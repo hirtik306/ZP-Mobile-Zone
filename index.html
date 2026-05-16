@@ -1900,16 +1900,34 @@ async function doLogout(){
   await sb.auth.signOut();
 }
 async function initAuth(){
+  // Check if this is a password recovery link (has access_token + type=recovery in URL hash)
+  const hashParams = new URLSearchParams(window.location.hash.replace('#',''));
+  const isRecovery = hashParams.get('type') === 'recovery' || sessionStorage.getItem("zp_recovery")==="1";
+
   // Safety timeout - if Supabase takes too long, show login anyway
   const timeout = setTimeout(()=>{
     document.getElementById("load-overlay").classList.add("hidden");
     document.getElementById("login-screen").classList.remove("hidden");
+    if(isRecovery){
+      sessionStorage.setItem("zp_recovery","1");
+      switchMode("forgot");
+      document.getElementById("f-step1").style.display="none";
+      document.getElementById("f-step2").style.display="block";
+    }
   }, 5000);
   
   try{
     const{data:{session}}=await sb.auth.getSession();
     clearTimeout(timeout);
-    if(session){currentUser=session.user;showApp();}
+    if(session && !isRecovery){currentUser=session.user;showApp();}
+    else if(isRecovery){
+      sessionStorage.setItem("zp_recovery","1");
+      document.getElementById("load-overlay").classList.add("hidden");
+      document.getElementById("login-screen").classList.remove("hidden");
+      switchMode("forgot");
+      document.getElementById("f-step1").style.display="none";
+      document.getElementById("f-step2").style.display="block";
+    }
     else{document.getElementById("load-overlay").classList.add("hidden");document.getElementById("login-screen").classList.remove("hidden");}
   }catch(e){
     clearTimeout(timeout);
