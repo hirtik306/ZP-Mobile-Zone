@@ -306,6 +306,16 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
 .logout-btn{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:#fca5a5;font-size:11px;padding:4px 10px;border-radius:6px;cursor:pointer;font-family:'Syne',sans-serif;font-weight:700;transition:all .15s}
 .logout-btn:hover{background:rgba(239,68,68,0.2)}
 
+/* ═══ PIN LOGIN ═══ */
+.pin-dot{width:16px;height:16px;border-radius:50%;border:2px solid rgba(201,162,39,0.4);background:transparent;transition:all .15s}
+.pin-dot.filled{background:#c9a227;border-color:#c9a227;box-shadow:0 0 10px rgba(201,162,39,0.5)}
+.pin-dot.shake{animation:pinShake .4s ease}
+@keyframes pinShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:260px;margin:0 auto}
+.pin-key{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:#fff;font-size:22px;font-weight:700;font-family:'Syne',sans-serif;height:62px;cursor:pointer;transition:all .12s;-webkit-tap-highlight-color:transparent}
+.pin-key:hover{background:rgba(201,162,39,0.15);border-color:rgba(201,162,39,0.4)}
+.pin-key:active{transform:scale(0.92);background:rgba(201,162,39,0.25)}
+
 /* ═══ OFFLINE BANNER ═══ */
 #offline-banner{
   display:none;position:fixed;top:0;left:0;right:0;z-index:9999;
@@ -333,17 +343,10 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
 </head>
 <body>
 
-<!-- OFFLINE BANNER -->
-<div id="offline-banner">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.56 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>
-  ⚠️ Internet nahi hai — Offline mode mein kaam kar rahe hain. Data locally save ho raha hai.
-  <span id="queue-count" style="display:none">• <span id="queue-num">0</span> pending sync</span>
-</div>
-
 <!-- INSTALL APP BUTTON -->
-<button id="install-btn" onclick="installApp()">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-  Install App (Offline Use)
+<button id="install-btn" onclick="installApp()" style="display:none;position:fixed;bottom:20px;right:20px;z-index:9998;background:var(--gold);color:#fff;border:none;border-radius:12px;padding:12px 20px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(201,162,39,0.4);font-family:'Syne',sans-serif;align-items:center;gap:8px">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+  Install App
 </button>
 
 <!-- LOADING -->
@@ -352,7 +355,7 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
   <div class="load-txt">Loading ZP Mobile Zone...</div>
 </div>
 
-<!-- LOGIN -->
+<!-- LOGIN — 100% OFFLINE PIN SYSTEM -->
 <div id="login-screen" class="hidden">
   <div class="login-box">
     <div class="login-logo">
@@ -363,63 +366,50 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
       </svg>
       <div>
         <div class="login-brand">ZP Mobile Zone</div>
-        <div class="login-tagline">Shop Management</div>
+        <div class="login-tagline">Shop Management — Offline Ready</div>
       </div>
     </div>
-    <div id="lmode">
-      <div class="login-title">Welcome Back 👋</div>
-      <div class="login-sub">Sign in to your account</div>
-      <div class="login-err" id="lerr"></div>
-      <div class="login-fg"><label>Email</label><input type="email" id="lemail" placeholder="email@example.com"></div>
-      <div class="login-fg"><label>Password</label><input type="password" id="lpass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-      <div class="forgot-link"><span onclick="switchMode('forgot')">Forgot Password?</span></div>
-      <button class="login-btn" id="lbtn" onclick="doLogin()">Sign In</button>
-      <div class="login-toggle">Don't have an account? <span onclick="switchMode('signup')">Create one</span></div>
-    </div>
-    <div id="smode" style="display:none">
-      <div class="login-title">Create Account</div>
-      <div class="login-sub">Register for ZP Mobile Zone</div>
-      <div class="login-err" id="serr"></div>
-      <div class="login-succ" id="ssucc"></div>
-      <div class="login-fg"><label>Full Name</label><input type="text" id="sname" placeholder="Your name"></div>
-      <div class="login-fg"><label>Email</label><input type="email" id="semail" placeholder="email@example.com"></div>
-      <div class="login-fg"><label>Password</label><input type="password" id="spass" placeholder="Minimum 6 characters"></div>
-      <button class="login-btn" id="sbtn" onclick="doSignup()">Create Account</button>
-      <div class="login-toggle">Already have an account? <span onclick="switchMode('login')">Sign in</span></div>
-    </div>
-    <!-- FORGOT PASSWORD PANEL -->
-    <div id="fmode" style="display:none">
-      <div style="margin-bottom:1.5rem">
-        <button onclick="switchMode('login')" style="background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:12px;padding:0;display:flex;align-items:center;gap:5px;margin-bottom:1rem;font-family:inherit">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-          Back to Sign In
-        </button>
-        <div class="login-title">Reset Password 🔐</div>
-        <div class="login-sub">Enter your email — we'll send a reset link</div>
+
+    <!-- PIN LOGIN MODE -->
+    <div id="pin-mode">
+      <div class="login-title" id="pin-title">Welcome Back 👋</div>
+      <div class="login-sub" id="pin-sub">4-digit PIN daalen</div>
+      <div class="login-err" id="pin-err"></div>
+
+      <!-- PIN DOTS DISPLAY -->
+      <div style="display:flex;justify-content:center;gap:14px;margin:1.5rem 0 1.25rem">
+        <div class="pin-dot" id="pd0"></div>
+        <div class="pin-dot" id="pd1"></div>
+        <div class="pin-dot" id="pd2"></div>
+        <div class="pin-dot" id="pd3"></div>
       </div>
-      <div class="login-err" id="ferr"></div>
-      <div class="login-succ" id="fsucc"></div>
-      <div id="f-step1">
-        <div class="login-fg"><label>Email Address</label><input type="email" id="femail" placeholder="email@example.com" onkeydown="if(event.key==='Enter')sendResetEmail()"></div>
-        <button class="login-btn" id="fbtn" onclick="sendResetEmail()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="flex-shrink:0"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          Send Reset Email
-        </button>
-        <div style="margin-top:16px;padding:12px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:8px;font-size:12px;color:rgba(255,255,255,0.3);line-height:1.6">
-          📧 A password reset link will be sent to your email.<br>Click the link in the email to set a new password.
+
+      <!-- NUMBER PAD -->
+      <div class="pin-grid">
+        <button class="pin-key" onclick="pinPress('1')">1</button>
+        <button class="pin-key" onclick="pinPress('2')">2</button>
+        <button class="pin-key" onclick="pinPress('3')">3</button>
+        <button class="pin-key" onclick="pinPress('4')">4</button>
+        <button class="pin-key" onclick="pinPress('5')">5</button>
+        <button class="pin-key" onclick="pinPress('6')">6</button>
+        <button class="pin-key" onclick="pinPress('7')">7</button>
+        <button class="pin-key" onclick="pinPress('8')">8</button>
+        <button class="pin-key" onclick="pinPress('9')">9</button>
+        <button class="pin-key" onclick="pinPress('clr')" style="font-size:11px;color:rgba(255,255,255,0.4)">CLR</button>
+        <button class="pin-key" onclick="pinPress('0')">0</button>
+        <button class="pin-key" onclick="pinPress('del')" style="font-size:18px">⌫</button>
+      </div>
+
+      <!-- SHOP NAME (only on setup) -->
+      <div id="pin-setup-extra" style="display:none;margin-top:1rem">
+        <div class="login-fg">
+          <label>Shop / Owner Ka Naam</label>
+          <input type="text" id="shop-name-input" placeholder="ZP Mobile Zone" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:11px 14px;font-size:14px;font-family:'Syne',sans-serif;color:#fff;outline:none;width:100%">
         </div>
       </div>
-      <div id="f-step2" style="display:none">
-        <div style="background:rgba(14,159,110,0.1);border:1px solid rgba(14,159,110,0.3);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#6ee7b7;display:flex;align-items:flex-start;gap:8px">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-top:1px;flex-shrink:0"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-          Link verified! Set your new password below.
-        </div>
-        <div class="login-fg"><label>New Password</label><input type="password" id="fnewpass" placeholder="Minimum 6 characters"></div>
-        <div class="login-fg" style="margin-bottom:16px"><label>Confirm New Password</label><input type="password" id="fnewpass2" placeholder="Repeat new password" onkeydown="if(event.key==='Enter')doResetPassword()"></div>
-        <button class="login-btn" id="fpbtn" onclick="doResetPassword()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="flex-shrink:0"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-          Set New Password
-        </button>
+
+      <div style="text-align:center;margin-top:1rem;font-size:11px;color:rgba(255,255,255,0.2)">
+        🔒 Data sirf is device par — koi internet nahi chahiye
       </div>
     </div>
   </div>
@@ -499,6 +489,11 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
   <button class="ntab" onclick="showTab('suppliers',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
     Suppliers
+  </button>
+  <button class="ntab" data-tab="orders" onclick="showTab('orders',this);renderOrders()" style="position:relative">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+    Orders
+    <span id="orders-badge" style="display:none;position:absolute;top:4px;right:6px;background:#ef4444;color:#fff;font-size:9px;font-weight:800;padding:2px 5px;border-radius:20px;line-height:1">0</span>
   </button>
 </nav>
 
@@ -1344,119 +1339,508 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
   </div>
 </div>
 
+<!-- ══ WEBSITE ORDERS ══════════════════════════════════════ -->
+<div id="orders" class="sec">
+  <div class="page-header">
+    <div class="page-title">Website Orders 🛍️</div>
+    <div class="page-sub">Customers jo website se order karte hain — real-time yahan aate hain</div>
+  </div>
+  <div class="sgrid" style="grid-template-columns:repeat(3,1fr);margin-bottom:1.5rem">
+    <div class="stat-card">
+      <div class="sval" id="ord-total" style="color:var(--gold)">0</div>
+      <div class="slbl">Total Orders</div>
+    </div>
+    <div class="stat-card">
+      <div class="sval" id="ord-new" style="color:var(--a)">0</div>
+      <div class="slbl">New / Pending</div>
+    </div>
+    <div class="stat-card">
+      <div class="sval" id="ord-done" style="color:var(--gd)">0</div>
+      <div class="slbl">Done</div>
+    </div>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Customer</th>
+            <th>Phone</th>
+            <th>Model Chahiye</th>
+            <th>Message</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="orders-body">
+          <tr><td colspan="7" class="empty"><div class="empty-icon">📭</div>Abhi koi order nahi — website se orders aayenge yahan</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.18.6/umd/index.min.js"></script>
 <script>
+// ════════════════════════════════════════════════════════════════
+// ZP MOBILE ZONE — HYBRID ENGINE v4.0
+// Primary: IndexedDB (always works, instant, offline)
+// Secondary: Supabase (background sync when internet available)
+// ════════════════════════════════════════════════════════════════
+
 // ═══ SUPABASE CONFIG ═══
 const SB_URL = 'https://pnfqwaejdkycckplkvfh.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBuZnF3YWVqZGt5Y2NrcGxrdmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNTk5ODAsImV4cCI6MjA5MzgzNTk4MH0.S32fvgVWsYkTD2bYFCUyjPgoD4zrs0Owkmr71tnk2f0';
 const sb = supabase.createClient(SB_URL, SB_KEY);
 
-// ═══ DATA STORES ═══
-const KEY = 'zpmobile_pro_v2';
-const CKEY = 'zpmobile_customers_v1';
-let stock = [];
+// ═══ INDEXEDDB SETUP ═══
+const DB_NAME = 'ZPMobileZone';
+const DB_VER = 2;
+let db = null;
 
-// Smart amount formatter: shows full number with commas up to 99,999 then Lakh
+function openDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('stock'))
+        d.createObjectStore('stock', { keyPath: '_id', autoIncrement: true });
+      if (!d.objectStoreNames.contains('customers'))
+        d.createObjectStore('customers', { keyPath: 'id', autoIncrement: true });
+      if (!d.objectStoreNames.contains('settings'))
+        d.createObjectStore('settings', { keyPath: 'key' });
+      if (!d.objectStoreNames.contains('syncQueue'))
+        d.createObjectStore('syncQueue', { keyPath: 'qid', autoIncrement: true });
+      if (!d.objectStoreNames.contains('orders'))
+        d.createObjectStore('orders', { keyPath: 'id', autoIncrement: true });
+    };
+    req.onsuccess = e => { db = e.target.result; res(db); };
+    req.onerror = () => rej(req.error);
+  });
+}
+
+// IndexedDB helpers
+const idb = {
+  get: (store, key) => new Promise((res, rej) => { const r = db.transaction(store,'readonly').objectStore(store).get(key); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }),
+  getAll: (store) => new Promise((res, rej) => { const r = db.transaction(store,'readonly').objectStore(store).getAll(); r.onsuccess=()=>res(r.result||[]); r.onerror=()=>rej(r.error); }),
+  put: (store, item) => new Promise((res, rej) => { const r = db.transaction(store,'readwrite').objectStore(store).put(item); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }),
+  del: (store, key) => new Promise((res, rej) => { const r = db.transaction(store,'readwrite').objectStore(store).delete(key); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error); }),
+  clear: (store) => new Promise((res, rej) => { const r = db.transaction(store,'readwrite').objectStore(store).clear(); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error); }),
+  setting: async (key, val) => {
+    if (val === undefined) { const r = await idb.get('settings', key); return r ? r.val : null; }
+    return idb.put('settings', { key, val });
+  }
+};
+
+// ═══ APP STATE ═══
+let stock = [], customers = [], orders = [];
+let scanReaders = {}, payTargetImei = null, currentSellImei = null;
+let selectedCustId = null, openCustDetailPhone = null;
+let currentUser = { email: 'owner@zpmobile.local', id: 'local-owner' };
+let isOnline = navigator.onLine;
+
 function fmtAmt(n) {
   n = Math.abs(Math.round(n || 0));
-  if (n >= 10000000) return (n/10000000).toFixed(1).replace(/\.0$/, '') + ' Cr';
-  if (n >= 100000)   return (n/100000).toFixed(1).replace(/\.0$/, '') + 'L';
+  if (n >= 10000000) return (n/10000000).toFixed(1).replace(/\.0$/,'') + ' Cr';
+  if (n >= 100000)   return (n/100000).toFixed(1).replace(/\.0$/,'') + 'L';
   return n.toLocaleString();
 }
-let customers = [];
-let scanReaders = {};
-let payTargetImei = null;
-let currentSellImei = null;
-let selectedCustId = null;
-let openCustDetailPhone = null;
-let currentUser = null;
 
-// ═══ SYNC STATUS ═══
-function setSyncing(s){
-  const d=document.getElementById('sdot'),t=document.getElementById('stxt');
-  if(!d)return;
-  d.className='sync-dot'+(s==='syncing'?' syncing':s==='error'?' error':'');
-  t.textContent=s==='syncing'?'Syncing...':s==='error'?'Error':'Synced';
+// ═══ SYNC STATUS INDICATOR ═══
+function setSyncing(s) {
+  const d = document.getElementById('sdot'), t = document.getElementById('stxt');
+  if (!d) return;
+  const states = {
+    syncing: ['syncing', 'Syncing...'],
+    error:   ['error',   'Offline ✗'],
+    synced:  ['',        'Saved ✓'],
+    offline: ['error',   '📴 Offline']
+  };
+  const [cls, txt] = states[s] || ['', 'Saved ✓'];
+  d.className = 'sync-dot' + (cls ? ' ' + cls : '');
+  t.textContent = txt;
 }
 
-// ═══ DB HELPERS ═══
-function dbToStock(r){
-  return{_id:r.id,imei:r.imei,model:r.model,variant:r.variant,supplier:r.supplier,
-    storage:r.storage,color:r.color,buyPrice:r.buy_price,status:r.status,
-    addedDate:r.added_date,addedMonth:r.added_month,addedYear:r.added_year,
-    customer:r.customer,sellPrice:r.sell_price,sellDate:r.sell_date,
-    sellMonth:r.sell_month,sellYear:r.sell_year,paymentType:r.payment_type,
-    paidAmount:r.paid_amount,balance:r.balance,dueDate:r.due_date,payments:r.payments||[]};
+// ═══ ONLINE / OFFLINE detection ═══
+window.addEventListener('online',  () => { isOnline = true;  setSyncing('syncing'); syncToSupabase(); });
+window.addEventListener('offline', () => { isOnline = false; setSyncing('offline'); });
+
+// ═══ DB FIELD MAPPERS ═══
+function dbToStock(r) {
+  return { _id: r.id, imei: r.imei, model: r.model, variant: r.variant, supplier: r.supplier,
+    storage: r.storage, color: r.color, buyPrice: r.buy_price, status: r.status,
+    addedDate: r.added_date, addedMonth: r.added_month, addedYear: r.added_year,
+    customer: r.customer, sellPrice: r.sell_price, sellDate: r.sell_date,
+    sellMonth: r.sell_month, sellYear: r.sell_year, paymentType: r.payment_type,
+    paidAmount: r.paid_amount, balance: r.balance, dueDate: r.due_date, payments: r.payments || [] };
 }
-function stockToDb(m){
-  return{user_id:currentUser.id,imei:m.imei,model:m.model,variant:m.variant,
-    supplier:m.supplier,storage:m.storage,color:m.color,buy_price:m.buyPrice,
-    status:m.status,added_date:m.addedDate,added_month:m.addedMonth,added_year:m.addedYear,
-    customer:m.customer,sell_price:m.sellPrice,sell_date:m.sellDate,
-    sell_month:m.sellMonth,sell_year:m.sellYear,payment_type:m.paymentType,
-    paid_amount:m.paidAmount,balance:m.balance,due_date:m.dueDate,payments:m.payments};
+function stockToDb(m) {
+  return { user_id: 'local-owner', imei: m.imei, model: m.model, variant: m.variant,
+    supplier: m.supplier, storage: m.storage, color: m.color, buy_price: m.buyPrice,
+    status: m.status, added_date: m.addedDate, added_month: m.addedMonth, added_year: m.addedYear,
+    customer: m.customer, sell_price: m.sellPrice, sell_date: m.sellDate,
+    sell_month: m.sellMonth, sell_year: m.sellYear, payment_type: m.paymentType,
+    paid_amount: m.paidAmount, balance: m.balance, due_date: m.dueDate, payments: m.payments };
 }
-async function saveStockItem(item){
+
+// ═══ CORE SAVE — IndexedDB first, Supabase background ═══
+async function saveStockItem(item) {
   setSyncing('syncing');
-  const dbItem=stockToDb(item);
-  let res;
-  if(item._id){res=await sb.from('stock').update(dbItem).eq('id',item._id).select().single();}
-  else{res=await sb.from('stock').insert(dbItem).select().single();}
-  if(res.error){setSyncing('error');throw res.error;}
-  setSyncing('synced');
-  // Update cache
-  setTimeout(()=>localStorage.setItem('zp_cache_stock', JSON.stringify(stock)),100);
-  return res.data;
+  // 1. Save to IndexedDB immediately (works offline)
+  const savedId = await idb.put('stock', item);
+  if (!item._id) item._id = savedId;
+  // Update in-memory array
+  const idx = stock.findIndex(x => x._id === item._id || x.imei === item.imei);
+  if (idx >= 0) stock[idx] = item; else stock.unshift(item);
+  setSyncing(isOnline ? 'syncing' : 'offline');
+  // 2. Queue for Supabase sync
+  await idb.put('syncQueue', { table: 'stock', action: 'upsert', data: stockToDb(item), localId: item._id });
+  // 3. Try Supabase now if online
+  if (isOnline) syncToSupabase();
+  else setSyncing('offline');
+  return item;
 }
-async function saveCustItem(c){
-  setSyncing('syncing');
-  const dbC={user_id:currentUser.id,name:c.name,phone:c.phone,cnic:c.cnic||'',address:c.address||'',added_date:c.addedDate||new Date().toLocaleDateString('en-GB')};
-  let res;
-  if(c.id&&String(c.id).length>10&&!String(c.id).startsWith('c_')){
-    res=await sb.from('customers').update(dbC).eq('id',c.id).select().single();
-  }else{res=await sb.from('customers').insert(dbC).select().single();}
-  if(res.error){setSyncing('error');throw res.error;}
-  setSyncing('synced');return res.data;
-}
-async function loadAllData(){
-  // Load from localStorage cache first (instant — works offline too)
-  const cachedStock = localStorage.getItem('zp_cache_stock');
-  const cachedCust = localStorage.getItem('zp_cache_cust');
-  if(cachedStock){ stock=JSON.parse(cachedStock); updateStats(); }
-  if(cachedCust){ customers=JSON.parse(cachedCust); renderCustomers && typeof renderCustomers==='function' && renderCustomers(); }
-  
-  // If offline, don't even try Supabase
-  if (!navigator.onLine) {
-    setSyncing('error');
-    console.log('[Offline] Loaded from cache only');
-    return;
+
+async function deleteStockItem(imei) {
+  const item = stock.find(x => x.imei === imei);
+  if (!item) return;
+  await idb.del('stock', item._id);
+  if (isOnline && item._sbId) {
+    try { await sb.from('stock').delete().eq('id', item._sbId); } catch(e){}
   }
-  
-  // Then sync from Supabase in background
+  stock = stock.filter(x => x.imei !== imei);
+}
+
+async function saveCustItem(c) {
   setSyncing('syncing');
-  try{
-    const[{data:sd,error:se},{data:cd,error:ce}]=await Promise.all([
-      sb.from('stock').select('*').order('created_at',{ascending:false}),
-      sb.from('customers').select('*').order('created_at',{ascending:false})
+  if (!c.id) c.id = Date.now();
+  await idb.put('customers', c);
+  const idx = customers.findIndex(x => x.id === c.id);
+  if (idx >= 0) customers[idx] = c; else customers.unshift(c);
+  await idb.put('syncQueue', { table: 'customers', action: 'upsert', data: c });
+  if (isOnline) syncToSupabase();
+  else setSyncing('offline');
+  return c;
+}
+
+// ═══ SYNC QUEUE — push local changes to Supabase ═══
+let syncRunning = false;
+async function syncToSupabase() {
+  if (syncRunning || !isOnline) return;
+  syncRunning = true;
+  try {
+    const queue = await idb.getAll('syncQueue');
+    for (const entry of queue) {
+      try {
+        if (entry.table === 'stock') {
+          const { error } = await sb.from('stock').upsert(entry.data, { onConflict: 'imei' });
+          if (!error) await idb.del('syncQueue', entry.qid);
+        } else if (entry.table === 'customers') {
+          const dbC = { user_id: 'local-owner', name: entry.data.name, phone: entry.data.phone, cnic: entry.data.cnic||'', address: entry.data.address||'', added_date: entry.data.addedDate||'' };
+          const { error } = await sb.from('customers').upsert(dbC, { onConflict: 'phone' });
+          if (!error) await idb.del('syncQueue', entry.qid);
+        }
+      } catch(e) { break; } // network error, stop and retry later
+    }
+    setSyncing('synced');
+  } finally { syncRunning = false; }
+}
+
+// ═══ LOAD DATA — IndexedDB first, then Supabase freshen ═══
+async function loadAllData() {
+  // Step 1: Load from IndexedDB instantly (works offline always)
+  const [localStock, localCust, localOrders] = await Promise.all([
+    idb.getAll('stock'), idb.getAll('customers'), idb.getAll('orders')
+  ]);
+  stock = localStock.reverse();
+  customers = localCust.reverse();
+  orders = localOrders.reverse();
+  updateStats();
+  if (typeof renderCustomers === 'function') renderCustomers();
+  if (typeof renderOrders === 'function') renderOrders();
+  if (typeof supPopulateDropdowns === 'function') supPopulateDropdowns();
+
+  if (!isOnline) { setSyncing('offline'); return; }
+
+  // Step 2: Freshen from Supabase in background
+  setSyncing('syncing');
+  try {
+    const [{ data: sd }, { data: cd }, { data: od }] = await Promise.all([
+      sb.from('stock').select('*').order('created_at', { ascending: false }),
+      sb.from('customers').select('*').order('created_at', { ascending: false }),
+      sb.from('orders').select('*').order('created_at', { ascending: false })
     ]);
-    if(se)throw se;if(ce)throw ce;
-    stock=(sd||[]).map(dbToStock);
-    customers=cd||[];
-    // Save to cache
-    localStorage.setItem('zp_cache_stock', JSON.stringify(stock));
-    localStorage.setItem('zp_cache_cust', JSON.stringify(customers));
-    updateStats();setSyncing('synced');
-  }catch(e){
-    setSyncing('error');
-    console.error('[Offline] Supabase sync failed, using cache:', e);
+    if (sd) {
+      stock = sd.map(dbToStock);
+      await idb.clear('stock');
+      for (const item of stock) await idb.put('stock', item);
+    }
+    if (cd) {
+      customers = cd;
+      await idb.clear('customers');
+      for (const c of customers) await idb.put('customers', c);
+    }
+    if (od) {
+      orders = od;
+      await idb.clear('orders');
+      for (const o of orders) await idb.put('orders', { ...o, id: o.id });
+      if (typeof renderOrders === 'function') renderOrders();
+    }
+    updateStats();
+    setSyncing('synced');
+    // Also push any pending local changes
+    syncToSupabase();
+  } catch(e) {
+    setSyncing('offline');
+    console.log('[Sync] Supabase unreachable, using local data');
   }
 }
 
-// ═══ OLD SAVE FUNCTIONS (now use Supabase) ═══
-function save(){} // handled by saveStockItem
-function saveCust(){} // handled by saveCustItem
+// ═══ ORDERS — listen for new website orders ═══
+let orderChannel = null;
+function subscribeOrders() {
+  if (!isOnline || orderChannel) return;
+  orderChannel = sb.channel('orders-realtime')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, async payload => {
+      const order = payload.new;
+      orders.unshift(order);
+      await idb.put('orders', { ...order });
+      if (typeof renderOrders === 'function') renderOrders();
+      showOrderNotification(order);
+    })
+    .subscribe();
+}
+
+function showOrderNotification(order) {
+  const existing = document.getElementById('order-notif');
+  if (existing) existing.remove();
+  const el = document.createElement('div');
+  el.id = 'order-notif';
+  el.style.cssText = 'position:fixed;top:20px;right:20px;z-index:99999;background:linear-gradient(135deg,#1a1200,#2a1f00);border:1.5px solid #c9a227;border-radius:14px;padding:16px 20px;min-width:280px;box-shadow:0 8px 32px rgba(0,0,0,0.5);animation:slideIn .3s ease';
+  el.innerHTML = `
+    <div style="display:flex;align-items:flex-start;gap:12px">
+      <div style="font-size:22px">🛍️</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:800;color:#e8c547;margin-bottom:4px">Naya Website Order!</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.8);font-weight:600">${order.customer_name}</div>
+        <div style="font-size:11.5px;color:rgba(255,255,255,0.5)">${order.phone} • ${order.model || 'Inquiry'}</div>
+      </div>
+      <button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:18px;line-height:1">×</button>
+    </div>
+    <button onclick="switchTab('orders');document.getElementById('order-notif').remove()" style="width:100%;margin-top:10px;background:rgba(201,162,39,0.15);border:1px solid rgba(201,162,39,0.3);border-radius:8px;padding:8px;color:#e8c547;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">View Order →</button>`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 8000);
+}
+
+// ═══ OLD COMPAT STUBS ═══
+function save() {}
+function saveCust() {}
+function switchMode() {}
+function sendResetEmail() {}
+function doResetPassword() {}
+function doSignup() {}
+function doLogin() {}
+
+// ═══ PIN AUTH SYSTEM ═══
+let pinBuffer = '', pinMode = 'login', pinFirst = '';
+
+async function initAuth() {
+  await openDB();
+  const savedPin = await idb.setting('pin');
+  const shopName = await idb.setting('shopName') || 'ZP Mobile Zone';
+  document.querySelectorAll('.login-brand').forEach(el => el.textContent = shopName);
+  if (!savedPin) {
+    pinMode = 'setup';
+    document.getElementById('pin-title').textContent = 'Setup PIN 🔐';
+    document.getElementById('pin-sub').textContent = 'Apna 4-digit PIN banayein';
+    document.getElementById('pin-setup-extra').style.display = 'block';
+  }
+  document.getElementById('load-overlay').classList.add('hidden');
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.addEventListener('keydown', e => {
+    if (document.getElementById('login-screen').classList.contains('hidden')) return;
+    if (e.key >= '0' && e.key <= '9') pinPress(e.key);
+    else if (e.key === 'Backspace') pinPress('del');
+    else if (e.key === 'Escape') pinPress('clr');
+  });
+}
+
+function pinPress(key) {
+  document.getElementById('pin-err').classList.remove('show');
+  if (key === 'clr') { pinBuffer = ''; updatePinDots(); return; }
+  if (key === 'del') { pinBuffer = pinBuffer.slice(0,-1); updatePinDots(); return; }
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += key;
+  updatePinDots();
+  if (pinBuffer.length === 4) setTimeout(() => handlePin(pinBuffer), 120);
+}
+
+function updatePinDots() {
+  for (let i = 0; i < 4; i++) {
+    const d = document.getElementById('pd' + i);
+    if (d) d.classList.toggle('filled', i < pinBuffer.length);
+  }
+}
+
+async function handlePin(pin) {
+  const errEl = document.getElementById('pin-err');
+  if (pinMode === 'login') {
+    const saved = await idb.setting('pin');
+    if (pin === saved) {
+      await showApp();
+    } else {
+      errEl.textContent = '❌ Galat PIN — dobara try karein';
+      errEl.classList.add('show');
+      pinBuffer = ''; updatePinDots();
+      document.querySelectorAll('.pin-dot').forEach(d => {
+        d.classList.add('shake'); setTimeout(() => d.classList.remove('shake'), 500);
+      });
+    }
+  } else if (pinMode === 'setup') {
+    pinFirst = pin; pinMode = 'confirm'; pinBuffer = ''; updatePinDots();
+    document.getElementById('pin-title').textContent = 'Confirm PIN ✅';
+    document.getElementById('pin-sub').textContent = 'Dobara wahi PIN daalen';
+    document.getElementById('pin-setup-extra').style.display = 'none';
+  } else if (pinMode === 'confirm') {
+    if (pin === pinFirst) {
+      const shopName = document.getElementById('shop-name-input')?.value.trim() || 'ZP Mobile Zone';
+      await idb.setting('pin', pin);
+      await idb.setting('shopName', shopName);
+      await showApp();
+    } else {
+      errEl.textContent = '❌ PIN match nahi hua — phir se try karein';
+      errEl.classList.add('show');
+      pinBuffer = ''; pinFirst = ''; pinMode = 'setup'; updatePinDots();
+      document.getElementById('pin-title').textContent = 'Setup PIN 🔐';
+      document.getElementById('pin-sub').textContent = 'Apna 4-digit PIN banayein';
+      document.getElementById('pin-setup-extra').style.display = 'block';
+    }
+  }
+}
+
+async function showApp() {
+  document.getElementById('load-overlay').classList.add('hidden');
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app-wrap').style.display = 'block';
+  const shopName = await idb.setting('shopName') || 'ZP Mobile Zone';
+  const el = document.getElementById('uemail'); if (el) el.textContent = shopName;
+  const ud = document.getElementById('udot'); if (ud) ud.textContent = 'ZP';
+  setDateDisplay();
+  if (typeof buildColorPicker === 'function') buildColorPicker('');
+  await loadAllData();
+  subscribeOrders();
+}
+
+function setDateDisplay() {
+  const d = new Date();
+  const mn = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const el = document.getElementById('topdate');
+  if (el) el.textContent = days[d.getDay()] + ', ' + d.getDate() + ' ' + mn[d.getMonth()] + ' ' + d.getFullYear();
+  const ry = document.getElementById('r-year');
+  if (ry) ry.querySelectorAll('option').forEach(o => { if (o.value == d.getFullYear()) o.selected = true; });
+}
+
+async function doLogout() {
+  if (!confirm('Logout karna chahte hain?')) return;
+  document.getElementById('app-wrap').style.display = 'none';
+  document.getElementById('login-screen').classList.remove('hidden');
+  pinBuffer = ''; pinMode = 'login'; pinFirst = '';
+  updatePinDots();
+  document.getElementById('pin-title').textContent = 'Welcome Back 👋';
+  document.getElementById('pin-sub').textContent = '4-digit PIN daalen';
+  document.getElementById('pin-err').classList.remove('show');
+  if (orderChannel) { sb.removeChannel(orderChannel); orderChannel = null; }
+}
+
+async function changePin() {
+  const cur = prompt('Pehle purana PIN daalen:');
+  const saved = await idb.setting('pin');
+  if (cur !== saved) { alert('Galat PIN!'); return; }
+  const n1 = prompt('Naya 4-digit PIN:');
+  if (!n1 || n1.length !== 4 || isNaN(n1)) { alert('4 digits ka PIN chahiye!'); return; }
+  const n2 = prompt('Confirm naya PIN:');
+  if (n1 !== n2) { alert('PIN match nahi hua!'); return; }
+  await idb.setting('pin', n1);
+  alert('✅ PIN change ho gaya!');
+}
+
+async function deleteDevice(imei) {
+  const m = stock.find(x => x.imei === imei);
+  if (!m) return;
+  if (!confirm(`Permanently delete?\n\nModel: ${m.model} ${m.storage||''}\nIMEI: ${m.imei}\n\nYeh undo nahi hoga.`)) return;
+  await deleteStockItem(imei);
+  renderStock();
+  typeof renderPending === 'function' && renderPending();
+  updateStats();
+}
+
+async function returnToStock(imei) {
+  const m = stock.find(x => x.imei === imei);
+  if (!m) return;
+  if (!confirm(`Return to stock?\n\nModel: ${m.model} ${m.storage||''}\nIMEI: ${m.imei}\n\nSale data remove ho jayega.`)) return;
+  const updated = {...m, status:'available', customer:null, sellPrice:null, paidAmount:null, balance:null, paymentType:'full', sellDate:null, sellMonth:null, sellYear:null, dueDate:null, payments:[]};
+  await saveStockItem(updated);
+  renderStock();
+  typeof renderPending === 'function' && renderPending();
+  alert(`✅ ${m.model} wapas stock mein aa gaya.`);
+}
+
+// PWA Install
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstallPrompt = e; const b = document.getElementById('install-btn'); if(b) b.style.display='flex'; });
+window.addEventListener('appinstalled', () => { deferredInstallPrompt = null; const b = document.getElementById('install-btn'); if(b) b.style.display='none'; });
+function installApp() {
+  if (deferredInstallPrompt) { deferredInstallPrompt.prompt(); deferredInstallPrompt.userChoice.then(() => { deferredInstallPrompt = null; }); }
+  else alert('📱 Android: 3 dots → "Add to Home Screen"\n💻 Laptop: Address bar mein install icon\n\n100% offline kaam karta hai!');
+}
+if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{})); }
+
+// ═══ ORDERS TAB RENDERER ═══
+function renderOrders() {
+  const tbody = document.getElementById('orders-body');
+  if (!tbody) return;
+  const badge = document.getElementById('orders-badge');
+  const newOrders = orders.filter(o => o.status === 'new' || o.status === 'pending');
+  if (badge) { badge.textContent = newOrders.length; badge.style.display = newOrders.length ? 'inline-flex' : 'none'; }
+  if (!orders.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty"><div class="empty-icon">📭</div>Abhi koi order nahi — website se order aayenge yahan</td></tr>'; return; }
+  tbody.innerHTML = orders.map(o => `<tr>
+    <td style="font-size:11px;color:var(--txt3);font-family:'IBM Plex Mono',monospace">${new Date(o.created_at||Date.now()).toLocaleDateString('en-GB')}</td>
+    <td style="font-weight:700">${o.customer_name}</td>
+    <td style="color:var(--txt2);font-family:'IBM Plex Mono',monospace;font-size:12px">${o.phone}</td>
+    <td style="font-weight:500">${o.model || '—'}</td>
+    <td style="color:var(--txt3);font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.message || '—'}</td>
+    <td><span class="badge ${o.status==='done'?'bg-g':o.status==='cancelled'?'bg-r':'bg-a'}">${o.status==='done'?'Done':o.status==='cancelled'?'Cancelled':'New'}</span></td>
+    <td>
+      <div style="display:flex;gap:6px">
+        ${o.status!=='done'?`<button class="btn btn-gold" style="font-size:11px;padding:5px 10px" onclick="updateOrderStatus(${o.id||o.qid},'done')">✓ Done</button>`:''}
+        ${o.status!=='cancelled'?`<button class="btn" style="font-size:11px;padding:5px 10px;background:var(--rl);color:var(--rt);border:1px solid var(--r-border)" onclick="updateOrderStatus(${o.id||o.qid},'cancelled')">✗</button>`:''}
+      </div>
+    </td>
+  </tr>`).join('');
+}
+
+async function updateOrderStatus(id, status) {
+  const idx = orders.findIndex(o => o.id == id || o.qid == id);
+  if (idx < 0) return;
+  orders[idx].status = status;
+  await idb.put('orders', orders[idx]);
+  if (isOnline) { try { await sb.from('orders').update({ status }).eq('id', id); } catch(e){} }
+  renderOrders();
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.ntab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('active'));
+  const sec = document.getElementById(tab);
+  if (sec) sec.classList.add('active');
+  document.querySelectorAll('.ntab').forEach(b => { if (b.dataset.tab === tab) b.classList.add('active'); });
+}
+
+window.addEventListener('load', initAuth);
+</script>
 
 // ═══ COLORS ═══
 const COLORS = {
@@ -1973,37 +2357,7 @@ function updateStats() {
   set('s-invest', 'Rs. ' + invest.toLocaleString());
 }
 
-function returnToStock(imei) {
-  const m = stock.find(x => x.imei === imei);
-  if (!m) return;
-  const custName = m.customer ? m.customer.name : 'Unknown';
-  if (!confirm(`Return device to stock?\n\nModel: ${m.model} ${m.storage || ''}\nIMEI: ${m.imei}\nPrevious Customer: ${custName}\n\nThis will mark the device as Available again and remove all sale data.`)) return;
-  const idx = stock.findIndex(x => x.imei === imei);
-  stock[idx].status = 'available';
-  stock[idx].customer = null;
-  stock[idx].sellPrice = 0;
-  stock[idx].paidAmount = 0;
-  stock[idx].balance = 0;
-  stock[idx].paymentType = null;
-  stock[idx].sellDate = null;
-  stock[idx].sellMonth = null;
-  stock[idx].sellYear = null;
-  stock[idx].dueDate = null;
-  try { saveStock(); } catch(e) {}
-  renderStock(); renderPending();
-  alert(`✅ Device returned to stock successfully.\n${m.model} ${m.storage || ''} is now available for sale.`);
-}
-
-function deleteDevice(imei) {
-  const m = stock.find(x => x.imei === imei);
-  if (!m) return;
-  const label = m.status === 'sold' ? ' (SOLD — sale record will also be removed)' : '';
-  if (!confirm(`Permanently delete this device?\n\nModel: ${m.model} ${m.storage || ''}\nIMEI: ${m.imei}\nStatus: ${m.status === 'available' ? 'In Stock' : 'Sold'}${label}\n\nThis action cannot be undone.`)) return;
-  stock = stock.filter(x => x.imei !== imei);
-  try { saveStock(); } catch(e) {}
-  renderStock(); updateStats();
-  alert(`🗑️ Device deleted.\n${m.model} ${m.storage || ''} has been removed from the system.`);
-}
+// returnToStock and deleteDevice are defined in the IndexedDB engine above
 
 // ═══ PENDING ═══
 function renderPending() {
@@ -2343,342 +2697,15 @@ function renderBills() {
   }).join('');
 }
 
-// ═══ AUTH ═══
-function switchMode(m){
-  document.getElementById("lmode").style.display=m==="login"?"block":"none";
-  document.getElementById("smode").style.display=m==="signup"?"block":"none";
-  document.getElementById("fmode").style.display=m==="forgot"?"block":"none";
-  // Clear errors on switch
-  ["lerr","serr","ferr"].forEach(id=>{const el=document.getElementById(id);if(el){el.textContent="";el.classList.remove("show");}});
-  ["fsucc","ssucc"].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove("show");});
-}
+// ═══ AUTH — handled by PIN system above ═══
 
-async function sendResetEmail(){
-  const email=document.getElementById("femail").value.trim();
-  const err=document.getElementById("ferr");
-  const succ=document.getElementById("fsucc");
-  err.classList.remove("show");succ.classList.remove("show");
-  if(!email){err.textContent="Please enter your email address.";err.classList.add("show");return;}
-  const btn=document.getElementById("fbtn");
-  btn.disabled=true;
-  btn.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="flex-shrink:0;animation:spin 1s linear infinite"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Sending...';
-  const redirectTo = "https://zp-mobile-zone.netlify.app/";
-  const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:redirectTo});
-  btn.disabled=false;
-  btn.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="flex-shrink:0"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Send Reset Email';
-  if(error){err.textContent=error.message;err.classList.add("show");}
-  else{
-    succ.innerHTML='✅ Reset email sent! Check your inbox (and spam folder).<br><span style="font-size:12px;opacity:0.8">Click the link in the email to set a new password.</span>';
-    succ.classList.add("show");
-    document.getElementById("f-step1").style.opacity="0.5";
-    document.getElementById("f-step1").style.pointerEvents="none";
-  }
-}
 
-async function doResetPassword(){
-  const pass=document.getElementById("fnewpass").value;
-  const pass2=document.getElementById("fnewpass2").value;
-  const err=document.getElementById("ferr");
-  err.classList.remove("show");
-  if(!pass||!pass2){err.textContent="Please fill both password fields.";err.classList.add("show");return;}
-  if(pass.length<6){err.textContent="Password must be at least 6 characters.";err.classList.add("show");return;}
-  if(pass!==pass2){err.textContent="Passwords do not match.";err.classList.add("show");return;}
-  const btn=document.getElementById("fpbtn");
-  btn.disabled=true;btn.textContent="Updating password...";
-  const{error}=await sb.auth.updateUser({password:pass});
-  btn.disabled=false;
-  btn.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="flex-shrink:0"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> Set New Password';
-  if(error){err.textContent=error.message;err.classList.add("show");}
-  else{
-    const succ=document.getElementById("fsucc");
-    succ.textContent="✅ Password updated successfully! Signing you in...";
-    succ.classList.add("show");
-    sessionStorage.removeItem("zp_recovery");
-    setTimeout(()=>switchMode("login"),2500);
-  }
-}
-async function doLogin(){
-  const email=document.getElementById("lemail").value.trim();
-  const pass=document.getElementById("lpass").value;
-  const err=document.getElementById("lerr");err.classList.remove("show");
-  if(!email||!pass){err.textContent="Email and password are required.";err.classList.add("show");return;}
-  const btn=document.getElementById("lbtn");btn.disabled=true;btn.textContent="Signing in...";
-  const{error}=await sb.auth.signInWithPassword({email,password:pass});
-  btn.disabled=false;btn.textContent="Sign In";
-  if(error){err.textContent=error.message==="Invalid login credentials"?"Invalid email or password.":error.message;err.classList.add("show");}
-}
-async function doSignup(){
-  const name=document.getElementById("sname").value.trim();
-  const email=document.getElementById("semail").value.trim();
-  const pass=document.getElementById("spass").value;
-  const err=document.getElementById("serr"),succ=document.getElementById("ssucc");
-  err.classList.remove("show");succ.classList.remove("show");
-  if(!name||!email||!pass){err.textContent="Please fill all fields.";err.classList.add("show");return;}
-  if(pass.length<6){err.textContent="Password must be at least 6 characters!";err.classList.add("show");return;}
-  const btn=document.getElementById("sbtn");btn.disabled=true;btn.textContent="Creating account...";
-  const{error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:name}}});
-  btn.disabled=false;btn.textContent="Create Account";
-  if(error){err.textContent=error.message;err.classList.add("show");}
-  else{succ.textContent="✓ Account created! Please sign in.";succ.classList.add("show");setTimeout(()=>switchMode("login"),2000);}
-}
-async function doLogout(){
-  if(!confirm("Are you sure you want to logout?"))return;
-  await sb.auth.signOut();
-}
-async function initAuth(){
-  // Check if this is a password recovery link (has access_token + type=recovery in URL hash)
-  const hashParams = new URLSearchParams(window.location.hash.replace('#',''));
-  const isRecovery = hashParams.get('type') === 'recovery' || sessionStorage.getItem("zp_recovery")==="1";
-
-  // OFFLINE: If no internet, check if we have a cached user session
-  if (!navigator.onLine) {
-    const cachedUser = localStorage.getItem('zp_cached_user');
-    if (cachedUser) {
-      try {
-        currentUser = JSON.parse(cachedUser);
-        document.getElementById("load-overlay").classList.add("hidden");
-        await showApp();
-        console.log('[Offline] Logged in from cache');
-        return;
-      } catch(e) { console.error(e); }
-    }
-    // No cached session — show offline login message
-    document.getElementById("load-overlay").classList.add("hidden");
-    document.getElementById("login-screen").classList.remove("hidden");
-    const lerr = document.getElementById("lerr");
-    if (lerr) { lerr.textContent = "⚠️ Offline — pehle internet se login kar lein, phir offline bhi chalega."; lerr.classList.add("show"); }
-    return;
-  }
-
-  // Safety timeout - if Supabase takes too long, show login anyway
-  const timeout = setTimeout(()=>{
-    document.getElementById("load-overlay").classList.add("hidden");
-    document.getElementById("login-screen").classList.remove("hidden");
-    if(isRecovery){
-      sessionStorage.setItem("zp_recovery","1");
-      switchMode("forgot");
-      document.getElementById("f-step1").style.display="none";
-      document.getElementById("f-step2").style.display="block";
-    }
-  }, 5000);
-  
-  try{
-    const{data:{session}}=await sb.auth.getSession();
-    clearTimeout(timeout);
-    if(session && !isRecovery){currentUser=session.user;showApp();}
-    else if(isRecovery){
-      sessionStorage.setItem("zp_recovery","1");
-      document.getElementById("load-overlay").classList.add("hidden");
-      document.getElementById("login-screen").classList.remove("hidden");
-      switchMode("forgot");
-      document.getElementById("f-step1").style.display="none";
-      document.getElementById("f-step2").style.display="block";
-    }
-    else{document.getElementById("load-overlay").classList.add("hidden");document.getElementById("login-screen").classList.remove("hidden");}
-  }catch(e){
-    clearTimeout(timeout);
-    document.getElementById("load-overlay").classList.add("hidden");
-    document.getElementById("login-screen").classList.remove("hidden");
-  }
-  sb.auth.onAuthStateChange(async(event,session)=>{
-    if(event==="SIGNED_IN"){
-      // Don't auto-show app if we are in password recovery flow
-      if(sessionStorage.getItem("zp_recovery")==="1") return;
-      currentUser=session.user;
-      // Cache user for offline access
-      localStorage.setItem('zp_cached_user', JSON.stringify(session.user));
-      await showApp();
-    }
-    if(event==="SIGNED_OUT"){
-      currentUser=null;
-      localStorage.removeItem('zp_cached_user');
-      document.getElementById("app-wrap").style.display="none";
-      document.getElementById("login-screen").classList.remove("hidden");
-      stock=[];customers=[];
-    }
-    if(event==="PASSWORD_RECOVERY"){
-      // User clicked the reset link in their email — show new password form
-      sessionStorage.setItem("zp_recovery","1");
-      document.getElementById("load-overlay").classList.add("hidden");
-      document.getElementById("login-screen").classList.remove("hidden");
-      switchMode("forgot");
-      document.getElementById("f-step1").style.display="none";
-      document.getElementById("f-step2").style.display="block";
-    }
-  });
-}
-async function showApp(){
-  // Show app IMMEDIATELY - don't wait for Supabase
-  document.getElementById("load-overlay").classList.add("hidden");
-  document.getElementById("login-screen").classList.add("hidden");
-  document.getElementById("app-wrap").style.display="block";
-  const email=currentUser.email;
-  const el=document.getElementById("uemail");if(el)el.textContent=email;
-  const ud=document.getElementById("udot");if(ud)ud.textContent=email[0].toUpperCase();
-  setDateDisplay();
-  if(typeof buildColorPicker==="function")buildColorPicker("");
-  // Load data in background - cache shows instantly, Supabase syncs after
-  loadAllData().then(()=>{ if(typeof supPopulateDropdowns==="function") supPopulateDropdowns(); });
-}
-function setDateDisplay(){
-  const d=new Date();const mn=["January","February","March","April","May","June","July","August","September","October","November","December"];
-  const days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-  const el=document.getElementById("topdate");if(el)el.textContent=days[d.getDay()]+", "+d.getDate()+" "+mn[d.getMonth()]+" "+d.getFullYear();
-  const ry=document.getElementById("r-year");if(ry)ry.querySelectorAll("option").forEach(o=>{if(o.value==d.getFullYear())o.selected=true;});
-}
-// Wait for supabase to be ready
-if(typeof supabase !== "undefined") { initAuth(); } else { window.addEventListener("load", initAuth); }
 
 // ══════════════════════════════════════════════════
-// OFFLINE SUPPORT SYSTEM
+// PWA INSTALL PROMPT
 // ══════════════════════════════════════════════════
-const OFFLINE_QUEUE_KEY = 'zp_offline_queue_v1';
-let isOnline = navigator.onLine;
-let offlineQueue = [];
 let deferredInstallPrompt = null;
 
-// Load pending offline queue from storage
-function loadOfflineQueue() {
-  try { offlineQueue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]'); } 
-  catch { offlineQueue = []; }
-  updateQueueBadge();
-}
-
-function saveOfflineQueue() {
-  localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(offlineQueue));
-  updateQueueBadge();
-}
-
-function updateQueueBadge() {
-  const qEl = document.getElementById('queue-count');
-  const numEl = document.getElementById('queue-num');
-  if (qEl && numEl) {
-    if (offlineQueue.length > 0) { qEl.style.display = 'inline'; numEl.textContent = offlineQueue.length; }
-    else { qEl.style.display = 'none'; }
-  }
-}
-
-// Show/hide offline banner
-function setOnlineStatus(online) {
-  isOnline = online;
-  const banner = document.getElementById('offline-banner');
-  if (banner) {
-    if (online) {
-      banner.classList.remove('show');
-      // Push banner down — remove offset
-      document.body.style.paddingTop = '';
-    } else {
-      banner.classList.add('show');
-      document.body.style.paddingTop = '46px';
-    }
-  }
-  // If came back online, sync offline queue
-  if (online && offlineQueue.length > 0 && currentUser) {
-    syncOfflineQueue();
-  }
-}
-
-// Intercept saveStockItem for offline mode
-const _originalSaveStockItem = saveStockItem;
-saveStockItem = async function(item) {
-  if (isOnline) {
-    try {
-      return await _originalSaveStockItem(item);
-    } catch(e) {
-      // Network error — fall through to offline save
-      console.warn('[Offline] Supabase failed, saving locally:', e.message);
-    }
-  }
-  // OFFLINE: save locally and queue for sync
-  return saveOfflineItem('stock', item);
-};
-
-const _originalSaveCustItem = saveCustItem;
-saveCustItem = async function(c) {
-  if (isOnline) {
-    try {
-      return await _originalSaveCustItem(c);
-    } catch(e) {
-      console.warn('[Offline] Supabase failed, saving locally:', e.message);
-    }
-  }
-  return saveOfflineItem('customers', c);
-};
-
-function saveOfflineItem(table, item) {
-  // Generate a local temp ID if needed
-  if (!item._id && !item.id) {
-    item._id = 'local_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
-  }
-  // Add to offline queue
-  offlineQueue.push({ table, item: {...item}, timestamp: Date.now() });
-  saveOfflineQueue();
-  // Update local caches immediately so UI works
-  if (table === 'stock') {
-    localStorage.setItem('zp_cache_stock', JSON.stringify(stock));
-  } else if (table === 'customers') {
-    localStorage.setItem('zp_cache_cust', JSON.stringify(customers));
-  }
-  setSyncing('error');
-  // Return a fake "saved" object so the rest of the code continues
-  return item._id ? {...item, id: item._id} : {...item};
-}
-
-// Sync offline queue when internet returns
-async function syncOfflineQueue() {
-  if (!currentUser || offlineQueue.length === 0) return;
-  console.log('[Offline] Syncing', offlineQueue.length, 'items...');
-  setSyncing('syncing');
-  const failed = [];
-  for (const entry of offlineQueue) {
-    try {
-      if (entry.table === 'stock') {
-        await _originalSaveStockItem(entry.item);
-      } else if (entry.table === 'customers') {
-        await _originalSaveCustItem(entry.item);
-      }
-    } catch(e) {
-      console.error('[Offline] Sync failed for item:', e);
-      failed.push(entry);
-    }
-  }
-  offlineQueue = failed;
-  saveOfflineQueue();
-  if (failed.length === 0) {
-    setSyncing('synced');
-    // Reload fresh data from server
-    loadAllData();
-  } else {
-    setSyncing('error');
-  }
-}
-
-// Also patch returnToStock and deleteDevice to work offline
-const _origReturnToStock = returnToStock;
-window.returnToStock = async function(imei) {
-  const m = stock.find(x => x.imei === imei);
-  if (!m) return;
-  const custName = m.customer ? m.customer.name : 'Unknown';
-  if (!confirm(`Return device to stock?\n\nModel: ${m.model} ${m.storage||''}\nIMEI: ${m.imei}\nPrevious Customer: ${custName}\n\nThis will mark the device as Available again and remove all sale data.`)) return;
-  const idx = stock.findIndex(x => x.imei === imei);
-  stock[idx] = {...stock[idx], status:'available', customer:null, sellPrice:0, paidAmount:0, balance:0, paymentType:null, sellDate:null, sellMonth:null, sellYear:null, dueDate:null};
-  try { await saveStockItem(stock[idx]); } catch(e) { console.error(e); }
-  localStorage.setItem('zp_cache_stock', JSON.stringify(stock));
-  renderStock(); renderPending && renderPending();
-  alert(`✅ Device returned to stock successfully.\n${m.model} ${m.storage||''} is now available for sale.`);
-};
-
-// Online/Offline event listeners
-window.addEventListener('online', () => {
-  console.log('[Offline] Back online!');
-  setOnlineStatus(true);
-});
-window.addEventListener('offline', () => {
-  console.log('[Offline] Gone offline!');
-  setOnlineStatus(false);
-});
-
-// PWA Install prompt
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredInstallPrompt = e;
@@ -2690,30 +2717,22 @@ window.addEventListener('appinstalled', () => {
   if (btn) btn.style.display = 'none';
   deferredInstallPrompt = null;
 });
-
 function installApp() {
   if (deferredInstallPrompt) {
     deferredInstallPrompt.prompt();
     deferredInstallPrompt.userChoice.then(() => { deferredInstallPrompt = null; });
   } else {
-    alert('Install karne ke liye:\n\n📱 Mobile (Chrome): Menu → "Add to Home Screen"\n💻 Laptop (Chrome): Address bar mein install icon click karen\n\nYa phir yeh file save kar len aur browser mein open karen — internet ke baghair bhi chalega!');
+    alert('Install karne ke liye:\n\n📱 Android (Chrome): 3 dots menu → "Add to Home Screen"\n💻 Laptop (Chrome): Address bar mein install icon click karein\n\nYeh app 100% offline kaam karta hai — koi internet ki zaroorat nahi!');
   }
 }
-
 // Register Service Worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').then(reg => {
-      console.log('[SW] Registered:', reg.scope);
-    }).catch(err => {
-      console.log('[SW] Registration failed (ok if local file):', err.message);
-    });
+    navigator.serviceWorker.register('sw.js')
+      .then(r => console.log('[SW] Ready'))
+      .catch(e => console.log('[SW] Skipped:', e.message));
   });
 }
-
-// Initialize on load
-loadOfflineQueue();
-setOnlineStatus(navigator.onLine);
 </script>
 
 <!-- ══ MULTI BILL ══════════════════════════════════════════ -->
