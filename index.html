@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#08090a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ZP Mobile">
+<link rel="manifest" href="manifest.json">
 <title>ZP Mobile Zone</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap');
@@ -300,9 +305,46 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
 .user-email{font-size:11px;color:rgba(255,255,255,0.5);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .logout-btn{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:#fca5a5;font-size:11px;padding:4px 10px;border-radius:6px;cursor:pointer;font-family:'Syne',sans-serif;font-weight:700;transition:all .15s}
 .logout-btn:hover{background:rgba(239,68,68,0.2)}
+
+/* ═══ OFFLINE BANNER ═══ */
+#offline-banner{
+  display:none;position:fixed;top:0;left:0;right:0;z-index:9999;
+  background:linear-gradient(90deg,#b45309,#92400e);
+  color:#fff;padding:10px 1.5rem;
+  font-size:12px;font-weight:700;letter-spacing:0.3px;
+  text-align:center;box-shadow:0 2px 12px rgba(0,0,0,0.3);
+  align-items:center;justify-content:center;gap:8px;
+}
+#offline-banner.show{display:flex}
+#offline-banner svg{width:14px;height:14px;flex-shrink:0}
+#queue-count{
+  background:rgba(255,255,255,0.2);border-radius:20px;
+  padding:2px 8px;margin-left:4px;font-size:11px;
+}
+#install-btn{
+  display:none;position:fixed;bottom:20px;right:20px;z-index:9998;
+  background:var(--gold);color:#fff;border:none;border-radius:12px;
+  padding:12px 20px;font-size:13px;font-weight:700;cursor:pointer;
+  box-shadow:0 4px 20px rgba(201,162,39,0.4);font-family:'Syne',sans-serif;
+  display:none;align-items:center;gap:8px;
+}
+#install-btn svg{width:16px;height:16px}
 </style>
 </head>
 <body>
+
+<!-- OFFLINE BANNER -->
+<div id="offline-banner">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.56 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>
+  ⚠️ Internet nahi hai — Offline mode mein kaam kar rahe hain. Data locally save ho raha hai.
+  <span id="queue-count" style="display:none">• <span id="queue-num">0</span> pending sync</span>
+</div>
+
+<!-- INSTALL APP BUTTON -->
+<button id="install-btn" onclick="installApp()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+  Install App (Offline Use)
+</button>
 
 <!-- LOADING -->
 <div id="load-overlay">
@@ -1379,11 +1421,18 @@ async function saveCustItem(c){
   setSyncing('synced');return res.data;
 }
 async function loadAllData(){
-  // Load from localStorage cache first (instant)
+  // Load from localStorage cache first (instant — works offline too)
   const cachedStock = localStorage.getItem('zp_cache_stock');
   const cachedCust = localStorage.getItem('zp_cache_cust');
   if(cachedStock){ stock=JSON.parse(cachedStock); updateStats(); }
   if(cachedCust){ customers=JSON.parse(cachedCust); renderCustomers && typeof renderCustomers==='function' && renderCustomers(); }
+  
+  // If offline, don't even try Supabase
+  if (!navigator.onLine) {
+    setSyncing('error');
+    console.log('[Offline] Loaded from cache only');
+    return;
+  }
   
   // Then sync from Supabase in background
   setSyncing('syncing');
@@ -1399,7 +1448,10 @@ async function loadAllData(){
     localStorage.setItem('zp_cache_stock', JSON.stringify(stock));
     localStorage.setItem('zp_cache_cust', JSON.stringify(customers));
     updateStats();setSyncing('synced');
-  }catch(e){setSyncing('error');console.error(e);}
+  }catch(e){
+    setSyncing('error');
+    console.error('[Offline] Supabase sync failed, using cache:', e);
+  }
 }
 
 // ═══ OLD SAVE FUNCTIONS (now use Supabase) ═══
@@ -2378,6 +2430,26 @@ async function initAuth(){
   const hashParams = new URLSearchParams(window.location.hash.replace('#',''));
   const isRecovery = hashParams.get('type') === 'recovery' || sessionStorage.getItem("zp_recovery")==="1";
 
+  // OFFLINE: If no internet, check if we have a cached user session
+  if (!navigator.onLine) {
+    const cachedUser = localStorage.getItem('zp_cached_user');
+    if (cachedUser) {
+      try {
+        currentUser = JSON.parse(cachedUser);
+        document.getElementById("load-overlay").classList.add("hidden");
+        await showApp();
+        console.log('[Offline] Logged in from cache');
+        return;
+      } catch(e) { console.error(e); }
+    }
+    // No cached session — show offline login message
+    document.getElementById("load-overlay").classList.add("hidden");
+    document.getElementById("login-screen").classList.remove("hidden");
+    const lerr = document.getElementById("lerr");
+    if (lerr) { lerr.textContent = "⚠️ Offline — pehle internet se login kar lein, phir offline bhi chalega."; lerr.classList.add("show"); }
+    return;
+  }
+
   // Safety timeout - if Supabase takes too long, show login anyway
   const timeout = setTimeout(()=>{
     document.getElementById("load-overlay").classList.add("hidden");
@@ -2412,10 +2484,14 @@ async function initAuth(){
     if(event==="SIGNED_IN"){
       // Don't auto-show app if we are in password recovery flow
       if(sessionStorage.getItem("zp_recovery")==="1") return;
-      currentUser=session.user;await showApp();
+      currentUser=session.user;
+      // Cache user for offline access
+      localStorage.setItem('zp_cached_user', JSON.stringify(session.user));
+      await showApp();
     }
     if(event==="SIGNED_OUT"){
       currentUser=null;
+      localStorage.removeItem('zp_cached_user');
       document.getElementById("app-wrap").style.display="none";
       document.getElementById("login-screen").classList.remove("hidden");
       stock=[];customers=[];
@@ -2452,6 +2528,192 @@ function setDateDisplay(){
 }
 // Wait for supabase to be ready
 if(typeof supabase !== "undefined") { initAuth(); } else { window.addEventListener("load", initAuth); }
+
+// ══════════════════════════════════════════════════
+// OFFLINE SUPPORT SYSTEM
+// ══════════════════════════════════════════════════
+const OFFLINE_QUEUE_KEY = 'zp_offline_queue_v1';
+let isOnline = navigator.onLine;
+let offlineQueue = [];
+let deferredInstallPrompt = null;
+
+// Load pending offline queue from storage
+function loadOfflineQueue() {
+  try { offlineQueue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]'); } 
+  catch { offlineQueue = []; }
+  updateQueueBadge();
+}
+
+function saveOfflineQueue() {
+  localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(offlineQueue));
+  updateQueueBadge();
+}
+
+function updateQueueBadge() {
+  const qEl = document.getElementById('queue-count');
+  const numEl = document.getElementById('queue-num');
+  if (qEl && numEl) {
+    if (offlineQueue.length > 0) { qEl.style.display = 'inline'; numEl.textContent = offlineQueue.length; }
+    else { qEl.style.display = 'none'; }
+  }
+}
+
+// Show/hide offline banner
+function setOnlineStatus(online) {
+  isOnline = online;
+  const banner = document.getElementById('offline-banner');
+  if (banner) {
+    if (online) {
+      banner.classList.remove('show');
+      // Push banner down — remove offset
+      document.body.style.paddingTop = '';
+    } else {
+      banner.classList.add('show');
+      document.body.style.paddingTop = '46px';
+    }
+  }
+  // If came back online, sync offline queue
+  if (online && offlineQueue.length > 0 && currentUser) {
+    syncOfflineQueue();
+  }
+}
+
+// Intercept saveStockItem for offline mode
+const _originalSaveStockItem = saveStockItem;
+saveStockItem = async function(item) {
+  if (isOnline) {
+    try {
+      return await _originalSaveStockItem(item);
+    } catch(e) {
+      // Network error — fall through to offline save
+      console.warn('[Offline] Supabase failed, saving locally:', e.message);
+    }
+  }
+  // OFFLINE: save locally and queue for sync
+  return saveOfflineItem('stock', item);
+};
+
+const _originalSaveCustItem = saveCustItem;
+saveCustItem = async function(c) {
+  if (isOnline) {
+    try {
+      return await _originalSaveCustItem(c);
+    } catch(e) {
+      console.warn('[Offline] Supabase failed, saving locally:', e.message);
+    }
+  }
+  return saveOfflineItem('customers', c);
+};
+
+function saveOfflineItem(table, item) {
+  // Generate a local temp ID if needed
+  if (!item._id && !item.id) {
+    item._id = 'local_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
+  }
+  // Add to offline queue
+  offlineQueue.push({ table, item: {...item}, timestamp: Date.now() });
+  saveOfflineQueue();
+  // Update local caches immediately so UI works
+  if (table === 'stock') {
+    localStorage.setItem('zp_cache_stock', JSON.stringify(stock));
+  } else if (table === 'customers') {
+    localStorage.setItem('zp_cache_cust', JSON.stringify(customers));
+  }
+  setSyncing('error');
+  // Return a fake "saved" object so the rest of the code continues
+  return item._id ? {...item, id: item._id} : {...item};
+}
+
+// Sync offline queue when internet returns
+async function syncOfflineQueue() {
+  if (!currentUser || offlineQueue.length === 0) return;
+  console.log('[Offline] Syncing', offlineQueue.length, 'items...');
+  setSyncing('syncing');
+  const failed = [];
+  for (const entry of offlineQueue) {
+    try {
+      if (entry.table === 'stock') {
+        await _originalSaveStockItem(entry.item);
+      } else if (entry.table === 'customers') {
+        await _originalSaveCustItem(entry.item);
+      }
+    } catch(e) {
+      console.error('[Offline] Sync failed for item:', e);
+      failed.push(entry);
+    }
+  }
+  offlineQueue = failed;
+  saveOfflineQueue();
+  if (failed.length === 0) {
+    setSyncing('synced');
+    // Reload fresh data from server
+    loadAllData();
+  } else {
+    setSyncing('error');
+  }
+}
+
+// Also patch returnToStock and deleteDevice to work offline
+const _origReturnToStock = returnToStock;
+window.returnToStock = async function(imei) {
+  const m = stock.find(x => x.imei === imei);
+  if (!m) return;
+  const custName = m.customer ? m.customer.name : 'Unknown';
+  if (!confirm(`Return device to stock?\n\nModel: ${m.model} ${m.storage||''}\nIMEI: ${m.imei}\nPrevious Customer: ${custName}\n\nThis will mark the device as Available again and remove all sale data.`)) return;
+  const idx = stock.findIndex(x => x.imei === imei);
+  stock[idx] = {...stock[idx], status:'available', customer:null, sellPrice:0, paidAmount:0, balance:0, paymentType:null, sellDate:null, sellMonth:null, sellYear:null, dueDate:null};
+  try { await saveStockItem(stock[idx]); } catch(e) { console.error(e); }
+  localStorage.setItem('zp_cache_stock', JSON.stringify(stock));
+  renderStock(); renderPending && renderPending();
+  alert(`✅ Device returned to stock successfully.\n${m.model} ${m.storage||''} is now available for sale.`);
+};
+
+// Online/Offline event listeners
+window.addEventListener('online', () => {
+  console.log('[Offline] Back online!');
+  setOnlineStatus(true);
+});
+window.addEventListener('offline', () => {
+  console.log('[Offline] Gone offline!');
+  setOnlineStatus(false);
+});
+
+// PWA Install prompt
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  const btn = document.getElementById('install-btn');
+  if (btn) btn.style.display = 'flex';
+});
+window.addEventListener('appinstalled', () => {
+  const btn = document.getElementById('install-btn');
+  if (btn) btn.style.display = 'none';
+  deferredInstallPrompt = null;
+});
+
+function installApp() {
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(() => { deferredInstallPrompt = null; });
+  } else {
+    alert('Install karne ke liye:\n\n📱 Mobile (Chrome): Menu → "Add to Home Screen"\n💻 Laptop (Chrome): Address bar mein install icon click karen\n\nYa phir yeh file save kar len aur browser mein open karen — internet ke baghair bhi chalega!');
+  }
+}
+
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      console.log('[SW] Registered:', reg.scope);
+    }).catch(err => {
+      console.log('[SW] Registration failed (ok if local file):', err.message);
+    });
+  });
+}
+
+// Initialize on load
+loadOfflineQueue();
+setOnlineStatus(navigator.onLine);
 </script>
 
 <!-- ══ MULTI BILL ══════════════════════════════════════════ -->

@@ -1,0 +1,27 @@
+{
+  "name": "ZP Mobile Zone",
+  "short_name": "ZP Mobile",
+  "description": "ZP Mobile Zone — Shop Management System",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#08090a",
+  "theme_color": "#08090a",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Ccircle cx='96' cy='96' r='96' fill='%231a1600'/%3E%3Ccircle cx='96' cy='96' r='80' fill='none' stroke='%23c9a227' stroke-width='6'/%3E%3Ctext x='96' y='115' font-family='Georgia,serif' font-size='52' font-weight='700' fill='%23e8c547' text-anchor='middle' letter-spacing='3'%3EZP%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Ccircle cx='256' cy='256' r='256' fill='%231a1600'/%3E%3Ccircle cx='256' cy='256' r='215' fill='none' stroke='%23c9a227' stroke-width='12'/%3E%3Ctext x='256' y='305' font-family='Georgia,serif' font-size='140' font-weight='700' fill='%23e8c547' text-anchor='middle' letter-spacing='8'%3EZP%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "ur",
+  "dir": "ltr"
+}
