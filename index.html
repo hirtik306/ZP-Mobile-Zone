@@ -513,11 +513,11 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
     </div>
     <div class="frow">
       <div class="fg">
-        <label>Source <span class="req">*</span></label>
+        <label>Supplier / Source <span class="req">*</span></label>
         <select id="supplier">
-          <option value="">— Select Source —</option>
-          <option>Dubai</option><option>Malaysia</option>
+          <option value="">— Supplier Select Karo —</option>
         </select>
+        <div style="font-size:11px;color:var(--txt3);margin-top:4px">Supplier nahi hai? <span style="color:var(--gold-dark);cursor:pointer;font-weight:700" onclick="document.querySelector('[onclick*=suppliers]').click()">Suppliers mein add karo →</span></div>
       </div>
       <div class="fg">
         <label>Storage <span class="req">*</span></label>
@@ -809,7 +809,7 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
     <div class="filter-bar">
       <select id="f-model" onchange="renderStock()"><option value="">All Models</option><option>iPhone 17 Air</option><option>iPhone 17</option><option>iPhone 17 Pro</option><option>iPhone 17 Pro Max</option><option>iPhone 16</option><option>iPhone 16 Plus</option><option>iPhone 16 Pro</option><option>iPhone 16 Pro Max</option><option>iPhone 15</option><option>iPhone 15 Pro</option><option>iPhone 15 Pro Max</option><option>iPhone 14</option><option>iPhone 14 Pro</option><option>iPhone 14 Pro Max</option></select>
       <select id="f-variant" onchange="renderStock()"><option value="">All Variants</option><option>Non PTA</option><option>PTA Approved</option><option>JV</option></select>
-      <select id="f-supplier" onchange="renderStock()"><option value="">All Sources</option><option>Dubai</option><option>Malaysia</option></select>
+      <select id="f-supplier" onchange="renderStock()"><option value="">All Suppliers</option></select>
       <select id="f-status" onchange="renderStock()"><option value="">All Status</option><option value="available">Available</option><option value="sold">Sold</option></select>
     </div>
     <div class="twrap">
@@ -2442,7 +2442,7 @@ async function showApp(){
   setDateDisplay();
   if(typeof buildColorPicker==="function")buildColorPicker("");
   // Load data in background - cache shows instantly, Supabase syncs after
-  loadAllData();
+  loadAllData().then(()=>{ if(typeof supPopulateDropdowns==="function") supPopulateDropdowns(); });
 }
 function setDateDisplay(){
   const d=new Date();const mn=["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -3247,6 +3247,23 @@ function supBalance(id){
   },0);
 }
 
+// Populate supplier dropdowns across the app
+function supPopulateDropdowns(){
+  const supSel = document.getElementById('supplier');
+  const fSup = document.getElementById('f-supplier');
+  if(supSel){
+    const cur = supSel.value;
+    supSel.innerHTML = '<option value="">— Supplier Select Karo —</option>';
+    suppliers.forEach(s=>{ const o=document.createElement('option'); o.value=s.name; o.textContent=s.name+(s.city?' ('+s.city+')':''); if(s.name===cur) o.selected=true; supSel.appendChild(o); });
+    if(!suppliers.length){ const o=document.createElement('option'); o.disabled=true; o.textContent='— Pehle Supplier Add Karo —'; supSel.appendChild(o); }
+  }
+  if(fSup){
+    const cur2 = fSup.value;
+    fSup.innerHTML = '<option value="">All Suppliers</option>';
+    suppliers.forEach(s=>{ const o=document.createElement('option'); o.value=s.name; o.textContent=s.name; if(s.name===cur2) o.selected=true; fSup.appendChild(o); });
+  }
+}
+
 function supAdd(){
   const name=document.getElementById('sup-name').value.trim();
   const phone=document.getElementById('sup-phone').value.trim();
@@ -3257,6 +3274,7 @@ function supAdd(){
   document.getElementById('sup-name').value='';
   document.getElementById('sup-phone').value='';
   document.getElementById('sup-city').value='';
+  supPopulateDropdowns();
   supRender();
   // Flash feedback
   const btn = document.querySelector('#suppliers .card .btn-gold');
@@ -3269,6 +3287,7 @@ function supDelete(id){
   supTxns=supTxns.filter(t=>t.supId!==id);
   supSave(); supTxnSave();
   if(openSupId===id){ openSupId=null; supCloseDetail(); }
+  supPopulateDropdowns();
   supRender();
 }
 
@@ -3364,22 +3383,70 @@ function supStockRender(id){
   if(!el) return;
   const supName=suppliers.find(x=>x.id===id)?.name||'';
   const mobiles=stock.filter(m=>m.supplier&&m.supplier.toLowerCase()===supName.toLowerCase());
+  const fmt=n=>'Rs. '+Number(n).toLocaleString();
+
   if(!mobiles.length){
-    el.innerHTML='<div style="font-size:12px;color:var(--txt3);padding:8px 0;text-align:center">No mobiles linked to this supplier</div>';
+    el.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--txt3);font-size:13px"><div style="font-size:24px;opacity:0.4;margin-bottom:6px">📦</div>Is supplier se abhi koi mobile nahi liya<br><span style="font-size:11px">Stock In karte waqt is supplier ko select karo</span></div>';
     return;
   }
-  const fmt=n=>'Rs. '+Number(n).toLocaleString();
-  el.innerHTML='<div style="overflow-x:auto;border:1px solid var(--bor);border-radius:var(--rad-s)"><table><thead><tr><th>IMEI</th><th>Model</th><th>Variant</th><th>Color</th><th>Buy Price</th><th>Status</th><th>Date</th></tr></thead><tbody>'+
-    mobiles.map(m=>`<tr>
-      <td style="font-family:'IBM Plex Mono',monospace;font-size:11px">${m.imei}</td>
-      <td style="font-size:12px;font-weight:600">${m.model||'—'}</td>
-      <td><span class="badge bg-b" style="font-size:10px">${m.variant||'—'}</span></td>
-      <td style="font-size:12px">${m.color||'—'}</td>
-      <td style="font-weight:700">${fmt(m.buyPrice||0)}</td>
-      <td><span class="badge ${m.status==='sold'?'bg-g':'bg-a'}">${m.status==='sold'?'Sold':'Available'}</span></td>
-      <td style="font-size:11px;white-space:nowrap">${m.addedDate||'—'}</td>
-    </tr>`).join('')+
-  '</tbody></table></div>';
+
+  // Model-wise summary
+  const summary={};
+  mobiles.forEach(m=>{
+    const key=m.model||'Unknown';
+    if(!summary[key]) summary[key]={total:0,available:0,sold:0,totalCost:0};
+    summary[key].total++;
+    summary[key].totalCost+=(m.buyPrice||0);
+    if(m.status==='sold') summary[key].sold++; else summary[key].available++;
+  });
+
+  const totalCost=mobiles.reduce((s,m)=>s+(m.buyPrice||0),0);
+  const totalAvail=mobiles.filter(m=>m.status==='available').length;
+  const totalSold=mobiles.filter(m=>m.status==='sold').length;
+
+  let html = '';
+
+  // Summary stats row
+  html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">';
+  html += '<div style="background:var(--sur2);border:1px solid var(--bor);border-radius:var(--rad-s);padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--txt)">'+mobiles.length+'</div><div style="font-size:10px;color:var(--txt3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px">Total Pieces</div></div>';
+  html += '<div style="background:var(--al);border:1px solid #fcd34d;border-radius:var(--rad-s);padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--at)">'+totalAvail+'</div><div style="font-size:10px;color:var(--at);font-weight:700;text-transform:uppercase;letter-spacing:0.5px">Available</div></div>';
+  html += '<div style="background:var(--gl);border:1px solid var(--g-border);border-radius:var(--rad-s);padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--gd)">'+totalSold+'</div><div style="font-size:10px;color:var(--gd);font-weight:700;text-transform:uppercase;letter-spacing:0.5px">Sold</div></div>';
+  html += '<div style="background:var(--bl);border:1px solid #93c5fd;border-radius:var(--rad-s);padding:10px;text-align:center"><div style="font-size:14px;font-weight:800;color:var(--bt)">'+fmt(totalCost)+'</div><div style="font-size:10px;color:var(--bt);font-weight:700;text-transform:uppercase;letter-spacing:0.5px">Total Cost</div></div>';
+  html += '</div>';
+
+  // Model-wise summary table
+  html += '<div style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">📊 Model-Wise Summary</div>';
+  html += '<div style="overflow-x:auto;border:1px solid var(--bor);border-radius:var(--rad-s);margin-bottom:14px"><table><thead><tr><th>Model</th><th>Total Pieces</th><th>Available</th><th>Sold</th><th>Total Cost</th></tr></thead><tbody>';
+  Object.entries(summary).sort((a,b)=>b[1].total-a[1].total).forEach(([model,s])=>{
+    html += '<tr>';
+    html += '<td style="font-weight:700;font-size:13px">'+model+'</td>';
+    html += '<td style="text-align:center"><span style="background:var(--sur2);padding:3px 10px;border-radius:6px;font-weight:700;font-size:13px">'+s.total+'</span></td>';
+    html += '<td style="text-align:center"><span style="background:var(--al);color:var(--at);padding:3px 10px;border-radius:6px;font-weight:700;font-size:12px">'+s.available+'</span></td>';
+    html += '<td style="text-align:center"><span style="background:var(--gl);color:var(--gd);padding:3px 10px;border-radius:6px;font-weight:700;font-size:12px">'+s.sold+'</span></td>';
+    html += '<td style="font-weight:700;color:var(--bt)">'+fmt(s.totalCost)+'</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+
+  // Full stock list
+  html += '<div style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">📱 Tamam Mobiles Ki List</div>';
+  html += '<div style="overflow-x:auto;border:1px solid var(--bor);border-radius:var(--rad-s)"><table><thead><tr><th>IMEI</th><th>Model</th><th>Variant</th><th>Storage</th><th>Color</th><th>Buy Price</th><th>Status</th><th>Date Added</th></tr></thead><tbody>';
+  mobiles.forEach(m=>{
+    const isAvail = m.status==='available';
+    html += '<tr>';
+    html += '<td style="font-family:monospace;font-size:11px;white-space:nowrap">'+m.imei+'</td>';
+    html += '<td style="font-size:12px;font-weight:700">'+( m.model||'—')+'</td>';
+    html += '<td><span class="badge bg-b" style="font-size:10px">'+(m.variant||'—')+'</span></td>';
+    html += '<td style="font-size:12px">'+(m.storage||'—')+'</td>';
+    html += '<td style="font-size:12px">'+(m.color||'—')+'</td>';
+    html += '<td style="font-weight:700">'+fmt(m.buyPrice||0)+'</td>';
+    html += '<td><span class="badge '+(isAvail?'bg-a':'bg-g')+'">'+(isAvail?'Available':'Sold')+'</span></td>';
+    html += '<td style="font-size:11px;white-space:nowrap">'+(m.addedDate||'—')+'</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+
+  el.innerHTML = html;
 }
 
 function supTxnAdd(){
@@ -3496,6 +3563,7 @@ function supRender(){
 }
 
 function supInitTab(){
+  supPopulateDropdowns();
   supRender();
   const dateEl=document.getElementById('sup-txn-date');
   if(dateEl){ const d=new Date(); dateEl.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
