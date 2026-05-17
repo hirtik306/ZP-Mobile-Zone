@@ -1167,13 +1167,16 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
 
 <!-- ══ SUPPLIERS ══════════════════════════════════════════ -->
 <div id="suppliers" class="sec">
-  <div class="page-title">Supplier Ledger</div>
-  <div class="page-sub">Manage supplier accounts — track what you owe and what they owe</div>
+  <div class="page-header">
+    <div class="page-title">Supplier Ledger</div>
+    <div class="page-sub">Manage supplier accounts — track what you owe and what they owe</div>
+  </div>
 
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:1.25rem 0">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:1.5rem">
     <div class="scard"><div class="scard-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="slbl">Total Suppliers</div><div class="sval" id="sup-count">0</div></div>
     <div class="scard"><div class="scard-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div class="slbl">We Owe (Total)</div><div class="sval r" id="sup-we-owe">Rs. 0</div></div>
     <div class="scard"><div class="scard-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg></div><div class="slbl">They Owe (Total)</div><div class="sval g" id="sup-they-owe">Rs. 0</div></div>
+    <div class="scard"><div class="scard-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/></svg></div><div class="slbl">Total Mobiles</div><div class="sval gold" id="sup-total-mobiles">0</div></div>
   </div>
 
   <!-- Add Supplier -->
@@ -1190,47 +1193,112 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
     </button>
   </div>
 
-  <!-- Supplier Cards -->
-  <div id="sup-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:1.25rem"></div>
-  <div id="sup-empty" style="text-align:center;padding:3rem;color:var(--txt3);font-size:13px;display:none">
-    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="opacity:0.3;margin-bottom:10px"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
-    <div>No suppliers yet — add one above</div>
-  </div>
+  <!-- Supplier Detail Panel (like customer detail panel) -->
+  <div id="sup-detail-panel" class="cust-detail-panel" style="margin-bottom:1.25rem">
+    <div class="cdp-header">
+      <div class="cdp-avatar" id="sup-dp-avatar" style="background:linear-gradient(135deg,rgba(201,162,39,0.2),rgba(201,162,39,0.05));border-color:rgba(201,162,39,0.3);color:var(--gold2)">—</div>
+      <div>
+        <div class="cdp-name" id="sup-dp-name">—</div>
+        <div class="cdp-phone" id="sup-dp-phone">—</div>
+        <div style="margin-top:4px;font-size:11px;color:rgba(255,255,255,0.4)" id="sup-dp-city"></div>
+      </div>
+      <button class="cdp-close" onclick="supCloseDetail()">✕ Close</button>
+    </div>
+    <!-- Stats Row -->
+    <div class="cdp-stats" style="grid-template-columns:repeat(4,1fr)">
+      <div class="cdp-stat"><div class="cdp-stat-val" id="sup-dp-mobiles">0</div><div class="cdp-stat-lbl">Mobiles</div></div>
+      <div class="cdp-stat"><div class="cdp-stat-val" style="color:var(--r)" id="sup-dp-we-owe">Rs. 0</div><div class="cdp-stat-lbl">Hum Denge</div></div>
+      <div class="cdp-stat"><div class="cdp-stat-val" style="color:var(--gd)" id="sup-dp-they-owe">Rs. 0</div><div class="cdp-stat-lbl">Woh Denge</div></div>
+      <div class="cdp-stat"><div class="cdp-stat-val" style="color:var(--gold-dark)" id="sup-dp-total-paid">Rs. 0</div><div class="cdp-stat-lbl">Total Paid</div></div>
+    </div>
+    <div class="cdp-body">
+      <!-- Edit/Delete Buttons -->
+      <div style="display:flex;gap:8px;margin-bottom:1.25rem">
+        <button class="btn btn-ghost" onclick="supEditToggle()" style="flex:1;font-size:12px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit Supplier
+        </button>
+        <button class="btn btn-r" onclick="supDeleteCurrent()" style="flex:1;font-size:12px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+          Delete Supplier
+        </button>
+      </div>
+      <!-- Edit Form -->
+      <div id="sup-edit-form" style="display:none;background:var(--sur2);border:1px solid var(--bor);border-radius:var(--rad-s);padding:1rem;margin-bottom:1.25rem">
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px">Edit Supplier</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+          <div class="fg"><label>Name</label><input type="text" id="sup-edit-name" placeholder="Supplier name"></div>
+          <div class="fg"><label>Phone</label><input type="text" id="sup-edit-phone" placeholder="Phone"></div>
+          <div class="fg"><label>City / Source</label><input type="text" id="sup-edit-city" placeholder="City"></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn btn-gold" onclick="supEditSave()" style="flex:1;font-size:12px">Save Changes</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('sup-edit-form').style.display='none'" style="font-size:12px;padding:8px 16px">Cancel</button>
+        </div>
+      </div>
 
-  <!-- Transaction Panel (hidden until supplier selected) -->
-  <div id="sup-txn-panel" style="display:none">
-    <div class="card" style="margin-bottom:1.25rem">
-      <div class="card-hd"><div class="card-hd-accent"></div><span id="sup-txn-title">Add Transaction</span></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-        <div class="fg">
+      <!-- Add Transaction -->
+      <div class="section-label" style="margin-bottom:12px">Add Transaction</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="fg" style="margin:0">
           <label>Type <span class="req">*</span></label>
-          <select id="sup-txn-type">
-            <option value="we_paid">We Paid Supplier</option>
-            <option value="they_gave">Supplier Gave Credit</option>
-            <option value="stock_taken">Stock Taken (Credit)</option>
-            <option value="return_stock">Stock Returned</option>
+          <select id="sup-txn-type" style="width:100%;padding:9px 10px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur)">
+            <option value="stock_taken">📦 Stock Liya (Hum Denge)</option>
+            <option value="we_paid">💸 Humne Diya (Payment)</option>
+            <option value="they_gave">🎁 Unhone Diya (Credit)</option>
+            <option value="return_stock">↩️ Stock Wapas Kiya</option>
           </select>
         </div>
-        <div class="fg"><label>Amount (Rs.) <span class="req">*</span></label><input type="number" id="sup-txn-amt" placeholder="0" min="0"></div>
-        <div class="fg"><label>Date <span class="req">*</span></label><input type="date" id="sup-txn-date"></div>
-        <div class="fg"><label>Note</label><input type="text" id="sup-txn-note" placeholder="e.g. 5 phones ka payment"></div>
+        <div class="fg" style="margin:0">
+          <label>Amount (Rs.) <span class="req">*</span></label>
+          <input type="number" id="sup-txn-amt" placeholder="0" min="0" style="width:100%">
+        </div>
+        <div class="fg" style="margin:0">
+          <label>Date <span class="req">*</span></label>
+          <input type="date" id="sup-txn-date" style="width:100%">
+        </div>
+        <div class="fg" style="margin:0">
+          <label>Note <span style="color:var(--txt3);font-size:10px;font-weight:400;text-transform:none">(optional)</span></label>
+          <input type="text" id="sup-txn-note" placeholder="e.g. 5 iPhones, cash payment" style="width:100%">
+        </div>
       </div>
-      <button class="btn btn-gold" onclick="supTxnAdd()" style="margin-top:14px">
+      <button class="btn btn-gold" onclick="supTxnAdd()" style="width:100%;justify-content:center;padding:11px">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add Transaction
       </button>
-    </div>
 
-    <div class="card">
-      <div class="card-hd" style="margin-bottom:12px"><div class="card-hd-accent"></div><span id="sup-hist-title">Transaction History</span></div>
-      <div style="overflow-x:auto">
+      <!-- Mobiles from this supplier -->
+      <div class="section-label" style="margin:1.25rem 0 12px">Mobiles From This Supplier</div>
+      <div id="sup-dp-stock-list" style="margin-bottom:1.25rem">
+        <div style="font-size:12px;color:var(--txt3);padding:8px 0">No mobiles from this supplier yet</div>
+      </div>
+
+      <!-- Transaction History -->
+      <div class="section-label" style="margin-bottom:12px">Transaction History</div>
+      <div style="overflow-x:auto;border:1px solid var(--bor);border-radius:var(--rad-s)">
         <table>
           <thead><tr><th>Date</th><th>Type</th><th>Note</th><th>Amount</th><th>Action</th></tr></thead>
           <tbody id="sup-txn-tbody"></tbody>
         </table>
       </div>
-      <div id="sup-txn-empty" style="text-align:center;padding:1.5rem;color:var(--txt3);font-size:13px;display:none">No transactions yet</div>
+      <div id="sup-txn-empty" style="text-align:center;padding:1.5rem;color:var(--txt3);font-size:13px;display:none">
+        <div style="font-size:24px;opacity:0.4;margin-bottom:6px">📋</div>
+        No transactions yet — add one above
+      </div>
     </div>
+  </div>
+
+  <!-- Supplier Cards Grid -->
+  <div style="margin-bottom:12px;display:flex;align-items:center;gap:10px">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="sup-search" placeholder="Search supplier..." oninput="supRender()">
+    </div>
+  </div>
+  <div id="sup-grid" class="cust-grid"></div>
+  <div id="sup-empty" style="text-align:center;padding:3rem;color:var(--txt3);font-size:13px;display:none">
+    <div style="font-size:28px;margin-bottom:8px;opacity:0.4">🏪</div>
+    No suppliers yet — add one above
   </div>
 </div>
 
@@ -3056,17 +3124,27 @@ const CB_LABELS = {
 function cbIsIn(type){ return CB_IN_TYPES.includes(type); }
 
 function cbAdd(){
-  const type = document.getElementById('cb-type').value;
-  const amt = parseFloat(document.getElementById('cb-amount').value);
-  const date = document.getElementById('cb-date').value;
-  const desc = document.getElementById('cb-desc').value.trim();
-  if(!amt||amt<=0){ alert('Please enter an amount!'); return; }
+  const typeEl = document.getElementById('cb-type');
+  const amtEl = document.getElementById('cb-amount');
+  const dateEl = document.getElementById('cb-date');
+  const descEl = document.getElementById('cb-desc');
+  if(!typeEl||!amtEl||!dateEl){alert('Form not ready, please try again.');return;}
+  const type = typeEl.value;
+  const amt = parseFloat(amtEl.value);
+  // Auto-fill today if date empty
+  if(!dateEl.value){ const d=new Date(); dateEl.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  const date = dateEl.value;
+  const desc = descEl ? descEl.value.trim() : '';
+  if(!amt||amt<=0){ alert('Please enter a valid amount!'); amtEl.focus(); return; }
   if(!date){ alert('Please select a date!'); return; }
   cashEntries.unshift({ id:Date.now(), type, amount:amt, date, desc });
   cbSave();
-  document.getElementById('cb-amount').value='';
-  document.getElementById('cb-desc').value='';
-  cbRender(); cbStats();
+  amtEl.value='';
+  if(descEl) descEl.value='';
+  cbPopMonths(); cbRender(); cbStats();
+  // Flash success
+  const btn = document.querySelector('#cashbook .btn-gold');
+  if(btn){ const orig=btn.textContent; btn.textContent='✅ Entry Added!'; btn.style.background='var(--g)'; setTimeout(()=>{btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Entry'; btn.style.background='';},1500); }
 }
 
 function cbDelete(id){
@@ -3147,12 +3225,12 @@ function cbExport(){
 
 function cbInitTab(){
   const dateEl=document.getElementById('cb-date');
-  if(dateEl&&!dateEl.value){ const d=new Date(); dateEl.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  if(dateEl){ const d=new Date(); dateEl.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
   cbPopMonths(); cbRender(); cbStats();
 }
 
 // ═══════════════════════════════════════════════
-// SUPPLIER LEDGER MODULE
+// SUPPLIER LEDGER MODULE (UPGRADED)
 // ═══════════════════════════════════════════════
 const SUP_KEY = 'zpmobile_suppliers_v1';
 const SUP_TXN_KEY = 'zpmobile_sup_txn_v1';
@@ -3165,10 +3243,10 @@ function supTxnSave(){ localStorage.setItem(SUP_TXN_KEY, JSON.stringify(supTxns)
 // Balance: positive = humara dena (we owe them), negative = unka dena (they owe us)
 function supBalance(id){
   return supTxns.filter(t=>t.supId===id).reduce((s,t)=>{
-    if(t.type==='stock_taken') return s+t.amount;  // stock liya = humara dena
-    if(t.type==='we_paid') return s-t.amount;       // humne diya = dena kam hua
-    if(t.type==='they_gave') return s-t.amount;     // unhone diya = humara credit
-    if(t.type==='return_stock') return s-t.amount;  // stock wapas = dena kam
+    if(t.type==='stock_taken') return s+t.amount;
+    if(t.type==='we_paid') return s-t.amount;
+    if(t.type==='they_gave') return s-t.amount;
+    if(t.type==='return_stock') return s-t.amount;
     return s;
   },0);
 }
@@ -3184,6 +3262,9 @@ function supAdd(){
   document.getElementById('sup-phone').value='';
   document.getElementById('sup-city').value='';
   supRender();
+  // Flash feedback
+  const btn = document.querySelector('#suppliers .card .btn-gold');
+  if(btn){ btn.textContent='✅ Supplier Added!'; btn.style.background='var(--g)'; setTimeout(()=>{btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Supplier'; btn.style.background='';},1500); }
 }
 
 function supDelete(id){
@@ -3191,45 +3272,148 @@ function supDelete(id){
   suppliers=suppliers.filter(s=>s.id!==id);
   supTxns=supTxns.filter(t=>t.supId!==id);
   supSave(); supTxnSave();
-  if(openSupId===id){ openSupId=null; document.getElementById('sup-txn-panel').style.display='none'; }
+  if(openSupId===id){ openSupId=null; supCloseDetail(); }
   supRender();
+}
+
+function supDeleteCurrent(){
+  if(openSupId) supDelete(openSupId);
+}
+
+function supCloseDetail(){
+  openSupId=null;
+  const p=document.getElementById('sup-detail-panel');
+  if(p) p.classList.remove('open');
+  supRender();
+}
+
+function supEditToggle(){
+  const f=document.getElementById('sup-edit-form');
+  if(!f) return;
+  if(f.style.display==='none'){
+    const s=suppliers.find(x=>x.id===openSupId);
+    if(s){
+      document.getElementById('sup-edit-name').value=s.name||'';
+      document.getElementById('sup-edit-phone').value=s.phone||'';
+      document.getElementById('sup-edit-city').value=s.city||'';
+    }
+    f.style.display='block';
+  } else { f.style.display='none'; }
+}
+
+function supEditSave(){
+  const s=suppliers.find(x=>x.id===openSupId);
+  if(!s) return;
+  const name=document.getElementById('sup-edit-name').value.trim();
+  if(!name){alert('Name required!');return;}
+  s.name=name;
+  s.phone=document.getElementById('sup-edit-phone').value.trim();
+  s.city=document.getElementById('sup-edit-city').value.trim();
+  supSave();
+  document.getElementById('sup-edit-form').style.display='none';
+  supOpenDetail(openSupId);
+  supRender();
+  alert('Supplier updated!');
 }
 
 function supOpenDetail(id){
   openSupId=id;
   const s=suppliers.find(x=>x.id===id);
   if(!s) return;
-  document.getElementById('sup-txn-panel').style.display='block';
-  document.getElementById('sup-txn-title').textContent=s.name+' — Add Transaction';
-  document.getElementById('sup-hist-title').textContent=s.name+' — Transaction History';
+  const panel=document.getElementById('sup-detail-panel');
+  panel.classList.add('open');
+
+  // Header
+  document.getElementById('sup-dp-avatar').textContent=s.name.charAt(0).toUpperCase();
+  document.getElementById('sup-dp-name').textContent=s.name;
+  document.getElementById('sup-dp-phone').textContent=s.phone||'No phone';
+  document.getElementById('sup-dp-city').textContent=s.city?'📍 '+s.city:'';
+
+  // Set date if empty
   const dateEl=document.getElementById('sup-txn-date');
-  if(dateEl&&!dateEl.value){ const d=new Date(); dateEl.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  if(dateEl){ const d=new Date(); dateEl.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+  supUpdateDetailStats(id);
   supTxnRender(id);
-  document.getElementById('sup-txn-panel').scrollIntoView({behavior:'smooth',block:'start'});
+  supStockRender(id);
+  panel.scrollIntoView({behavior:'smooth',block:'start'});
   supRender();
+}
+
+function supUpdateDetailStats(id){
+  const fmt=n=>'Rs. '+Number(n).toLocaleString();
+  const bal=supBalance(id);
+  const txns=supTxns.filter(t=>t.supId===id);
+  const totalPaid=txns.filter(t=>t.type==='we_paid').reduce((s,t)=>s+t.amount,0);
+  // Mobiles from this supplier (from stock)
+  const supName=suppliers.find(x=>x.id===id)?.name||'';
+  const mobileCount=stock.filter(m=>m.supplier&&m.supplier.toLowerCase()===supName.toLowerCase()).length;
+  const el=(i,v)=>{const x=document.getElementById(i);if(x)x.textContent=v;};
+  el('sup-dp-mobiles',mobileCount);
+  if(bal>0){
+    el('sup-dp-we-owe',fmt(bal));
+    el('sup-dp-they-owe','Rs. 0');
+  } else if(bal<0){
+    el('sup-dp-we-owe','Rs. 0');
+    el('sup-dp-they-owe',fmt(Math.abs(bal)));
+  } else {
+    el('sup-dp-we-owe','Rs. 0');
+    el('sup-dp-they-owe','Rs. 0');
+  }
+  el('sup-dp-total-paid',fmt(totalPaid));
+}
+
+function supStockRender(id){
+  const el=document.getElementById('sup-dp-stock-list');
+  if(!el) return;
+  const supName=suppliers.find(x=>x.id===id)?.name||'';
+  const mobiles=stock.filter(m=>m.supplier&&m.supplier.toLowerCase()===supName.toLowerCase());
+  if(!mobiles.length){
+    el.innerHTML='<div style="font-size:12px;color:var(--txt3);padding:8px 0;text-align:center">No mobiles linked to this supplier</div>';
+    return;
+  }
+  const fmt=n=>'Rs. '+Number(n).toLocaleString();
+  el.innerHTML='<div style="overflow-x:auto;border:1px solid var(--bor);border-radius:var(--rad-s)"><table><thead><tr><th>IMEI</th><th>Model</th><th>Variant</th><th>Color</th><th>Buy Price</th><th>Status</th><th>Date</th></tr></thead><tbody>'+
+    mobiles.map(m=>`<tr>
+      <td style="font-family:'IBM Plex Mono',monospace;font-size:11px">${m.imei}</td>
+      <td style="font-size:12px;font-weight:600">${m.model||'—'}</td>
+      <td><span class="badge bg-b" style="font-size:10px">${m.variant||'—'}</span></td>
+      <td style="font-size:12px">${m.color||'—'}</td>
+      <td style="font-weight:700">${fmt(m.buyPrice||0)}</td>
+      <td><span class="badge ${m.status==='sold'?'bg-g':'bg-a'}">${m.status==='sold'?'Sold':'Available'}</span></td>
+      <td style="font-size:11px;white-space:nowrap">${m.addedDate||'—'}</td>
+    </tr>`).join('')+
+  '</tbody></table></div>';
 }
 
 function supTxnAdd(){
   if(!openSupId){alert('Please select a supplier first');return;}
   const type=document.getElementById('sup-txn-type').value;
   const amt=parseFloat(document.getElementById('sup-txn-amt').value);
-  const date=document.getElementById('sup-txn-date').value;
+  const dateEl=document.getElementById('sup-txn-date');
+  // Auto-fill today if empty
+  if(!dateEl.value){ const d=new Date(); dateEl.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  const date=dateEl.value;
   const note=document.getElementById('sup-txn-note').value.trim();
-  if(!amt||amt<=0){alert('Please enter an amount!');return;}
+  if(!amt||amt<=0){alert('Please enter an amount!');document.getElementById('sup-txn-amt').focus();return;}
   if(!date){alert('Please select a date!');return;}
   supTxns.push({id:Date.now(), supId:openSupId, type, amount:amt, date, note});
   supTxnSave();
   document.getElementById('sup-txn-amt').value='';
   document.getElementById('sup-txn-note').value='';
+  supUpdateDetailStats(openSupId);
   supTxnRender(openSupId);
   supRender();
+  // Flash
+  const btn=document.querySelector('#sup-detail-panel .cdp-body .btn-gold');
+  if(btn){ btn.textContent='✅ Added!'; btn.style.background='var(--g)'; setTimeout(()=>{btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Transaction'; btn.style.background='';},1500); }
 }
 
 function supTxnDelete(id){
   if(!confirm('Delete this entry?')) return;
   supTxns=supTxns.filter(t=>t.id!==id);
   supTxnSave();
-  if(openSupId) supTxnRender(openSupId);
+  if(openSupId){ supUpdateDetailStats(openSupId); supTxnRender(openSupId); }
   supRender();
 }
 
@@ -3238,7 +3422,7 @@ function supTxnRender(id){
   const empty=document.getElementById('sup-txn-empty');
   if(!tbody) return;
   const list=supTxns.filter(t=>t.supId===id).sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
-  const TXN_LABELS={stock_taken:'Stock Taken (Credit)',we_paid:'We Paid',they_gave:'Supplier Credit',return_stock:'Stock Returned'};
+  const TXN_LABELS={stock_taken:'📦 Stock Liya',we_paid:'💸 Humne Diya',they_gave:'🎁 Unhone Diya (Credit)',return_stock:'↩️ Stock Wapas'};
   const TXN_COLORS={stock_taken:'var(--r)',we_paid:'var(--gd)',they_gave:'var(--b)',return_stock:'var(--a)'};
   tbody.innerHTML='';
   if(!list.length){empty.style.display='block';return;}
@@ -3249,7 +3433,7 @@ function supTxnRender(id){
     tr.innerHTML=`<td style="font-size:12px;white-space:nowrap">${t.date}</td>`+
       `<td><span style="font-size:12px;font-weight:600;color:${TXN_COLORS[t.type]||'var(--txt)'}">${TXN_LABELS[t.type]||t.type}</span></td>`+
       `<td style="font-size:12px;color:var(--txt2)">${t.note||'—'}</td>`+
-      `<td style="font-weight:700">${fmt(t.amount)}</td>`+
+      `<td style="font-weight:700;font-size:13px">${fmt(t.amount)}</td>`+
       `<td><button onclick="supTxnDelete(${t.id})" class="btn btn-r" style="padding:4px 10px;font-size:11px">Del</button></td>`;
     tbody.appendChild(tr);
   });
@@ -3259,34 +3443,58 @@ function supRender(){
   const grid=document.getElementById('sup-grid');
   const empty=document.getElementById('sup-empty');
   if(!grid) return;
-  if(!suppliers.length){empty.style.display='block';grid.innerHTML='';
-    const s=(id,v)=>{const x=document.getElementById(id);if(x)x.textContent=v;};
-    s('sup-count','0');s('sup-we-owe','Rs. 0');s('sup-they-owe','Rs. 0');return;}
-  empty.style.display='none';
-  let totalWeOwe=0, totalTheyOwe=0;
-  suppliers.forEach(s=>{ const b=supBalance(s.id); if(b>0) totalWeOwe+=b; else totalTheyOwe+=Math.abs(b); });
+  const search=(document.getElementById('sup-search')?.value||'').toLowerCase();
+  let list=suppliers;
+  if(search) list=list.filter(s=>s.name.toLowerCase().includes(search)||(s.phone&&s.phone.includes(search)));
+
+  // Update totals
+  let totalWeOwe=0, totalTheyOwe=0, totalMobiles=0;
+  suppliers.forEach(s=>{
+    const b=supBalance(s.id);
+    if(b>0) totalWeOwe+=b; else totalTheyOwe+=Math.abs(b);
+    const supName=s.name||'';
+    totalMobiles+=stock.filter(m=>m.supplier&&m.supplier.toLowerCase()===supName.toLowerCase()).length;
+  });
   const fmt=n=>'Rs. '+Number(n).toLocaleString();
   const st=(id,v)=>{const x=document.getElementById(id);if(x)x.textContent=v;};
   st('sup-count',suppliers.length); st('sup-we-owe',fmt(totalWeOwe)); st('sup-they-owe',fmt(totalTheyOwe));
-  grid.innerHTML=suppliers.map(s=>{
+  st('sup-total-mobiles',totalMobiles);
+
+  if(!list.length){
+    empty.style.display='block'; grid.innerHTML='';
+    return;
+  }
+  empty.style.display='none';
+  grid.innerHTML=list.map(s=>{
     const bal=supBalance(s.id);
     const isOpen=openSupId===s.id;
-    return `<div style="background:var(--sur);border:1.5px solid ${isOpen?'var(--gold)':bal>0?'var(--r-border)':bal<0?'var(--g-border)':'var(--bor)'};border-radius:var(--rad);padding:1.1rem;cursor:pointer;transition:all .18s" onclick="supOpenDetail(${s.id})">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-        <div>
-          <div style="font-size:14px;font-weight:800;color:var(--txt)">${s.name}</div>
-          ${s.phone?`<div style="font-size:11px;color:var(--txt3);margin-top:2px">${s.phone}</div>`:''}
-          ${s.city?`<div style="font-size:11px;color:var(--txt3)">${s.city}</div>`:''}
+    const supMobiles=stock.filter(m=>m.supplier&&m.supplier.toLowerCase()===s.name.toLowerCase()).length;
+    const txnCount=supTxns.filter(t=>t.supId===s.id).length;
+    const totalPaid=supTxns.filter(t=>t.supId===s.id&&t.type==='we_paid').reduce((sum,t)=>sum+t.amount,0);
+    const initials=s.name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+    return `<div class="cust-card" style="border-color:${isOpen?'var(--gold)':bal>0?'var(--r-border)':bal<0?'var(--g-border)':'var(--bor)'}" onclick="supOpenDetail(${s.id})">
+      ${isOpen?'<div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold2))"></div>':''}
+      <div class="cust-card-top">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="cust-avatar" style="background:linear-gradient(135deg,var(--gold-bg),rgba(201,162,39,0.15));border-color:var(--gold-border);color:var(--gold-dark)">${initials}</div>
+          <div>
+            <div class="cust-name">${s.name}</div>
+            ${s.phone?`<div class="cust-phone-sm">${s.phone}</div>`:''}
+            ${s.city?`<div style="font-size:11px;color:var(--txt3)">📍 ${s.city}</div>`:''}
+          </div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-          ${bal>0?`<span style="background:var(--rl);color:var(--rt);font-size:10px;padding:3px 9px;border-radius:8px;font-weight:700">Dena: ${fmt(bal)}</span>`:
-            bal<0?`<span style="background:var(--gl);color:var(--gt);font-size:10px;padding:3px 9px;border-radius:8px;font-weight:700">Lena: ${fmt(Math.abs(bal))}</span>`:
-            `<span style="background:var(--sur2);color:var(--txt2);font-size:10px;padding:3px 9px;border-radius:8px;font-weight:700">Clear</span>`}
-          <button onclick="event.stopPropagation();supDelete(${s.id})" style="background:none;border:1px solid var(--r-border);color:var(--r);border-radius:6px;padding:3px 8px;font-size:10px;cursor:pointer">Delete</button>
+          ${bal>0?`<span class="badge bg-r">Dena: ${fmt(bal)}</span>`:
+            bal<0?`<span class="badge bg-g">Lena: ${fmt(Math.abs(bal))}</span>`:
+            `<span class="badge bg-gray">Clear ✓</span>`}
         </div>
       </div>
-      <div style="font-size:11px;color:var(--txt3)">${supTxns.filter(t=>t.supId===s.id).length} transactions · Added ${s.added}</div>
-      <div style="margin-top:8px;font-size:11px;color:var(--txt2);font-weight:600">${isOpen?'▼ Selected':'Click to view transactions'}</div>
+      <div class="cust-stats-row">
+        <div class="cust-stat"><div class="cust-stat-val">${supMobiles}</div><div class="cust-stat-lbl">Mobiles</div></div>
+        <div class="cust-stat"><div class="cust-stat-val" style="color:var(--gd)">${txnCount}</div><div class="cust-stat-lbl">Transactions</div></div>
+        <div class="cust-stat"><div class="cust-stat-val sm" style="font-size:12px;color:var(--gold-dark)">${totalPaid?fmt(totalPaid):'Rs.0'}</div><div class="cust-stat-lbl">Paid</div></div>
+      </div>
+      <div style="font-size:11px;color:var(--txt3);margin-top:8px">${isOpen?'▼ Selected — scroll down to manage':'Click to view & manage'}</div>
     </div>`;
   }).join('');
 }
@@ -3294,7 +3502,7 @@ function supRender(){
 function supInitTab(){
   supRender();
   const dateEl=document.getElementById('sup-txn-date');
-  if(dateEl&&!dateEl.value){ const d=new Date(); dateEl.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  if(dateEl){ const d=new Date(); dateEl.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 }
 
 // Hook all tabs into showTab
