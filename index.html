@@ -445,7 +445,6 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
   <button class="ntab" onclick="showTab('multibill',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
     Multi Bill
-    <span style="background:var(--r);color:#fff;font-size:8px;padding:1px 5px;border-radius:8px;font-weight:800;margin-left:2px">NEW</span>
   </button>
   <button class="ntab" onclick="showTab('expenses',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><path d="M6 14h4M14 14h4"/></svg>
@@ -473,9 +472,13 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
     <div class="card-hd"><div class="card-hd-accent"></div>IMEI / Barcode</div>
     <div class="irow">
       <input type="text" id="imei-input" placeholder="Scan or type IMEI number..." maxlength="15" oninput="liveCheckImei()">
-      <button class="btn btn-b" onclick="openScanner('purchase')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><path d="M21 16h-3v3m0-6h-3v3m3 3v3h3"/></svg>
-        Scan
+      <button class="btn btn-b" onclick="openScanner('purchase','camera')" title="Use device camera to scan barcode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Camera
+      </button>
+      <button class="btn btn-ghost" onclick="focusUsbField('imei-input')" title="Use USB or Bluetooth barcode scanner" style="padding:8px 14px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="7" height="7"/><rect x="15" y="2" width="7" height="7"/><rect x="2" y="15" width="7" height="7"/><path d="M15 15h.01M15 19h.01M19 15h.01M19 19h.01"/></svg>
+        USB Scanner
       </button>
       <button class="btn btn-ghost" onclick="clearForm()">Reset</button>
     </div>
@@ -494,10 +497,10 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
         <label>iPhone Model <span class="req">*</span></label>
         <select id="model">
           <option value="">— Select Model —</option>
-          <optgroup label="iPhone 17 Series"><option>iPhone 17</option><option>iPhone 17 Pro</option><option>iPhone 17 Pro Max</option></optgroup>
-          <optgroup label="iPhone 16 Series"><option>iPhone 16</option><option>iPhone 16 Pro</option><option>iPhone 16 Pro Max</option></optgroup>
-          <optgroup label="iPhone 15 Series"><option>iPhone 15</option><option>iPhone 15 Pro</option><option>iPhone 15 Pro Max</option></optgroup>
-          <optgroup label="iPhone 14 Series"><option>iPhone 14</option><option>iPhone 14 Pro</option><option>iPhone 14 Pro Max</option></optgroup>
+          <optgroup label="iPhone 17 Series"><option>iPhone 17 Air</option><option>iPhone 17 Air</option><option>iPhone 17</option><option>iPhone 17 Pro</option><option>iPhone 17 Pro Max</option></optgroup>
+          <optgroup label="iPhone 16 Series"><option>iPhone 16</option><option>iPhone 16 Plus</option><option>iPhone 16 Pro</option><option>iPhone 16 Pro Max</option></optgroup>
+          <optgroup label="iPhone 15 Series"><option>iPhone 15</option><option>iPhone 15 Plus</option><option>iPhone 15 Pro</option><option>iPhone 15 Pro Max</option></optgroup>
+          <optgroup label="iPhone 14 Series"><option>iPhone 14</option><option>iPhone 14 Plus</option><option>iPhone 14 Pro</option><option>iPhone 14 Pro Max</option></optgroup>
         </select>
       </div>
       <div class="fg">
@@ -552,9 +555,13 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
     <div class="card-hd"><div class="card-hd-accent"></div>Scan Device IMEI</div>
     <div class="irow">
       <input type="text" id="sell-imei" placeholder="Scan or type IMEI..." oninput="findForSell()" style="font-size:15px;letter-spacing:2.5px">
-      <button class="btn btn-b" onclick="openScanner('sell')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><path d="M21 16h-3v3m0-6h-3v3m3 3v3h3"/></svg>
-        Scan
+      <button class="btn btn-b" onclick="openScanner('sell','camera')" title="Use device camera to scan barcode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Camera
+      </button>
+      <button class="btn btn-ghost" onclick="focusUsbField('sell-imei')" title="Use USB or Bluetooth barcode scanner" style="padding:8px 14px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="7" height="7"/><rect x="15" y="2" width="7" height="7"/><rect x="2" y="15" width="7" height="7"/><path d="M15 15h.01M15 19h.01M19 15h.01M19 19h.01"/></svg>
+        USB Scanner
       </button>
       <button class="btn btn-ghost" onclick="clearSell()">Clear</button>
     </div>
@@ -726,7 +733,7 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
 
       <!-- Edit Form (hidden) -->
       <div id="cdp-edit-form" style="display:none;background:var(--sur2);border:1px solid var(--bor);border-radius:var(--rad-s);padding:1rem;margin-bottom:1.25rem">
-        <div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--txt)">Customer Edit Karo</div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--txt)">Edit Customer Details</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <div class="fg"><label>Name</label><input type="text" id="cdp-edit-name" placeholder="Customer name"></div>
           <div class="fg"><label>Phone</label><input type="text" id="cdp-edit-phone" placeholder="Phone number"></div>
@@ -741,14 +748,14 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
 
       <!-- Advance / Loan Section -->
       <div style="margin-bottom:1.25rem">
-        <div class="section-label" style="margin-bottom:10px">Advance / Loan (Customer ne liya ya diya)</div>
+        <div class="section-label" style="margin-bottom:10px">Advance / Loan</div>
         <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;margin-bottom:10px;align-items:end">
           <div class="fg" style="margin:0">
             <label>Type</label>
             <select id="adv-type" style="width:100%;padding:9px 10px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur)">
-              <option value="gave">Humne Diya (Advance Out)</option>
-              <option value="received">Humne Liya (Customer ka Extra)</option>
-              <option value="returned">Customer ne Wapas Diya</option>
+              <option value="gave">We Gave Advance</option>
+              <option value="received">Customer Paid Extra (Credit)</option>
+              <option value="returned">Customer Returned Advance</option>
             </select>
           </div>
           <div class="fg" style="margin:0">
@@ -800,7 +807,7 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
   </div>
   <div class="card">
     <div class="filter-bar">
-      <select id="f-model" onchange="renderStock()"><option value="">All Models</option><option>iPhone 17</option><option>iPhone 17 Pro</option><option>iPhone 17 Pro Max</option><option>iPhone 16</option><option>iPhone 16 Pro</option><option>iPhone 16 Pro Max</option><option>iPhone 15</option><option>iPhone 15 Pro</option><option>iPhone 15 Pro Max</option><option>iPhone 14</option><option>iPhone 14 Pro</option><option>iPhone 14 Pro Max</option></select>
+      <select id="f-model" onchange="renderStock()"><option value="">All Models</option><option>iPhone 17 Air</option><option>iPhone 17</option><option>iPhone 17 Pro</option><option>iPhone 17 Pro Max</option><option>iPhone 16</option><option>iPhone 16 Plus</option><option>iPhone 16 Pro</option><option>iPhone 16 Pro Max</option><option>iPhone 15</option><option>iPhone 15 Pro</option><option>iPhone 15 Pro Max</option><option>iPhone 14</option><option>iPhone 14 Pro</option><option>iPhone 14 Pro Max</option></select>
       <select id="f-variant" onchange="renderStock()"><option value="">All Variants</option><option>Non PTA</option><option>PTA Approved</option><option>JV</option></select>
       <select id="f-supplier" onchange="renderStock()"><option value="">All Sources</option><option>Dubai</option><option>Malaysia</option></select>
       <select id="f-status" onchange="renderStock()"><option value="">All Status</option><option value="available">Available</option><option value="sold">Sold</option></select>
@@ -950,7 +957,7 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
 <!-- ══ EXPENSES ══════════════════════════════════════════ -->
 <div id="expenses" class="sec">
   <div class="page-title">Expenses & Partners</div>
-  <div class="page-sub">Shop kharchay aur partners ka hissa track karo</div>
+  <div class="page-sub">Track shop expenses and partner withdrawals</div>
 
   <!-- Summary Cards -->
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:1.25rem 0">
@@ -991,14 +998,14 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
 
   <!-- Add Expense Form -->
   <div class="card" style="margin-bottom:1.25rem">
-    <div class="card-hd"><div class="card-hd-accent"></div>Expense / Withdrawal Add Karo</div>
+    <div class="card-hd"><div class="card-hd-accent"></div>Add Expense / Withdrawal</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
       <div class="fg">
         <label>Type <span class="req">*</span></label>
         <select id="exp-type" onchange="expTypeChange()">
           <optgroup label="Shop Expenses">
-            <option value="light">Bijli Bill (Light)</option>
-            <option value="rent">Shop Kiraya (Rent)</option>
+            <option value="light">Electricity Bill</option>
+            <option value="rent">Shop Rent</option>
             <option value="internet">Internet Bill</option>
             <option value="repair">Repair / Maintenance</option>
             <option value="salary">Staff Salary</option>
@@ -1042,7 +1049,7 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
       <select id="exp-filter-type" onchange="expRender()" style="flex:1;min-width:140px;padding:8px 10px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:12px;background:var(--sur);color:var(--txt)">
         <option value="">All Types</option>
-        <option value="light">Bijli Bill</option>
+        <option value="light">Electricity Bill</option>
         <option value="rent">Rent</option>
         <option value="internet">Internet</option>
         <option value="repair">Repair</option>
@@ -1071,7 +1078,7 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
     </div>
     <div id="exp-empty" style="text-align:center;padding:2rem;color:var(--txt3);font-size:13px;display:none">
       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.4;margin-bottom:8px"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-      <div>Koi expense nahi mili</div>
+      <div>No expenses found</div>
     </div>
   </div>
 </div>
@@ -1079,28 +1086,28 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
 <!-- ══ CASH BOOK ══════════════════════════════════════════ -->
 <div id="cashbook" class="sec">
   <div class="page-title">Cash Book</div>
-  <div class="page-sub">Roz ka cash in/out — din ke end pe pata chale kitna cash hai</div>
+  <div class="page-sub">Daily cash in & out — know your drawer balance at end of day</div>
 
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:1.25rem 0">
     <div class="scard"><div class="scard-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div><div class="slbl">Total Cash In</div><div class="sval g" id="cb-in-total">Rs. 0</div></div>
     <div class="scard"><div class="scard-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg></div><div class="slbl">Total Cash Out</div><div class="sval r" id="cb-out-total">Rs. 0</div></div>
     <div class="scard"><div class="scard-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div class="slbl">Net Balance</div><div class="sval gold" id="cb-net-total">Rs. 0</div></div>
-    <div class="scard"><div class="scard-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="slbl">Aaj ka Net</div><div class="sval b" id="cb-today-net">Rs. 0</div></div>
+    <div class="scard"><div class="scard-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="slbl">Today Net</div><div class="sval b" id="cb-today-net">Rs. 0</div></div>
   </div>
 
   <div class="card" style="margin-bottom:1.25rem">
-    <div class="card-hd"><div class="card-hd-accent"></div>Entry Add Karo</div>
+    <div class="card-hd"><div class="card-hd-accent"></div>Add Entry</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
       <div class="fg">
         <label>Type <span class="req">*</span></label>
         <select id="cb-type">
-          <optgroup label="Cash In (Aaya)">
+          <optgroup label="Cash In">
             <option value="sale_cash">Phone Sale Cash</option>
             <option value="cust_payment">Customer Due Payment</option>
-            <option value="loan_return">Loan Wapas Aaya</option>
+            <option value="loan_return">Loan Returned</option>
             <option value="other_in">Other Cash In</option>
           </optgroup>
-          <optgroup label="Cash Out (Gaya)">
+          <optgroup label="Cash Out">
             <option value="stock_buy">Stock Purchase</option>
             <option value="expense_out">Shop Expense</option>
             <option value="partner_draw">Partner Withdrawal</option>
@@ -1153,7 +1160,7 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
     </div>
     <div id="cb-empty" style="text-align:center;padding:2rem;color:var(--txt3);font-size:13px;display:none">
       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.4;margin-bottom:8px"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-      <div>Koi entry nahi</div>
+      <div>No entries yet</div>
     </div>
   </div>
 </div>
@@ -1161,17 +1168,17 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
 <!-- ══ SUPPLIERS ══════════════════════════════════════════ -->
 <div id="suppliers" class="sec">
   <div class="page-title">Supplier Ledger</div>
-  <div class="page-sub">Jin se phone aate hain unka hisaab — dena/lena sab yahan</div>
+  <div class="page-sub">Manage supplier accounts — track what you owe and what they owe</div>
 
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:1.25rem 0">
     <div class="scard"><div class="scard-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="slbl">Total Suppliers</div><div class="sval" id="sup-count">0</div></div>
-    <div class="scard"><div class="scard-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div class="slbl">Humara Dena (Total)</div><div class="sval r" id="sup-we-owe">Rs. 0</div></div>
-    <div class="scard"><div class="scard-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg></div><div class="slbl">Unka Dena (Total)</div><div class="sval g" id="sup-they-owe">Rs. 0</div></div>
+    <div class="scard"><div class="scard-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div class="slbl">We Owe (Total)</div><div class="sval r" id="sup-we-owe">Rs. 0</div></div>
+    <div class="scard"><div class="scard-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg></div><div class="slbl">They Owe (Total)</div><div class="sval g" id="sup-they-owe">Rs. 0</div></div>
   </div>
 
   <!-- Add Supplier -->
   <div class="card" style="margin-bottom:1.25rem">
-    <div class="card-hd"><div class="card-hd-accent"></div>Naya Supplier Add Karo</div>
+    <div class="card-hd"><div class="card-hd-accent"></div>Add New Supplier</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
       <div class="fg"><label>Supplier Name <span class="req">*</span></label><input type="text" id="sup-name" placeholder="e.g. Ali Dubai, Karachi Mart"></div>
       <div class="fg"><label>Phone</label><input type="text" id="sup-phone" placeholder="03xx-xxxxxxx"></div>
@@ -1187,21 +1194,21 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
   <div id="sup-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:1.25rem"></div>
   <div id="sup-empty" style="text-align:center;padding:3rem;color:var(--txt3);font-size:13px;display:none">
     <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="opacity:0.3;margin-bottom:10px"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
-    <div>Koi supplier nahi — upar add karo</div>
+    <div>No suppliers yet — add one above</div>
   </div>
 
   <!-- Transaction Panel (hidden until supplier selected) -->
   <div id="sup-txn-panel" style="display:none">
     <div class="card" style="margin-bottom:1.25rem">
-      <div class="card-hd"><div class="card-hd-accent"></div><span id="sup-txn-title">Transaction Add Karo</span></div>
+      <div class="card-hd"><div class="card-hd-accent"></div><span id="sup-txn-title">Add Transaction</span></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
         <div class="fg">
           <label>Type <span class="req">*</span></label>
           <select id="sup-txn-type">
-            <option value="we_paid">Humne Unhe Diya (We Paid)</option>
-            <option value="they_gave">Unhone Humhe Diya (Credit)</option>
-            <option value="stock_taken">Stock Liya (Udhaar)</option>
-            <option value="return_stock">Stock Wapas Kiya</option>
+            <option value="we_paid">We Paid Supplier</option>
+            <option value="they_gave">Supplier Gave Credit</option>
+            <option value="stock_taken">Stock Taken (Credit)</option>
+            <option value="return_stock">Stock Returned</option>
           </select>
         </div>
         <div class="fg"><label>Amount (Rs.) <span class="req">*</span></label><input type="number" id="sup-txn-amt" placeholder="0" min="0"></div>
@@ -1222,7 +1229,7 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
           <tbody id="sup-txn-tbody"></tbody>
         </table>
       </div>
-      <div id="sup-txn-empty" style="text-align:center;padding:1.5rem;color:var(--txt3);font-size:13px;display:none">Koi transaction nahi</div>
+      <div id="sup-txn-empty" style="text-align:center;padding:1.5rem;color:var(--txt3);font-size:13px;display:none">No transactions yet</div>
     </div>
   </div>
 </div>
@@ -1240,6 +1247,14 @@ const sb = supabase.createClient(SB_URL, SB_KEY);
 const KEY = 'zpmobile_pro_v2';
 const CKEY = 'zpmobile_customers_v1';
 let stock = [];
+
+// Smart amount formatter: shows full number with commas up to 99,999 then Lakh
+function fmtAmt(n) {
+  n = Math.abs(Math.round(n || 0));
+  if (n >= 10000000) return (n/10000000).toFixed(1).replace(/\.0$/, '') + ' Cr';
+  if (n >= 100000)   return (n/100000).toFixed(1).replace(/\.0$/, '') + 'L';
+  return n.toLocaleString();
+}
 let customers = [];
 let scanReaders = {};
 let payTargetImei = null;
@@ -1325,19 +1340,23 @@ function saveCust(){} // handled by saveCustItem
 
 // ═══ COLORS ═══
 const COLORS = {
-  'iPhone 14':[{name:'Midnight',hex:'#1c1c1e'},{name:'Starlight',hex:'#f2ede4'},{name:'Blue',hex:'#aec6cf'},{name:'Purple',hex:'#d7c5e8'},{name:'Product Red',hex:'#bf0000'},{name:'Yellow',hex:'#fada5e'}],
+  'iPhone 14':[{name:'Midnight',hex:'#1c1c2e'},{name:'Starlight',hex:'#f2ede4'},{name:'Blue',hex:'#9ab8d6'},{name:'Purple',hex:'#ccc0d8'},{name:'Product Red',hex:'#bf0000'},{name:'Yellow',hex:'#fada5e'}],
+  'iPhone 14 Plus':[{name:'Midnight',hex:'#1c1c2e'},{name:'Starlight',hex:'#f2ede4'},{name:'Blue',hex:'#9ab8d6'},{name:'Purple',hex:'#ccc0d8'},{name:'Product Red',hex:'#bf0000'},{name:'Yellow',hex:'#fada5e'}],
   'iPhone 14 Pro':[{name:'Space Black',hex:'#2c2c2e'},{name:'Silver',hex:'#e5e4e0'},{name:'Gold',hex:'#c8a97e'},{name:'Deep Purple',hex:'#4b3a6e'}],
   'iPhone 14 Pro Max':[{name:'Space Black',hex:'#2c2c2e'},{name:'Silver',hex:'#e5e4e0'},{name:'Gold',hex:'#c8a97e'},{name:'Deep Purple',hex:'#4b3a6e'}],
-  'iPhone 15':[{name:'Black',hex:'#1c1c1e'},{name:'Blue',hex:'#aac4d4'},{name:'Green',hex:'#c0d4bb'},{name:'Yellow',hex:'#f5e278'},{name:'Pink',hex:'#f4b8c1'}],
-  'iPhone 15 Pro':[{name:'Black Titanium',hex:'#2e2c2b'},{name:'White Titanium',hex:'#e8e3da'},{name:'Blue Titanium',hex:'#6e7f8c'},{name:'Natural Titanium',hex:'#b4a98c'}],
-  'iPhone 15 Pro Max':[{name:'Black Titanium',hex:'#2e2c2b'},{name:'White Titanium',hex:'#e8e3da'},{name:'Blue Titanium',hex:'#6e7f8c'},{name:'Natural Titanium',hex:'#b4a98c'}],
-  'iPhone 16':[{name:'Black',hex:'#1c1c1e'},{name:'White',hex:'#f5f5f0'},{name:'Pink',hex:'#f0b8c3'},{name:'Teal',hex:'#7bbcb8'},{name:'Ultramarine',hex:'#3a4fa0'}],
-  'iPhone 16 Pro':[{name:'Black Titanium',hex:'#2e2c2b'},{name:'White Titanium',hex:'#e8e3da'},{name:'Natural Titanium',hex:'#b4a98c'},{name:'Desert Titanium',hex:'#c4a882'}],
-  'iPhone 16 Pro Max':[{name:'Black Titanium',hex:'#2e2c2b'},{name:'White Titanium',hex:'#e8e3da'},{name:'Natural Titanium',hex:'#b4a98c'},{name:'Desert Titanium',hex:'#c4a882'}],
-  'iPhone 17':[{name:'Black',hex:'#1c1c1e'},{name:'White',hex:'#f5f5f0'},{name:'Sky Blue',hex:'#a8cce0'},{name:'Sand',hex:'#d4c4a8'}],
-  'iPhone 17 Pro':[{name:'Black Titanium',hex:'#2e2c2b'},{name:'White Titanium',hex:'#e8e3da'},{name:'Natural Titanium',hex:'#b4a98c'},{name:'Desert Titanium',hex:'#c4a882'}],
-  'iPhone 17 Pro Max':[{name:'Black Titanium',hex:'#2e2c2b'},{name:'White Titanium',hex:'#e8e3da'},{name:'Natural Titanium',hex:'#b4a98c'},{name:'Desert Titanium',hex:'#c4a882'}],
-};
+  'iPhone 15':[{name:'Black',hex:'#1c1c1e'},{name:'Blue',hex:'#aac4d4'},{name:'Green',hex:'#a8c8a0'},{name:'Yellow',hex:'#f5e278'},{name:'Pink',hex:'#f4b8c1'}],
+  'iPhone 15 Plus':[{name:'Black',hex:'#1c1c1e'},{name:'Blue',hex:'#aac4d4'},{name:'Green',hex:'#a8c8a0'},{name:'Yellow',hex:'#f5e278'},{name:'Pink',hex:'#f4b8c1'}],
+  'iPhone 15 Pro':[{name:'Black Titanium',hex:'#2e2c2b'},{name:'White Titanium',hex:'#e8e3da'},{name:'Blue Titanium',hex:'#5c7485'},{name:'Natural Titanium',hex:'#b4a98c'}],
+  'iPhone 15 Pro Max':[{name:'Black Titanium',hex:'#2e2c2b'},{name:'White Titanium',hex:'#e8e3da'},{name:'Blue Titanium',hex:'#5c7485'},{name:'Natural Titanium',hex:'#b4a98c'}],
+  'iPhone 16':[{name:'Black',hex:'#1c1c1e'},{name:'White',hex:'#f5f5f0'},{name:'Pink',hex:'#f2a7b7'},{name:'Teal',hex:'#5b9e9a'},{name:'Ultramarine',hex:'#3d5a9e'}],
+  'iPhone 16 Plus':[{name:'Black',hex:'#1c1c1e'},{name:'White',hex:'#f5f5f0'},{name:'Pink',hex:'#f2a7b7'},{name:'Teal',hex:'#5b9e9a'},{name:'Ultramarine',hex:'#3d5a9e'}],
+  'iPhone 16 Pro':[{name:'Black Titanium',hex:'#2a2825'},{name:'White Titanium',hex:'#e5e0d8'},{name:'Natural Titanium',hex:'#b0a18a'},{name:'Desert Titanium',hex:'#c8a97a'}],
+  'iPhone 16 Pro Max':[{name:'Black Titanium',hex:'#2a2825'},{name:'White Titanium',hex:'#e5e0d8'},{name:'Natural Titanium',hex:'#b0a18a'},{name:'Desert Titanium',hex:'#c8a97a'}],
+  'iPhone 17 Air':[{name:'Black',hex:'#1c1c1e'},{name:'White',hex:'#f5f5f0'},{name:'Sky Blue',hex:'#7fb3d3'},{name:'Pink',hex:'#f0a8b8'},{name:'Sand',hex:'#cfc0a5'}],
+  'iPhone 17':[{name:'Black',hex:'#1c1c1e'},{name:'White',hex:'#f5f5f0'},{name:'Sky Blue',hex:'#7fb3d3'},{name:'Pink',hex:'#f0a8b8'},{name:'Sand',hex:'#cfc0a5'}],
+  'iPhone 17 Pro':[{name:'Black Titanium',hex:'#2a2825'},{name:'White Titanium',hex:'#e5e0d8'},{name:'Natural Titanium',hex:'#b0a18a'},{name:'Desert Titanium',hex:'#c8a97a'}],
+  'iPhone 17 Pro Max':[{name:'Black Titanium',hex:'#2a2825'},{name:'White Titanium',hex:'#e5e0d8'},{name:'Natural Titanium',hex:'#b0a18a'},{name:'Desert Titanium',hex:'#c8a97a'}],
+}
 const DEFAULT_COLORS = [{name:'Black',hex:'#1c1c1e'},{name:'White',hex:'#f5f5f0'},{name:'Silver',hex:'#c0c0c0'},{name:'Gold',hex:'#c8a97e'}];
 function colorHex(model, colorName) {
   const colors = COLORS[model] || DEFAULT_COLORS;
@@ -1384,10 +1403,26 @@ function showTab(t, el) {
 }
 
 // ═══ SCANNER ═══
-function openScanner(target) {
+function focusUsbField(fieldId) {
+  // For USB/Bluetooth scanners: just focus the input — scanner acts like keyboard
+  closeAllScanners();
+  const el = document.getElementById(fieldId);
+  if (!el) return;
+  el.focus();
+  el.select();
+  // Show a brief visual indicator
+  el.style.boxShadow = '0 0 0 3px rgba(201,162,39,0.5)';
+  el.placeholder = '🔌 USB Scanner ready — scan now...';
+  setTimeout(() => {
+    el.style.boxShadow = '';
+    el.placeholder = fieldId === 'sell-imei' ? 'Scan or type IMEI...' : 'Scan or type IMEI number...';
+  }, 4000);
+}
+
+function openScanner(target, mode) {
   closeAllScanners();
   const wrap = document.getElementById('sc-' + target); wrap.classList.add('open');
-  if (typeof ZXing === 'undefined') { alert('Camera scanner unavailable. Please enter IMEI manually.'); wrap.classList.remove('open'); return; }
+  if (typeof ZXing === 'undefined') { alert('Camera unavailable. Use USB Scanner or type IMEI manually.'); wrap.classList.remove('open'); return; }
   const reader = new ZXing.BrowserMultiFormatReader(); scanReaders[target] = reader;
   reader.decodeFromVideoDevice(null, 'vid-' + target, (result) => {
     if (result) { closeScanner(target); const code = result.getText();
@@ -1538,8 +1573,8 @@ function renderCustomers() {
       </div>
       <div class="cust-stats-row">
         <div class="cust-stat"><div class="cust-stat-val" style="color:var(--b)">${st.devices}</div><div class="cust-stat-lbl">Devices</div></div>
-        <div class="cust-stat"><div class="cust-stat-val" style="color:var(--gd)">Rs.${(st.totalPaid/1000).toFixed(0)}k</div><div class="cust-stat-lbl">Paid</div></div>
-        <div class="cust-stat"><div class="cust-stat-val" style="color:${hasDue?'var(--r)':'var(--gd)'}">${hasDue ? 'Rs.'+( st.totalBalance>=1000 ? (st.totalBalance/1000).toFixed(0)+'k' : st.totalBalance.toLocaleString()) : '✅ PAID'}</div><div class="cust-stat-lbl">Balance</div></div>
+        <div class="cust-stat"><div class="cust-stat-val" style="color:var(--gd)">Rs.${fmtAmt(st.totalPaid)}</div><div class="cust-stat-lbl">Paid</div></div>
+        <div class="cust-stat"><div class="cust-stat-val" style="color:${hasDue?'var(--r)':'var(--gd)'}">${hasDue ? 'Rs.'+fmtAmt(st.totalBalance) : '✅ PAID'}</div><div class="cust-stat-lbl">Balance</div></div>
       </div>
     </div>`;
   }).join('');
@@ -1562,7 +1597,7 @@ function openCustDetail(phone) {
   // Advance/loan stat
   const advBal = advBalance(phone);
   const advEl = document.getElementById('cdp-advance-bal');
-  if(advEl) advEl.textContent = advBal !== 0 ? (advBal > 0 ? 'Rs.'+Math.abs(advBal).toLocaleString()+' (dena)' : 'Rs.'+Math.abs(advBal).toLocaleString()+' (lena)') : '—';
+  if(advEl) advEl.textContent = advBal !== 0 ? (advBal > 0 ? 'Rs.'+Math.abs(advBal).toLocaleString()+' (we owe)' : 'Rs.'+Math.abs(advBal).toLocaleString()+' (they owe)') : '—';
   // Edit form prefill
   const nameEl=document.getElementById('cdp-edit-name'); if(nameEl) nameEl.value=c.name||'';
   const phoneEl=document.getElementById('cdp-edit-phone'); if(phoneEl) phoneEl.value=c.phone||'';
@@ -1906,21 +1941,37 @@ function closePayModal() { document.getElementById('pay-modal').style.display = 
 
 async function savePayment() {
   const amount = parseInt(document.getElementById('pay-amount').value) || 0;
-  if (!amount || amount <= 0) { alert('Please enter a valid amount.'); return; }
+  if (!amount || amount <= 0) { alert('Please enter a valid amount!'); return; }
   const idx = stock.findIndex(m => m.imei === payTargetImei); if (idx === -1) return;
   const m = stock[idx];
-  if (amount > m.balance) { alert(`Amount exceeds balance. Maximum: Rs. ${m.balance.toLocaleString()}`); return; }
+  // Allow overpayment — extra becomes customer advance/credit
+  if (amount <= 0) { alert('Please enter an amount!'); return; }
+  const currentBalance = m.balance || 0;
+  const extra = amount - currentBalance;
+  const newBalance = currentBalance - amount; // can be negative = we owe customer
   const updPmt = {
     ...stock[idx],
     paidAmount: (m.paidAmount || 0) + amount,
-    balance: m.balance - amount,
+    balance: newBalance,
     payments: [...(m.payments||[]), { date: new Date().toISOString().split('T')[0], amount, note: document.getElementById('pay-note').value || 'Payment received' }]
   };
   try {
     await saveStockItem(updPmt);
     stock[idx] = updPmt;
   } catch(e) { alert('Error saving: ' + e.message); return; }
-  alert(`✓ Rs. ${amount.toLocaleString()} recorded.\nRemaining Balance: Rs. ${stock[idx].balance.toLocaleString()}`);
+  // If overpaid, save extra as customer advance
+  if (extra > 0) {
+    const advData = JSON.parse(localStorage.getItem('zpmobile_advances_v1') || '[]');
+    if (m.customer?.phone) {
+      const today = new Date().toISOString().split('T')[0];
+      advData.push({ id: Date.now(), phone: m.customer.phone, type:'received', amount: extra, date: today, note:'extra payment — '+m.model });
+      localStorage.setItem('zpmobile_advances_v1', JSON.stringify(advData));
+      if(typeof advances !== 'undefined') advances = advData;
+    }
+    alert(`✓ Rs. ${amount.toLocaleString()} recorded.\n✅ Bill clear!\n💰 Extra Rs. ${extra.toLocaleString()} saved as customer advance credit.`);
+  } else {
+    alert(`✓ Rs. ${amount.toLocaleString()} recorded.\nRemaining Balance: Rs. ${Math.abs(newBalance).toLocaleString()}`);
+  }
   closePayModal(); renderPending();
   // Refresh customer detail if open
   if (openCustDetailPhone) openCustDetail(openCustDetailPhone);
@@ -2715,7 +2766,7 @@ let expenses = JSON.parse(localStorage.getItem(EXP_KEY) || '[]');
 let expPartners = JSON.parse(localStorage.getItem(EXP_PARTNERS_KEY) || '{"p1":"Umer","p2":"Nijesh"}');
 
 const EXP_LABELS = {
-  light:'Bijli Bill',rent:'Rent',internet:'Internet',repair:'Repair',
+  light:'Electricity Bill',rent:'Shop Rent',internet:'Internet',repair:'Repair',
   salary:'Salary',transport:'Transport',tax:'Tax / FBR',
   other_expense:'Other Expense',partner1:'',partner2:''
 };
@@ -2746,8 +2797,8 @@ function expAdd(){
   const amount = parseFloat(document.getElementById('exp-amount').value);
   const date = document.getElementById('exp-date').value;
   const desc = document.getElementById('exp-desc').value.trim();
-  if(!amount || amount <= 0){ alert('Amount daalo!'); return; }
-  if(!date){ alert('Date select karo!'); return; }
+  if(!amount || amount <= 0){ alert('Please enter an amount!'); return; }
+  if(!date){ alert('Please select a date!'); return; }
   expenses.unshift({ id: Date.now(), type, amount, date, desc, created: new Date().toISOString() });
   expSaveData();
   document.getElementById('exp-amount').value='';
@@ -2757,7 +2808,7 @@ function expAdd(){
 }
 
 function expDelete(id){
-  if(!confirm('Ye entry delete karein?')) return;
+  if(!confirm('Delete this entry?')) return;
   expenses = expenses.filter(e => e.id !== id);
   expSaveData();
   expRender();
@@ -2847,7 +2898,7 @@ function expInitTab(){
 }
 
 function expExport(){
-  if(expenses.length===0){alert('Koi data nahi!');return;}
+  if(expenses.length===0){alert('No data available!');return;}
   let csv='Date,Type,Description,Amount\n';
   expenses.forEach(e=>{
     const label=e.type==='partner1'?expPartners.p1+' Withdrawal':e.type==='partner2'?expPartners.p2+' Withdrawal':(EXP_LABELS[e.type]||e.type);
@@ -2891,7 +2942,7 @@ function advAdd(){
   if(!phone) return;
   const type = document.getElementById('adv-type').value;
   const amt = parseFloat(document.getElementById('adv-amount').value);
-  if(!amt || amt<=0){ alert('Amount daalo!'); return; }
+  if(!amt || amt<=0){ alert('Please enter an amount!'); return; }
   const d = new Date();
   const date = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   advances.push({ id: Date.now(), phone, type, amount: amt, date });
@@ -2901,11 +2952,11 @@ function advAdd(){
   // update stat
   const advBal = advBalance(phone);
   const advEl = document.getElementById('cdp-advance-bal');
-  if(advEl) advEl.textContent = advBal !== 0 ? (advBal > 0 ? 'Rs.'+Math.abs(advBal).toLocaleString()+' (dena)' : 'Rs.'+Math.abs(advBal).toLocaleString()+' (lena)') : '—';
+  if(advEl) advEl.textContent = advBal !== 0 ? (advBal > 0 ? 'Rs.'+Math.abs(advBal).toLocaleString()+' (we owe)' : 'Rs.'+Math.abs(advBal).toLocaleString()+' (they owe)') : '—';
 }
 
 function advDelete(id){
-  if(!confirm('Delete karein?')) return;
+  if(!confirm('Delete this entry?')) return;
   const phone = advances.find(a=>a.id===id)?.phone;
   advances = advances.filter(a=>a.id!==id);
   advSave();
@@ -2917,15 +2968,15 @@ function advRender(phone){
   if(!el) return;
   const myAdv = advances.filter(a=>a.phone===phone);
   if(!myAdv.length){
-    el.innerHTML='<div style="font-size:12px;color:var(--txt3);padding:8px 0">Koi advance/loan nahi</div>';
+    el.innerHTML='<div style="font-size:12px;color:var(--txt3);padding:8px 0">No advances recorded</div>';
     return;
   }
-  const labels = {gave:'Humne Diya',received:'Customer ka Extra (Humara pass)',returned:'Customer ne Wapas Diya'};
+  const labels = {gave:'We Gave',received:'Customer Credit (Held)',returned:'Customer Returned Advance'};
   const colors = {gave:'var(--r)',received:'var(--g)',returned:'var(--b)'};
   const fmt = n=>'Rs. '+Number(n).toLocaleString();
   const bal = advBalance(phone);
   el.innerHTML = '<div style="margin-bottom:10px;padding:10px 14px;background:'+(bal>0?'var(--rl)':bal<0?'var(--gl)':'var(--sur2)')+';border-radius:var(--rad-s);font-size:13px;font-weight:700;color:'+(bal>0?'var(--r)':bal<0?'var(--gd)':'var(--txt2)')+'">'+
-    (bal>0?'⚠️ Humara Dena: '+fmt(Math.abs(bal)):bal<0?'✅ Customer ka Dena: '+fmt(Math.abs(bal)):'✅ Sab Clear')+'</div>'+
+    (bal>0?'⚠️ We Owe: '+fmt(Math.abs(bal)):bal<0?'✅ Customer Owes: '+fmt(Math.abs(bal)):'✅ All Clear')+'</div>'+
     myAdv.map(a=>'<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--sur2);border:1px solid var(--bor);border-radius:var(--rad-s);margin-bottom:6px;gap:8px">'+
       '<div><span style="font-size:12px;font-weight:600;color:'+colors[a.type]+'">'+labels[a.type]+'</span><span style="font-size:11px;color:var(--txt3);margin-left:8px">'+a.date+'</span></div>'+
       '<div style="display:flex;align-items:center;gap:10px"><span style="font-size:13px;font-weight:700">'+fmt(a.amount)+'</span>'+
@@ -2950,7 +3001,7 @@ async function custEditSave(){
   const newPhone = document.getElementById('cdp-edit-phone').value.trim();
   const cnic = document.getElementById('cdp-edit-cnic').value.trim();
   const address = document.getElementById('cdp-edit-address').value.trim();
-  if(!name){ alert('Naam zaroori hai!'); return; }
+  if(!name){ alert('Name is required!'); return; }
   customers[idx] = {...customers[idx], name, phone: newPhone||phone, cnic, address};
   // Update Supabase if has real id
   if(customers[idx].id && !String(customers[idx].id).startsWith('local_')){
@@ -2962,7 +3013,7 @@ async function custEditSave(){
   document.getElementById('cdp-edit-form').style.display='none';
   document.getElementById('cdp-name').textContent = name;
   renderCustomers();
-  alert('Customer updated!');
+  alert('Customer updated successfully!');
 }
 
 async function custDeleteConfirm(){
@@ -2972,10 +3023,10 @@ async function custDeleteConfirm(){
   if(!cust) return;
   const hasSales = stock.some(m=>m.status==='sold' && m.customer?.phone===phone);
   const msg = hasSales
-    ? cust.name+' ka record delete karna chahte ho?
+    ? cust.name+' 's record will be deleted.
 
-⚠️ Is customer ki '+stock.filter(m=>m.status==='sold'&&m.customer?.phone===phone).length+' sale(s) hain — woh bhi affect hongi.'
-    : cust.name+' ko delete karna chahte ho?';
+⚠️ This customer has '+stock.filter(m=>m.status==='sold'&&m.customer?.phone===phone).length+' sale(s) — they will also be affected.'
+    : cust.name+' will be deleted. Are you sure?';
   if(!confirm(msg)) return;
   customers = customers.filter(x=>x.phone!==phone);
   if(cust.id && !String(cust.id).startsWith('local_')){
@@ -2996,7 +3047,7 @@ function cbSave(){ localStorage.setItem(CB_KEY, JSON.stringify(cashEntries)); }
 const CB_IN_TYPES = ['sale_cash','cust_payment','loan_return','other_in'];
 const CB_LABELS = {
   sale_cash:'Phone Sale Cash', cust_payment:'Customer Due Payment',
-  loan_return:'Loan Wapas Aaya', other_in:'Other Cash In',
+  loan_return:'Loan Returned', other_in:'Other Cash In',
   stock_buy:'Stock Purchase', expense_out:'Shop Expense',
   partner_draw:'Partner Withdrawal', loan_out:'Customer Ko Loan',
   supplier_pay:'Supplier Payment', other_out:'Other Cash Out'
@@ -3009,8 +3060,8 @@ function cbAdd(){
   const amt = parseFloat(document.getElementById('cb-amount').value);
   const date = document.getElementById('cb-date').value;
   const desc = document.getElementById('cb-desc').value.trim();
-  if(!amt||amt<=0){ alert('Amount daalo!'); return; }
-  if(!date){ alert('Date select karo!'); return; }
+  if(!amt||amt<=0){ alert('Please enter an amount!'); return; }
+  if(!date){ alert('Please select a date!'); return; }
   cashEntries.unshift({ id:Date.now(), type, amount:amt, date, desc });
   cbSave();
   document.getElementById('cb-amount').value='';
@@ -3019,7 +3070,7 @@ function cbAdd(){
 }
 
 function cbDelete(id){
-  if(!confirm('Delete karein?')) return;
+  if(!confirm('Delete this entry?')) return;
   cashEntries = cashEntries.filter(e=>e.id!==id);
   cbSave(); cbRender(); cbStats();
 }
@@ -3085,7 +3136,7 @@ function cbRender(){
 }
 
 function cbExport(){
-  if(!cashEntries.length){alert('Koi data nahi!');return;}
+  if(!cashEntries.length){alert('No data available!');return;}
   let csv='Date,Type,Direction,Description,Amount
 ';
   cashEntries.forEach(e=>{ csv+=e.date+',"'+(CB_LABELS[e.type]||e.type)+'","'+(cbIsIn(e.type)?'In':'Out')+'","'+(e.desc||'')+'",'+e.amount+'
@@ -3126,7 +3177,7 @@ function supAdd(){
   const name=document.getElementById('sup-name').value.trim();
   const phone=document.getElementById('sup-phone').value.trim();
   const city=document.getElementById('sup-city').value.trim();
-  if(!name){alert('Supplier naam daalo!');return;}
+  if(!name){alert('Please enter supplier name!');return;}
   suppliers.push({id:Date.now(), name, phone, city, added:new Date().toISOString().slice(0,10)});
   supSave();
   document.getElementById('sup-name').value='';
@@ -3136,7 +3187,7 @@ function supAdd(){
 }
 
 function supDelete(id){
-  if(!confirm('Supplier delete karein? Saari transactions bhi jayengi.')) return;
+  if(!confirm('Delete supplier? All transactions will also be removed.')) return;
   suppliers=suppliers.filter(s=>s.id!==id);
   supTxns=supTxns.filter(t=>t.supId!==id);
   supSave(); supTxnSave();
@@ -3149,8 +3200,8 @@ function supOpenDetail(id){
   const s=suppliers.find(x=>x.id===id);
   if(!s) return;
   document.getElementById('sup-txn-panel').style.display='block';
-  document.getElementById('sup-txn-title').textContent=s.name+' — Transaction Add';
-  document.getElementById('sup-hist-title').textContent=s.name+' — History';
+  document.getElementById('sup-txn-title').textContent=s.name+' — Add Transaction';
+  document.getElementById('sup-hist-title').textContent=s.name+' — Transaction History';
   const dateEl=document.getElementById('sup-txn-date');
   if(dateEl&&!dateEl.value){ const d=new Date(); dateEl.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
   supTxnRender(id);
@@ -3159,13 +3210,13 @@ function supOpenDetail(id){
 }
 
 function supTxnAdd(){
-  if(!openSupId){alert('Pehle supplier select karo');return;}
+  if(!openSupId){alert('Please select a supplier first');return;}
   const type=document.getElementById('sup-txn-type').value;
   const amt=parseFloat(document.getElementById('sup-txn-amt').value);
   const date=document.getElementById('sup-txn-date').value;
   const note=document.getElementById('sup-txn-note').value.trim();
-  if(!amt||amt<=0){alert('Amount daalo!');return;}
-  if(!date){alert('Date select karo!');return;}
+  if(!amt||amt<=0){alert('Please enter an amount!');return;}
+  if(!date){alert('Please select a date!');return;}
   supTxns.push({id:Date.now(), supId:openSupId, type, amount:amt, date, note});
   supTxnSave();
   document.getElementById('sup-txn-amt').value='';
@@ -3175,7 +3226,7 @@ function supTxnAdd(){
 }
 
 function supTxnDelete(id){
-  if(!confirm('Delete karein?')) return;
+  if(!confirm('Delete this entry?')) return;
   supTxns=supTxns.filter(t=>t.id!==id);
   supTxnSave();
   if(openSupId) supTxnRender(openSupId);
@@ -3187,7 +3238,7 @@ function supTxnRender(id){
   const empty=document.getElementById('sup-txn-empty');
   if(!tbody) return;
   const list=supTxns.filter(t=>t.supId===id).sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
-  const TXN_LABELS={stock_taken:'Stock Liya (Udhaar)',we_paid:'Humne Diye (Payment)',they_gave:'Unhone Diye (Credit)',return_stock:'Stock Wapas'};
+  const TXN_LABELS={stock_taken:'Stock Taken (Credit)',we_paid:'We Paid',they_gave:'Supplier Credit',return_stock:'Stock Returned'};
   const TXN_COLORS={stock_taken:'var(--r)',we_paid:'var(--gd)',they_gave:'var(--b)',return_stock:'var(--a)'};
   tbody.innerHTML='';
   if(!list.length){empty.style.display='block';return;}
