@@ -3091,10 +3091,8 @@ async function custDeleteConfirm(){
   if(!cust) return;
   const hasSales = stock.some(m=>m.status==='sold' && m.customer?.phone===phone);
   const msg = hasSales
-    ? cust.name+' 's record will be deleted.
-
-⚠️ This customer has '+stock.filter(m=>m.status==='sold'&&m.customer?.phone===phone).length+' sale(s) — they will also be affected.'
-    : cust.name+' will be deleted. Are you sure?';
+    ? cust.name+' ka record delete hoga.\n\n⚠️ Is customer ki '+stock.filter(m=>m.status==='sold'&&m.customer?.phone===phone).length+' sale(s) bhi affect hongi.'
+    : cust.name+' delete hoga. Sure?';
   if(!confirm(msg)) return;
   customers = customers.filter(x=>x.phone!==phone);
   if(cust.id && !String(cust.id).startsWith('local_')){
@@ -3215,10 +3213,8 @@ function cbRender(){
 
 function cbExport(){
   if(!cashEntries.length){alert('No data available!');return;}
-  let csv='Date,Type,Direction,Description,Amount
-';
-  cashEntries.forEach(e=>{ csv+=e.date+',"'+(CB_LABELS[e.type]||e.type)+'","'+(cbIsIn(e.type)?'In':'Out')+'","'+(e.desc||'')+'",'+e.amount+'
-'; });
+  let csv='Date,Type,Direction,Description,Amount\n';
+  cashEntries.forEach(e=>{ csv+=e.date+',"'+(CB_LABELS[e.type]||e.type)+'","'+(cbIsIn(e.type)?'In':'Out')+'","'+(e.desc||'')+'",'+e.amount+'\n'; });
   const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
   a.download='cashbook_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
 }
