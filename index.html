@@ -451,6 +451,14 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><path d="M6 14h4M14 14h4"/></svg>
     Expenses
   </button>
+  <button class="ntab" onclick="showTab('cashbook',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+    Cash Book
+  </button>
+  <button class="ntab" onclick="showTab('suppliers',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+    Suppliers
+  </button>
 </nav>
 
 <div class="main">
@@ -695,14 +703,64 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
       </div>
       <button class="cdp-close" onclick="closeCustDetail()">✕ Close</button>
     </div>
-    <div class="cdp-stats">
-      <div class="cdp-stat"><div class="cdp-stat-val" id="cdp-devices">0</div><div class="cdp-stat-lbl">Devices Bought</div></div>
+    <div class="cdp-stats" style="grid-template-columns:repeat(5,1fr)">
+      <div class="cdp-stat"><div class="cdp-stat-val" id="cdp-devices">0</div><div class="cdp-stat-lbl">Devices</div></div>
       <div class="cdp-stat"><div class="cdp-stat-val" style="color:var(--gd)" id="cdp-paid">Rs.0</div><div class="cdp-stat-lbl">Total Paid</div></div>
       <div class="cdp-stat"><div class="cdp-stat-val" style="color:var(--r)" id="cdp-balance">Rs.0</div><div class="cdp-stat-lbl">Outstanding</div></div>
-      <div class="cdp-stat"><div class="cdp-stat-val" style="color:var(--gold-dark)" id="cdp-total-sale">Rs.0</div><div class="cdp-stat-lbl">Total Business</div></div>
+      <div class="cdp-stat"><div class="cdp-stat-val" style="color:var(--gold-dark)" id="cdp-total-sale">Rs.0</div><div class="cdp-stat-lbl">Business</div></div>
+      <div class="cdp-stat"><div class="cdp-stat-val" style="color:var(--a)" id="cdp-advance-bal">Rs.0</div><div class="cdp-stat-lbl">Advance/Loan</div></div>
     </div>
     <div class="cdp-body">
-      <div class="section-label">Purchase History & Payments</div>
+
+      <!-- Edit / Delete buttons -->
+      <div style="display:flex;gap:8px;margin-bottom:1.25rem">
+        <button class="btn btn-ghost" onclick="custEditOpen()" style="flex:1;font-size:12px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit Customer
+        </button>
+        <button class="btn btn-r" onclick="custDeleteConfirm()" style="flex:1;font-size:12px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+          Delete Customer
+        </button>
+      </div>
+
+      <!-- Edit Form (hidden) -->
+      <div id="cdp-edit-form" style="display:none;background:var(--sur2);border:1px solid var(--bor);border-radius:var(--rad-s);padding:1rem;margin-bottom:1.25rem">
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--txt)">Customer Edit Karo</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="fg"><label>Name</label><input type="text" id="cdp-edit-name" placeholder="Customer name"></div>
+          <div class="fg"><label>Phone</label><input type="text" id="cdp-edit-phone" placeholder="Phone number"></div>
+          <div class="fg"><label>CNIC</label><input type="text" id="cdp-edit-cnic" placeholder="CNIC (optional)"></div>
+          <div class="fg"><label>Address</label><input type="text" id="cdp-edit-address" placeholder="Address (optional)"></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn btn-gold" onclick="custEditSave()" style="flex:1;font-size:12px">Save Changes</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('cdp-edit-form').style.display='none'" style="font-size:12px;padding:8px 16px">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Advance / Loan Section -->
+      <div style="margin-bottom:1.25rem">
+        <div class="section-label" style="margin-bottom:10px">Advance / Loan (Customer ne liya ya diya)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;margin-bottom:10px;align-items:end">
+          <div class="fg" style="margin:0">
+            <label>Type</label>
+            <select id="adv-type" style="width:100%;padding:9px 10px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur)">
+              <option value="gave">Humne Diya (Advance Out)</option>
+              <option value="received">Humne Liya (Customer ka Extra)</option>
+              <option value="returned">Customer ne Wapas Diya</option>
+            </select>
+          </div>
+          <div class="fg" style="margin:0">
+            <label>Amount (Rs.)</label>
+            <input type="number" id="adv-amount" placeholder="0" min="0">
+          </div>
+          <button class="btn btn-gold" onclick="advAdd()" style="padding:9px 14px;white-space:nowrap">+ Add</button>
+        </div>
+        <div id="cdp-adv-list"></div>
+      </div>
+
+      <div class="section-label" style="margin-bottom:12px">Purchase History & Payments</div>
       <div id="cdp-history"></div>
     </div>
   </div>
@@ -1017,6 +1075,158 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
     </div>
   </div>
 </div>
+
+<!-- ══ CASH BOOK ══════════════════════════════════════════ -->
+<div id="cashbook" class="sec">
+  <div class="page-title">Cash Book</div>
+  <div class="page-sub">Roz ka cash in/out — din ke end pe pata chale kitna cash hai</div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:1.25rem 0">
+    <div class="scard"><div class="scard-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div><div class="slbl">Total Cash In</div><div class="sval g" id="cb-in-total">Rs. 0</div></div>
+    <div class="scard"><div class="scard-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg></div><div class="slbl">Total Cash Out</div><div class="sval r" id="cb-out-total">Rs. 0</div></div>
+    <div class="scard"><div class="scard-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div class="slbl">Net Balance</div><div class="sval gold" id="cb-net-total">Rs. 0</div></div>
+    <div class="scard"><div class="scard-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="slbl">Aaj ka Net</div><div class="sval b" id="cb-today-net">Rs. 0</div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:1.25rem">
+    <div class="card-hd"><div class="card-hd-accent"></div>Entry Add Karo</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="fg">
+        <label>Type <span class="req">*</span></label>
+        <select id="cb-type">
+          <optgroup label="Cash In (Aaya)">
+            <option value="sale_cash">Phone Sale Cash</option>
+            <option value="cust_payment">Customer Due Payment</option>
+            <option value="loan_return">Loan Wapas Aaya</option>
+            <option value="other_in">Other Cash In</option>
+          </optgroup>
+          <optgroup label="Cash Out (Gaya)">
+            <option value="stock_buy">Stock Purchase</option>
+            <option value="expense_out">Shop Expense</option>
+            <option value="partner_draw">Partner Withdrawal</option>
+            <option value="loan_out">Customer Ko Loan</option>
+            <option value="supplier_pay">Supplier Payment</option>
+            <option value="other_out">Other Cash Out</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Amount (Rs.) <span class="req">*</span></label>
+        <input type="number" id="cb-amount" placeholder="0" min="0">
+      </div>
+      <div class="fg">
+        <label>Date <span class="req">*</span></label>
+        <input type="date" id="cb-date">
+      </div>
+      <div class="fg">
+        <label>Description</label>
+        <input type="text" id="cb-desc" placeholder="Details (optional)">
+      </div>
+    </div>
+    <button class="btn btn-gold" onclick="cbAdd()" style="margin-top:14px;width:100%">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Entry
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="card-hd" style="margin-bottom:12px"><div class="card-hd-accent"></div>Cash Ledger</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+      <select id="cb-f-dir" onchange="cbRender()" style="flex:1;min-width:120px;padding:8px 10px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:12px;background:var(--sur);color:var(--txt)">
+        <option value="">All Entries</option>
+        <option value="in">Cash In Only</option>
+        <option value="out">Cash Out Only</option>
+      </select>
+      <select id="cb-f-month" onchange="cbRender()" style="flex:1;min-width:120px;padding:8px 10px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:12px;background:var(--sur);color:var(--txt)">
+        <option value="">All Months</option>
+      </select>
+      <button onclick="cbExport()" class="btn btn-ghost" style="padding:8px 14px;font-size:12px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export
+      </button>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Cash In</th><th>Cash Out</th><th>Action</th></tr></thead>
+        <tbody id="cb-tbody"></tbody>
+      </table>
+    </div>
+    <div id="cb-empty" style="text-align:center;padding:2rem;color:var(--txt3);font-size:13px;display:none">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.4;margin-bottom:8px"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      <div>Koi entry nahi</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SUPPLIERS ══════════════════════════════════════════ -->
+<div id="suppliers" class="sec">
+  <div class="page-title">Supplier Ledger</div>
+  <div class="page-sub">Jin se phone aate hain unka hisaab — dena/lena sab yahan</div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:1.25rem 0">
+    <div class="scard"><div class="scard-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="slbl">Total Suppliers</div><div class="sval" id="sup-count">0</div></div>
+    <div class="scard"><div class="scard-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div class="slbl">Humara Dena (Total)</div><div class="sval r" id="sup-we-owe">Rs. 0</div></div>
+    <div class="scard"><div class="scard-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg></div><div class="slbl">Unka Dena (Total)</div><div class="sval g" id="sup-they-owe">Rs. 0</div></div>
+  </div>
+
+  <!-- Add Supplier -->
+  <div class="card" style="margin-bottom:1.25rem">
+    <div class="card-hd"><div class="card-hd-accent"></div>Naya Supplier Add Karo</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+      <div class="fg"><label>Supplier Name <span class="req">*</span></label><input type="text" id="sup-name" placeholder="e.g. Ali Dubai, Karachi Mart"></div>
+      <div class="fg"><label>Phone</label><input type="text" id="sup-phone" placeholder="03xx-xxxxxxx"></div>
+      <div class="fg"><label>City / Source</label><input type="text" id="sup-city" placeholder="Dubai, Karachi..."></div>
+    </div>
+    <button class="btn btn-gold" onclick="supAdd()" style="margin-top:14px">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Supplier
+    </button>
+  </div>
+
+  <!-- Supplier Cards -->
+  <div id="sup-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:1.25rem"></div>
+  <div id="sup-empty" style="text-align:center;padding:3rem;color:var(--txt3);font-size:13px;display:none">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="opacity:0.3;margin-bottom:10px"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+    <div>Koi supplier nahi — upar add karo</div>
+  </div>
+
+  <!-- Transaction Panel (hidden until supplier selected) -->
+  <div id="sup-txn-panel" style="display:none">
+    <div class="card" style="margin-bottom:1.25rem">
+      <div class="card-hd"><div class="card-hd-accent"></div><span id="sup-txn-title">Transaction Add Karo</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="fg">
+          <label>Type <span class="req">*</span></label>
+          <select id="sup-txn-type">
+            <option value="we_paid">Humne Unhe Diya (We Paid)</option>
+            <option value="they_gave">Unhone Humhe Diya (Credit)</option>
+            <option value="stock_taken">Stock Liya (Udhaar)</option>
+            <option value="return_stock">Stock Wapas Kiya</option>
+          </select>
+        </div>
+        <div class="fg"><label>Amount (Rs.) <span class="req">*</span></label><input type="number" id="sup-txn-amt" placeholder="0" min="0"></div>
+        <div class="fg"><label>Date <span class="req">*</span></label><input type="date" id="sup-txn-date"></div>
+        <div class="fg"><label>Note</label><input type="text" id="sup-txn-note" placeholder="e.g. 5 phones ka payment"></div>
+      </div>
+      <button class="btn btn-gold" onclick="supTxnAdd()" style="margin-top:14px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Transaction
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="card-hd" style="margin-bottom:12px"><div class="card-hd-accent"></div><span id="sup-hist-title">Transaction History</span></div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Date</th><th>Type</th><th>Note</th><th>Amount</th><th>Action</th></tr></thead>
+          <tbody id="sup-txn-tbody"></tbody>
+        </table>
+      </div>
+      <div id="sup-txn-empty" style="text-align:center;padding:1.5rem;color:var(--txt3);font-size:13px;display:none">Koi transaction nahi</div>
+    </div>
+  </div>
+</div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.18.6/umd/index.min.js"></script>
@@ -1349,6 +1559,17 @@ function openCustDetail(phone) {
   document.getElementById('cdp-paid').textContent = 'Rs. ' + st.totalPaid.toLocaleString();
   document.getElementById('cdp-balance').textContent = st.totalBalance > 0 ? 'Rs. ' + st.totalBalance.toLocaleString() : '✅ PAID';
   document.getElementById('cdp-total-sale').textContent = 'Rs. ' + st.totalSale.toLocaleString();
+  // Advance/loan stat
+  const advBal = advBalance(phone);
+  const advEl = document.getElementById('cdp-advance-bal');
+  if(advEl) advEl.textContent = advBal !== 0 ? (advBal > 0 ? 'Rs.'+Math.abs(advBal).toLocaleString()+' (dena)' : 'Rs.'+Math.abs(advBal).toLocaleString()+' (lena)') : '—';
+  // Edit form prefill
+  const nameEl=document.getElementById('cdp-edit-name'); if(nameEl) nameEl.value=c.name||'';
+  const phoneEl=document.getElementById('cdp-edit-phone'); if(phoneEl) phoneEl.value=c.phone||'';
+  const cnicEl=document.getElementById('cdp-edit-cnic'); if(cnicEl) cnicEl.value=c.cnic||'';
+  const addrEl=document.getElementById('cdp-edit-address'); if(addrEl) addrEl.value=c.address||'';
+  // Advance list
+  advRender(phone);
 
   // Chips
   let chips = '';
@@ -2646,6 +2867,394 @@ showTab = function(t, el){
 };
 // ═══════════════════════════════════════════════
 // END EXPENSES MODULE
+// ═══════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════
+// CUSTOMER ADVANCE / LOAN MODULE
+// ═══════════════════════════════════════════════
+const ADV_KEY = 'zpmobile_advances_v1';
+let advances = JSON.parse(localStorage.getItem(ADV_KEY) || '[]');
+function advSave(){ localStorage.setItem(ADV_KEY, JSON.stringify(advances)); }
+
+// Returns net balance: positive = humara dena (we owe customer), negative = customer ka dena
+function advBalance(phone){
+  return advances.filter(a=>a.phone===phone).reduce((s,a)=>{
+    if(a.type==='gave') return s + a.amount;       // humne diya = customer ka credit
+    if(a.type==='received') return s - a.amount;   // customer ka extra humara pass = we owe
+    if(a.type==='returned') return s - a.amount;   // wapas aaya = reduces what we gave
+    return s;
+  },0);
+}
+
+function advAdd(){
+  const phone = openCustDetailPhone;
+  if(!phone) return;
+  const type = document.getElementById('adv-type').value;
+  const amt = parseFloat(document.getElementById('adv-amount').value);
+  if(!amt || amt<=0){ alert('Amount daalo!'); return; }
+  const d = new Date();
+  const date = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  advances.push({ id: Date.now(), phone, type, amount: amt, date });
+  advSave();
+  document.getElementById('adv-amount').value='';
+  advRender(phone);
+  // update stat
+  const advBal = advBalance(phone);
+  const advEl = document.getElementById('cdp-advance-bal');
+  if(advEl) advEl.textContent = advBal !== 0 ? (advBal > 0 ? 'Rs.'+Math.abs(advBal).toLocaleString()+' (dena)' : 'Rs.'+Math.abs(advBal).toLocaleString()+' (lena)') : '—';
+}
+
+function advDelete(id){
+  if(!confirm('Delete karein?')) return;
+  const phone = advances.find(a=>a.id===id)?.phone;
+  advances = advances.filter(a=>a.id!==id);
+  advSave();
+  if(phone){ advRender(phone); }
+}
+
+function advRender(phone){
+  const el = document.getElementById('cdp-adv-list');
+  if(!el) return;
+  const myAdv = advances.filter(a=>a.phone===phone);
+  if(!myAdv.length){
+    el.innerHTML='<div style="font-size:12px;color:var(--txt3);padding:8px 0">Koi advance/loan nahi</div>';
+    return;
+  }
+  const labels = {gave:'Humne Diya',received:'Customer ka Extra (Humara pass)',returned:'Customer ne Wapas Diya'};
+  const colors = {gave:'var(--r)',received:'var(--g)',returned:'var(--b)'};
+  const fmt = n=>'Rs. '+Number(n).toLocaleString();
+  const bal = advBalance(phone);
+  el.innerHTML = '<div style="margin-bottom:10px;padding:10px 14px;background:'+(bal>0?'var(--rl)':bal<0?'var(--gl)':'var(--sur2)')+';border-radius:var(--rad-s);font-size:13px;font-weight:700;color:'+(bal>0?'var(--r)':bal<0?'var(--gd)':'var(--txt2)')+'">'+
+    (bal>0?'⚠️ Humara Dena: '+fmt(Math.abs(bal)):bal<0?'✅ Customer ka Dena: '+fmt(Math.abs(bal)):'✅ Sab Clear')+'</div>'+
+    myAdv.map(a=>'<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--sur2);border:1px solid var(--bor);border-radius:var(--rad-s);margin-bottom:6px;gap:8px">'+
+      '<div><span style="font-size:12px;font-weight:600;color:'+colors[a.type]+'">'+labels[a.type]+'</span><span style="font-size:11px;color:var(--txt3);margin-left:8px">'+a.date+'</span></div>'+
+      '<div style="display:flex;align-items:center;gap:10px"><span style="font-size:13px;font-weight:700">'+fmt(a.amount)+'</span>'+
+      '<button onclick="advDelete('+a.id+')" class="btn btn-r" style="padding:3px 8px;font-size:11px">Del</button></div>'+
+    '</div>').join('');
+}
+
+// ═══════════════════════════════════════════════
+// CUSTOMER EDIT / DELETE
+// ═══════════════════════════════════════════════
+function custEditOpen(){
+  const f = document.getElementById('cdp-edit-form');
+  if(f) f.style.display = f.style.display==='none'?'block':'none';
+}
+
+async function custEditSave(){
+  const phone = openCustDetailPhone;
+  if(!phone) return;
+  const idx = customers.findIndex(x=>x.phone===phone);
+  if(idx<0) return;
+  const name = document.getElementById('cdp-edit-name').value.trim();
+  const newPhone = document.getElementById('cdp-edit-phone').value.trim();
+  const cnic = document.getElementById('cdp-edit-cnic').value.trim();
+  const address = document.getElementById('cdp-edit-address').value.trim();
+  if(!name){ alert('Naam zaroori hai!'); return; }
+  customers[idx] = {...customers[idx], name, phone: newPhone||phone, cnic, address};
+  // Update Supabase if has real id
+  if(customers[idx].id && !String(customers[idx].id).startsWith('local_')){
+    try{
+      await sb.from('customers').update({name, phone: newPhone||phone, cnic, address}).eq('id', customers[idx].id);
+    }catch(e){ console.log('DB update error',e); }
+  }
+  localStorage.setItem(CKEY, JSON.stringify(customers.filter(x=>!x.id?.toString().startsWith('local_'))));
+  document.getElementById('cdp-edit-form').style.display='none';
+  document.getElementById('cdp-name').textContent = name;
+  renderCustomers();
+  alert('Customer updated!');
+}
+
+async function custDeleteConfirm(){
+  const phone = openCustDetailPhone;
+  if(!phone) return;
+  const cust = customers.find(x=>x.phone===phone);
+  if(!cust) return;
+  const hasSales = stock.some(m=>m.status==='sold' && m.customer?.phone===phone);
+  const msg = hasSales
+    ? cust.name+' ka record delete karna chahte ho?
+
+⚠️ Is customer ki '+stock.filter(m=>m.status==='sold'&&m.customer?.phone===phone).length+' sale(s) hain — woh bhi affect hongi.'
+    : cust.name+' ko delete karna chahte ho?';
+  if(!confirm(msg)) return;
+  customers = customers.filter(x=>x.phone!==phone);
+  if(cust.id && !String(cust.id).startsWith('local_')){
+    try{ await sb.from('customers').delete().eq('id', cust.id); }catch(e){}
+  }
+  localStorage.setItem(CKEY, JSON.stringify(customers.filter(x=>!x.id?.toString().startsWith('local_'))));
+  closeCustDetail();
+  renderCustomers();
+}
+
+// ═══════════════════════════════════════════════
+// CASH BOOK MODULE
+// ═══════════════════════════════════════════════
+const CB_KEY = 'zpmobile_cashbook_v1';
+let cashEntries = JSON.parse(localStorage.getItem(CB_KEY) || '[]');
+function cbSave(){ localStorage.setItem(CB_KEY, JSON.stringify(cashEntries)); }
+
+const CB_IN_TYPES = ['sale_cash','cust_payment','loan_return','other_in'];
+const CB_LABELS = {
+  sale_cash:'Phone Sale Cash', cust_payment:'Customer Due Payment',
+  loan_return:'Loan Wapas Aaya', other_in:'Other Cash In',
+  stock_buy:'Stock Purchase', expense_out:'Shop Expense',
+  partner_draw:'Partner Withdrawal', loan_out:'Customer Ko Loan',
+  supplier_pay:'Supplier Payment', other_out:'Other Cash Out'
+};
+
+function cbIsIn(type){ return CB_IN_TYPES.includes(type); }
+
+function cbAdd(){
+  const type = document.getElementById('cb-type').value;
+  const amt = parseFloat(document.getElementById('cb-amount').value);
+  const date = document.getElementById('cb-date').value;
+  const desc = document.getElementById('cb-desc').value.trim();
+  if(!amt||amt<=0){ alert('Amount daalo!'); return; }
+  if(!date){ alert('Date select karo!'); return; }
+  cashEntries.unshift({ id:Date.now(), type, amount:amt, date, desc });
+  cbSave();
+  document.getElementById('cb-amount').value='';
+  document.getElementById('cb-desc').value='';
+  cbRender(); cbStats();
+}
+
+function cbDelete(id){
+  if(!confirm('Delete karein?')) return;
+  cashEntries = cashEntries.filter(e=>e.id!==id);
+  cbSave(); cbRender(); cbStats();
+}
+
+function cbStats(){
+  const fmt = n=>'Rs. '+Number(n).toLocaleString();
+  const today = new Date();
+  const td = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+  let totalIn=0, totalOut=0, todayNet=0;
+  cashEntries.forEach(e=>{
+    if(cbIsIn(e.type)){ totalIn+=e.amount; if(e.date===td) todayNet+=e.amount; }
+    else { totalOut+=e.amount; if(e.date===td) todayNet-=e.amount; }
+  });
+  const s=(id,v)=>{const x=document.getElementById(id);if(x)x.textContent=v;};
+  s('cb-in-total',fmt(totalIn)); s('cb-out-total',fmt(totalOut));
+  s('cb-net-total',fmt(totalIn-totalOut));
+  const tn=document.getElementById('cb-today-net');
+  if(tn){ tn.textContent=fmt(Math.abs(todayNet)); tn.className='sval '+(todayNet>=0?'g':'r'); }
+}
+
+function cbPopMonths(){
+  const sel=document.getElementById('cb-f-month'); if(!sel) return;
+  const months=[...new Set(cashEntries.map(e=>e.date.substring(0,7)))].sort().reverse();
+  const cur=sel.value;
+  sel.innerHTML='<option value="">All Months</option>';
+  const names=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  months.forEach(m=>{const[y,mo]=m.split('-');sel.innerHTML+=`<option value="${m}"${cur===m?' selected':''}>${names[parseInt(mo)-1]} ${y}</option>`;});
+}
+
+function cbRender(){
+  const tbody=document.getElementById('cb-tbody');
+  const empty=document.getElementById('cb-empty');
+  if(!tbody) return;
+  const dir=document.getElementById('cb-f-dir')?.value||'';
+  const month=document.getElementById('cb-f-month')?.value||'';
+  let list=cashEntries;
+  if(dir==='in') list=list.filter(e=>cbIsIn(e.type));
+  else if(dir==='out') list=list.filter(e=>!cbIsIn(e.type));
+  if(month) list=list.filter(e=>e.date.startsWith(month));
+  tbody.innerHTML='';
+  if(!list.length){ empty.style.display='block'; return; }
+  empty.style.display='none';
+  const fmt=n=>'Rs. '+Number(n).toLocaleString();
+  let running=0;
+  const all=cashEntries.filter(e=>!month||e.date.startsWith(month));
+  // Calculate running balance from oldest to newest, then display newest first
+  const sorted=[...all].sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
+  const balMap={};
+  let run=0;
+  sorted.forEach(e=>{ run += cbIsIn(e.type)?e.amount:-e.amount; balMap[e.id]=run; });
+  list.forEach(e=>{
+    const isIn=cbIsIn(e.type);
+    const bal=balMap[e.id]||0;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td style="white-space:nowrap;font-size:12px">${e.date}</td>`+
+      `<td><div style="font-size:12px;font-weight:600">${CB_LABELS[e.type]||e.type}</div><span style="font-size:10px;padding:2px 7px;border-radius:8px;font-weight:700;background:${isIn?'var(--gl)':'var(--rl)'};color:${isIn?'var(--gt)':'var(--rt)'}">${isIn?'Cash In':'Cash Out'}</span></td>`+
+      `<td style="font-size:12px;color:var(--txt2)">${e.desc||'—'}</td>`+
+      `<td style="font-weight:700;color:var(--gd)">${isIn?fmt(e.amount):'—'}</td>`+
+      `<td style="font-weight:700;color:var(--r)">${!isIn?fmt(e.amount):'—'}</td>`+
+      `<td><button onclick="cbDelete(${e.id})" class="btn btn-r" style="padding:4px 10px;font-size:11px">Del</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function cbExport(){
+  if(!cashEntries.length){alert('Koi data nahi!');return;}
+  let csv='Date,Type,Direction,Description,Amount
+';
+  cashEntries.forEach(e=>{ csv+=e.date+',"'+(CB_LABELS[e.type]||e.type)+'","'+(cbIsIn(e.type)?'In':'Out')+'","'+(e.desc||'')+'",'+e.amount+'
+'; });
+  const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='cashbook_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+}
+
+function cbInitTab(){
+  const dateEl=document.getElementById('cb-date');
+  if(dateEl&&!dateEl.value){ const d=new Date(); dateEl.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  cbPopMonths(); cbRender(); cbStats();
+}
+
+// ═══════════════════════════════════════════════
+// SUPPLIER LEDGER MODULE
+// ═══════════════════════════════════════════════
+const SUP_KEY = 'zpmobile_suppliers_v1';
+const SUP_TXN_KEY = 'zpmobile_sup_txn_v1';
+let suppliers = JSON.parse(localStorage.getItem(SUP_KEY) || '[]');
+let supTxns = JSON.parse(localStorage.getItem(SUP_TXN_KEY) || '[]');
+let openSupId = null;
+function supSave(){ localStorage.setItem(SUP_KEY, JSON.stringify(suppliers)); }
+function supTxnSave(){ localStorage.setItem(SUP_TXN_KEY, JSON.stringify(supTxns)); }
+
+// Balance: positive = humara dena (we owe them), negative = unka dena (they owe us)
+function supBalance(id){
+  return supTxns.filter(t=>t.supId===id).reduce((s,t)=>{
+    if(t.type==='stock_taken') return s+t.amount;  // stock liya = humara dena
+    if(t.type==='we_paid') return s-t.amount;       // humne diya = dena kam hua
+    if(t.type==='they_gave') return s-t.amount;     // unhone diya = humara credit
+    if(t.type==='return_stock') return s-t.amount;  // stock wapas = dena kam
+    return s;
+  },0);
+}
+
+function supAdd(){
+  const name=document.getElementById('sup-name').value.trim();
+  const phone=document.getElementById('sup-phone').value.trim();
+  const city=document.getElementById('sup-city').value.trim();
+  if(!name){alert('Supplier naam daalo!');return;}
+  suppliers.push({id:Date.now(), name, phone, city, added:new Date().toISOString().slice(0,10)});
+  supSave();
+  document.getElementById('sup-name').value='';
+  document.getElementById('sup-phone').value='';
+  document.getElementById('sup-city').value='';
+  supRender();
+}
+
+function supDelete(id){
+  if(!confirm('Supplier delete karein? Saari transactions bhi jayengi.')) return;
+  suppliers=suppliers.filter(s=>s.id!==id);
+  supTxns=supTxns.filter(t=>t.supId!==id);
+  supSave(); supTxnSave();
+  if(openSupId===id){ openSupId=null; document.getElementById('sup-txn-panel').style.display='none'; }
+  supRender();
+}
+
+function supOpenDetail(id){
+  openSupId=id;
+  const s=suppliers.find(x=>x.id===id);
+  if(!s) return;
+  document.getElementById('sup-txn-panel').style.display='block';
+  document.getElementById('sup-txn-title').textContent=s.name+' — Transaction Add';
+  document.getElementById('sup-hist-title').textContent=s.name+' — History';
+  const dateEl=document.getElementById('sup-txn-date');
+  if(dateEl&&!dateEl.value){ const d=new Date(); dateEl.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  supTxnRender(id);
+  document.getElementById('sup-txn-panel').scrollIntoView({behavior:'smooth',block:'start'});
+  supRender();
+}
+
+function supTxnAdd(){
+  if(!openSupId){alert('Pehle supplier select karo');return;}
+  const type=document.getElementById('sup-txn-type').value;
+  const amt=parseFloat(document.getElementById('sup-txn-amt').value);
+  const date=document.getElementById('sup-txn-date').value;
+  const note=document.getElementById('sup-txn-note').value.trim();
+  if(!amt||amt<=0){alert('Amount daalo!');return;}
+  if(!date){alert('Date select karo!');return;}
+  supTxns.push({id:Date.now(), supId:openSupId, type, amount:amt, date, note});
+  supTxnSave();
+  document.getElementById('sup-txn-amt').value='';
+  document.getElementById('sup-txn-note').value='';
+  supTxnRender(openSupId);
+  supRender();
+}
+
+function supTxnDelete(id){
+  if(!confirm('Delete karein?')) return;
+  supTxns=supTxns.filter(t=>t.id!==id);
+  supTxnSave();
+  if(openSupId) supTxnRender(openSupId);
+  supRender();
+}
+
+function supTxnRender(id){
+  const tbody=document.getElementById('sup-txn-tbody');
+  const empty=document.getElementById('sup-txn-empty');
+  if(!tbody) return;
+  const list=supTxns.filter(t=>t.supId===id).sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+  const TXN_LABELS={stock_taken:'Stock Liya (Udhaar)',we_paid:'Humne Diye (Payment)',they_gave:'Unhone Diye (Credit)',return_stock:'Stock Wapas'};
+  const TXN_COLORS={stock_taken:'var(--r)',we_paid:'var(--gd)',they_gave:'var(--b)',return_stock:'var(--a)'};
+  tbody.innerHTML='';
+  if(!list.length){empty.style.display='block';return;}
+  empty.style.display='none';
+  const fmt=n=>'Rs. '+Number(n).toLocaleString();
+  list.forEach(t=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td style="font-size:12px;white-space:nowrap">${t.date}</td>`+
+      `<td><span style="font-size:12px;font-weight:600;color:${TXN_COLORS[t.type]||'var(--txt)'}">${TXN_LABELS[t.type]||t.type}</span></td>`+
+      `<td style="font-size:12px;color:var(--txt2)">${t.note||'—'}</td>`+
+      `<td style="font-weight:700">${fmt(t.amount)}</td>`+
+      `<td><button onclick="supTxnDelete(${t.id})" class="btn btn-r" style="padding:4px 10px;font-size:11px">Del</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function supRender(){
+  const grid=document.getElementById('sup-grid');
+  const empty=document.getElementById('sup-empty');
+  if(!grid) return;
+  if(!suppliers.length){empty.style.display='block';grid.innerHTML='';
+    const s=(id,v)=>{const x=document.getElementById(id);if(x)x.textContent=v;};
+    s('sup-count','0');s('sup-we-owe','Rs. 0');s('sup-they-owe','Rs. 0');return;}
+  empty.style.display='none';
+  let totalWeOwe=0, totalTheyOwe=0;
+  suppliers.forEach(s=>{ const b=supBalance(s.id); if(b>0) totalWeOwe+=b; else totalTheyOwe+=Math.abs(b); });
+  const fmt=n=>'Rs. '+Number(n).toLocaleString();
+  const st=(id,v)=>{const x=document.getElementById(id);if(x)x.textContent=v;};
+  st('sup-count',suppliers.length); st('sup-we-owe',fmt(totalWeOwe)); st('sup-they-owe',fmt(totalTheyOwe));
+  grid.innerHTML=suppliers.map(s=>{
+    const bal=supBalance(s.id);
+    const isOpen=openSupId===s.id;
+    return `<div style="background:var(--sur);border:1.5px solid ${isOpen?'var(--gold)':bal>0?'var(--r-border)':bal<0?'var(--g-border)':'var(--bor)'};border-radius:var(--rad);padding:1.1rem;cursor:pointer;transition:all .18s" onclick="supOpenDetail(${s.id})">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div>
+          <div style="font-size:14px;font-weight:800;color:var(--txt)">${s.name}</div>
+          ${s.phone?`<div style="font-size:11px;color:var(--txt3);margin-top:2px">${s.phone}</div>`:''}
+          ${s.city?`<div style="font-size:11px;color:var(--txt3)">${s.city}</div>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          ${bal>0?`<span style="background:var(--rl);color:var(--rt);font-size:10px;padding:3px 9px;border-radius:8px;font-weight:700">Dena: ${fmt(bal)}</span>`:
+            bal<0?`<span style="background:var(--gl);color:var(--gt);font-size:10px;padding:3px 9px;border-radius:8px;font-weight:700">Lena: ${fmt(Math.abs(bal))}</span>`:
+            `<span style="background:var(--sur2);color:var(--txt2);font-size:10px;padding:3px 9px;border-radius:8px;font-weight:700">Clear</span>`}
+          <button onclick="event.stopPropagation();supDelete(${s.id})" style="background:none;border:1px solid var(--r-border);color:var(--r);border-radius:6px;padding:3px 8px;font-size:10px;cursor:pointer">Delete</button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--txt3)">${supTxns.filter(t=>t.supId===s.id).length} transactions · Added ${s.added}</div>
+      <div style="margin-top:8px;font-size:11px;color:var(--txt2);font-weight:600">${isOpen?'▼ Selected':'Click to view transactions'}</div>
+    </div>`;
+  }).join('');
+}
+
+function supInitTab(){
+  supRender();
+  const dateEl=document.getElementById('sup-txn-date');
+  if(dateEl&&!dateEl.value){ const d=new Date(); dateEl.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+}
+
+// Hook all tabs into showTab
+var _allOrigShowTab = showTab;
+showTab = function(t, el){
+  _allOrigShowTab(t, el);
+  if(t==='cashbook') cbInitTab();
+  if(t==='suppliers') supInitTab();
+};
+// ═══════════════════════════════════════════════
+// END ALL MODULES
 // ═══════════════════════════════════════════════
 
 </script>
