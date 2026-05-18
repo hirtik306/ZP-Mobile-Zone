@@ -1515,9 +1515,8 @@ async function deleteStockItem(imei) {
 
 async function saveCustItem(c) {
   setSyncing('syncing');
-  if (!c.id) c.id = Date.now() + Math.floor(Math.random() * 1000);
-  const savedKey = await idb.put('customers', c);
-  if (!c.id) c.id = savedKey;
+  if (!c.id) c.id = Date.now() + Math.floor(Math.random() * 9999);
+  await idb.put('customers', c);
   const idx = customers.findIndex(x => x.id === c.id || x.phone === c.phone);
   if (idx >= 0) customers[idx] = c; else customers.unshift(c);
   await idb.put('syncQueue', { table: 'customers', action: 'upsert', data: c });
@@ -1590,6 +1589,7 @@ async function loadAllData() {
       if (typeof renderOrders === 'function') renderOrders();
     }
     updateStats();
+    if (typeof supPopulateDropdowns === 'function') supPopulateDropdowns();
     setSyncing('synced');
     // Also push any pending local changes
     syncToSupabase();
@@ -1982,7 +1982,7 @@ async function addToStock() {
 }
 
 // ═══ CUSTOMERS ═══
-function genCustId() { return Date.now() + Math.floor(Math.random() * 1000); }
+function genCustId() { return Date.now() + Math.floor(Math.random() * 9999); }
 
 async function addNewCustomer() {
   const name = document.getElementById('nc-name').value.trim();
