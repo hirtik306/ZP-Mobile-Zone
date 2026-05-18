@@ -2702,41 +2702,6 @@ function renderBills() {
 }
 
 // ═══ AUTH — handled by PIN system above ═══
-
-
-
-// ══════════════════════════════════════════════════
-// PWA INSTALL PROMPT
-// ══════════════════════════════════════════════════
-let deferredInstallPrompt = null;
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredInstallPrompt = e;
-  const btn = document.getElementById('install-btn');
-  if (btn) btn.style.display = 'flex';
-});
-window.addEventListener('appinstalled', () => {
-  const btn = document.getElementById('install-btn');
-  if (btn) btn.style.display = 'none';
-  deferredInstallPrompt = null;
-});
-function installApp() {
-  if (deferredInstallPrompt) {
-    deferredInstallPrompt.prompt();
-    deferredInstallPrompt.userChoice.then(() => { deferredInstallPrompt = null; });
-  } else {
-    alert('Install karne ke liye:\n\n📱 Android (Chrome): 3 dots menu → "Add to Home Screen"\n💻 Laptop (Chrome): Address bar mein install icon click karein\n\nYeh app 100% offline kaam karta hai — koi internet ki zaroorat nahi!');
-  }
-}
-// Register Service Worker
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js')
-      .then(r => console.log('[SW] Ready'))
-      .catch(e => console.log('[SW] Skipped:', e.message));
-  });
-}
 </script>
 
 <!-- ══ MULTI BILL ══════════════════════════════════════════ -->
