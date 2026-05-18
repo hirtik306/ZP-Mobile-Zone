@@ -1515,9 +1515,10 @@ async function deleteStockItem(imei) {
 
 async function saveCustItem(c) {
   setSyncing('syncing');
-  if (!c.id) c.id = Date.now();
-  await idb.put('customers', c);
-  const idx = customers.findIndex(x => x.id === c.id);
+  if (!c.id) c.id = Date.now() + Math.floor(Math.random() * 1000);
+  const savedKey = await idb.put('customers', c);
+  if (!c.id) c.id = savedKey;
+  const idx = customers.findIndex(x => x.id === c.id || x.phone === c.phone);
   if (idx >= 0) customers[idx] = c; else customers.unshift(c);
   await idb.put('syncQueue', { table: 'customers', action: 'upsert', data: c });
   if (isOnline) syncToSupabase();
@@ -1981,7 +1982,7 @@ async function addToStock() {
 }
 
 // ═══ CUSTOMERS ═══
-function genCustId() { return 'c_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5); }
+function genCustId() { return Date.now() + Math.floor(Math.random() * 1000); }
 
 async function addNewCustomer() {
   const name = document.getElementById('nc-name').value.trim();
@@ -1992,8 +1993,7 @@ async function addNewCustomer() {
   const exists = customers.find(c => c.phone === phone);
   if (exists) { alert('A customer with this phone number already exists:\n' + exists.name); return; }
   try {
-    const saved = await saveCustItem({ name, phone, cnic, address, addedDate: new Date().toLocaleDateString('en-GB') });
-    customers.unshift(saved);
+    await saveCustItem({ name, phone, cnic, address, addedDate: new Date().toLocaleDateString('en-GB') });
   } catch(e) { alert('Error saving: ' + e.message); return; }
   document.getElementById('nc-name').value = '';
   document.getElementById('nc-phone').value = '';
@@ -2008,7 +2008,7 @@ async function ensureCustomer(name, phone, cnic) {
   let c = customers.find(x => x.phone === phone);
   if (!c) {
     c = { id: genCustId(), name, phone, cnic: cnic || '', address: '', addedDate: new Date().toLocaleDateString('en-GB') };
-    try { const saved = await saveCustItem(c); c = saved; customers.unshift(saved); } catch(e) { console.error(e); }
+    try { c = await saveCustItem(c); } catch(e) { console.error(e); }
   }
   return c;
 }
