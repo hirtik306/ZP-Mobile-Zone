@@ -1730,6 +1730,7 @@ async function showApp() {
   setDateDisplay();
   if (typeof buildColorPicker === 'function') buildColorPicker('');
   await loadAllData();
+  if (typeof supPopulateDropdowns === 'function') supPopulateDropdowns();
   subscribeOrders();
 }
 
@@ -1972,9 +1973,7 @@ async function addToStock() {
     customer: null, sellPrice: null, sellDate: null, sellMonth: null, sellYear: null,
     paymentType: 'full', paidAmount: null, balance: null, dueDate: null, payments: [] };
   try {
-    const saved = await saveStockItem(newItem);
-    newItem._id = saved.id;
-    stock.unshift(newItem);
+    await saveStockItem(newItem);
     updateStats();
     alert(`✓ ${model} (${variant} · ${color} · ${storage}) added to stock!\nIMEI: ${imei}`);
     clearForm();
@@ -2299,6 +2298,10 @@ async function completeSell() {
   const pbBtn = document.getElementById('print-bill-sell-btn');
   if (pbBtn) pbBtn.style.display = 'flex';
   alert(msg + '\n\nInvoice is ready — click "Print Invoice" to print!');
+  // Clear sell form for next sale (preserve lastBillImei for print)
+  const savedBillImei = lastBillImei;
+  clearSell();
+  lastBillImei = savedBillImei;
 }
 
 function clearSell() {
@@ -3857,6 +3860,7 @@ showTab = function(t, el){
   _allOrigShowTab(t, el);
   if(t==='cashbook') cbInitTab();
   if(t==='suppliers') supInitTab();
+  if(t==='purchase') supPopulateDropdowns();
 };
 // ═══════════════════════════════════════════════
 // END ALL MODULES
