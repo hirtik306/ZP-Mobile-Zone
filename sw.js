@@ -1,7 +1,7 @@
-// ZP Mobile Zone - Service Worker v1.0
-// Offline support: caches app shell and handles offline queue
+// ZP Mobile Zone - Service Worker v4.0
+// Force refresh — clears all old caches
 
-const CACHE_NAME = 'zp-mobile-zone-v1';
+const CACHE_NAME = 'zp-mobile-zone-v4';
 const OFFLINE_QUEUE_KEY = 'zp_offline_queue';
 
 // Files to cache for offline use
