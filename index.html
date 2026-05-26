@@ -1569,10 +1569,9 @@ async function loadAllData() {
   // Step 2: Freshen from Supabase in background
   setSyncing('syncing');
   try {
-    const [{ data: sd }, { data: cd }, { data: od }] = await Promise.all([
+    const [{ data: sd }, { data: cd }] = await Promise.all([
       sb.from('stock').select('*').order('created_at', { ascending: false }),
       sb.from('customers').select('*').order('created_at', { ascending: false }),
-      sb.from('orders').select('*').order('created_at', { ascending: false })
     ]);
     if (sd) {
       stock = sd.map(dbToStock);
@@ -1584,12 +1583,17 @@ async function loadAllData() {
       await idb.clear('customers');
       for (const c of customers) await idb.put('customers', c);
     }
-    if (od) {
-      orders = od;
-      await idb.clear('orders');
-      for (const o of orders) await idb.put('orders', { ...o, id: o.id });
-      if (typeof renderOrders === 'function') renderOrders();
-    }
+    // ── ORDERS: MongoDB (Render API) se fetch karo ──
+    try {
+      const ordRes = await fetch('https://zp-backend-v0i2.onrender.com/api/orders');
+      if (ordRes.ok) {
+        const od = await ordRes.json();
+        orders = od;
+        await idb.clear('orders');
+        for (const o of orders) await idb.put('orders', { ...o, id: o._id });
+        if (typeof renderOrders === 'function') renderOrders();
+      }
+    } catch(oe) { console.log('[Orders] MongoDB fetch error:', oe); }
     updateStats();
     if (typeof supPopulateDropdowns === 'function') supPopulateDropdowns();
     setSyncing('synced');
@@ -1601,19 +1605,27 @@ async function loadAllData() {
   }
 }
 
-// ═══ ORDERS — listen for new website orders ═══
-let orderChannel = null;
+// ═══ ORDERS — MongoDB (Render API) se poll karo har 20 sec ═══
+let orderPollInterval = null;
+let lastOrderCount = 0;
 function subscribeOrders() {
-  if (!isOnline || orderChannel) return;
-  orderChannel = sb.channel('orders-realtime')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, async payload => {
-      const order = payload.new;
-      orders.unshift(order);
-      await idb.put('orders', { ...order });
+  if (!isOnline || orderPollInterval) return;
+  orderPollInterval = setInterval(async () => {
+    try {
+      const res = await fetch('https://zp-backend-v0i2.onrender.com/api/orders');
+      if (!res.ok) return;
+      const newOrders = await res.json();
+      if (newOrders.length > lastOrderCount && lastOrderCount > 0) {
+        const added = newOrders.slice(0, newOrders.length - lastOrderCount);
+        added.forEach(order => showOrderNotification(order));
+      }
+      lastOrderCount = newOrders.length;
+      orders = newOrders;
+      await idb.clear('orders');
+      for (const o of orders) await idb.put('orders', { ...o, id: o._id });
       if (typeof renderOrders === 'function') renderOrders();
-      showOrderNotification(order);
-    })
-    .subscribe();
+    } catch(e) { console.log('[Orders Poll] Error:', e); }
+  }, 20000);
 }
 
 function showOrderNotification(order) {
@@ -1756,7 +1768,7 @@ async function doLogout() {
   document.getElementById('pin-title').textContent = 'Welcome Back 👋';
   document.getElementById('pin-sub').textContent = '4-digit PIN daalen';
   document.getElementById('pin-err').classList.remove('show');
-  if (orderChannel) { sb.removeChannel(orderChannel); orderChannel = null; }
+  if (orderPollInterval) { clearInterval(orderPollInterval); orderPollInterval = null; }
 }
 
 async function changePin() {
@@ -1917,7 +1929,7 @@ async function updateOrderStatus(id, status) {
   if (idx < 0) return;
   orders[idx].status = status;
   await idb.put('orders', orders[idx]);
-  if (isOnline) { try { await sb.from('orders').update({ status }).eq('id', orders[idx].id); } catch(e){} }
+  if (isOnline) { try { await fetch(`https://zp-backend-v0i2.onrender.com/api/orders/${orders[idx]._id||orders[idx].id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status}) }); } catch(e){} }
   renderOrders();
 }
 
