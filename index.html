@@ -1825,11 +1825,11 @@ function renderOrders() {
   const tot = document.getElementById('ord-total'); if(tot) tot.textContent = orders.length;
   const nw = document.getElementById('ord-new'); if(nw) nw.textContent = newOrders.length;
   const dn = document.getElementById('ord-done'); if(dn) dn.textContent = orders.filter(o=>o.status==='done').length;
-  if (!orders.length) { tbody.innerHTML = '<tr><td colspan="9" class="empty"><div class="empty-icon">📭</div>Abhi koi order nahi — website se order aayenge yahan</td></tr>'; return; }
+  if (!orders.length) { tbody.innerHTML = '<tr><td colspan="9" class="empty"><div class="empty-icon">📭</div>No orders yet — orders from the website will appear here</td></tr>'; return; }
   tbody.innerHTML = orders.map(o => {
     const items = Array.isArray(o.items) ? o.items : (typeof o.items === 'string' ? JSON.parse(o.items||'[]') : []);
     const itemsStr = items.length ? items.map(i => `${i.emoji||'📱'} ${i.name} ${i.storage||''}`).join('<br>') : (o.model || '—');
-    const pmtLabel = {full:'Cash',instalment:'Instalment',bank:'Bank Transfer',easypaisa:'EasyPaisa/JazzCash'}[o.payment_method] || o.payment_method || '—';
+    const pmtLabel = {full:'Cash',cash:'Cash on Delivery',instalment:'Instalment',bank:'UBL Bank Transfer',easypaisa:'EasyPaisa',jazzcash:'JazzCash'}[o.payment_method] || o.payment_method || '—';
     const oid = o.id || o.qid;
     return `<tr onclick="showOrderDetail('${oid}')" style="cursor:pointer">
       <td style="font-size:11px;color:var(--gold2);font-family:'IBM Plex Mono',monospace;font-weight:700">${o.qid||'—'}</td>
@@ -1854,7 +1854,7 @@ function showOrderDetail(id) {
   const o = orders.find(x => x.id == id || x.qid == id);
   if (!o) return;
   const items = Array.isArray(o.items) ? o.items : (typeof o.items === 'string' ? JSON.parse(o.items||'[]') : []);
-  const pmtLabel = {full:'Full Cash Payment',instalment:'Instalment Plan',bank:'Bank Transfer',easypaisa:'EasyPaisa / JazzCash'}[o.payment_method] || o.payment_method || '—';
+  const pmtLabel = {full:'Full Cash Payment',cash:'Cash on Delivery',instalment:'Instalment Plan',bank:'UBL Bank Transfer',easypaisa:'EasyPaisa',jazzcash:'JazzCash'}[o.payment_method] || o.payment_method || '—';
   const existing = document.getElementById('order-detail-modal');
   if (existing) existing.remove();
   const modal = document.createElement('div');
@@ -1892,8 +1892,11 @@ function showOrderDetail(id) {
             <div><span style="font-size:20px;margin-right:8px">${i.emoji||'📱'}</span><span style="font-weight:600">${i.name}</span> <span style="color:var(--txt3);font-size:12px">${i.storage||''}</span></div>
             <div style="font-weight:700;color:var(--gold2)">Rs. ${(i.price||0).toLocaleString()}</div>
           </div>`).join('') : `<div style="color:var(--txt3)">${o.model||'—'}</div>`}
-        <div style="display:flex;justify-content:space-between;padding-top:12px;font-weight:800;font-size:16px">
-          <span>Total</span><span style="color:var(--gold2)">Rs. ${(o.total||o.total_amount||0).toLocaleString()}</span>
+        ${o.shipping ? `<div style="display:flex;justify-content:space-between;padding-top:8px;font-size:13px;color:#e8c547">
+          <span>🚚 Shipping</span><span>Rs. ${(o.shipping||0).toLocaleString()}</span>
+        </div>` : ''}
+        <div style="display:flex;justify-content:space-between;padding-top:8px;font-weight:800;font-size:16px;border-top:1px solid rgba(255,255,255,0.07);margin-top:4px">
+          <span>Grand Total</span><span style="color:var(--gold2)">Rs. ${(o.total||o.total_amount||0).toLocaleString()}</span>
         </div>
       </div>
 
@@ -1905,11 +1908,10 @@ function showOrderDetail(id) {
 
       ${o.slip_url ? `
       <div style="background:var(--dark3);border-radius:10px;padding:14px;margin-bottom:12px">
-        <div style="font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Payment Slip</div>
-        <a href="${o.slip_url}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:rgba(201,162,39,0.1);border:1px solid rgba(201,162,39,0.3);padding:8px 14px;border-radius:8px;color:var(--gold2);text-decoration:none;font-size:13px;font-weight:600">
-          🧾 Slip Dekhein
-        </a>
-      </div>` : ''}
+        <div style="font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">✅ Payment Screenshot Received</div>
+        <img src="${o.slip_url}" style="width:100%;border-radius:8px;border:1px solid rgba(201,162,39,0.3);cursor:pointer;max-height:220px;object-fit:cover" onclick="window.open('${o.slip_url}','_blank')" title="Click to view full size">
+        <div style="font-size:11px;color:var(--txt3);margin-top:6px;text-align:center">Tap image to view full size</div>
+      </div>` : '<div style=\"background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:12px;margin-bottom:12px;font-size:12.5px;color:#fca5a5\">⚠️ No payment screenshot uploaded yet</div>'}
 
       <div style="display:flex;gap:10px;margin-top:16px">
         <a href="https://wa.me/92${(o.customer_phone||'').replace(/^0/,'').replace(/\D/g,'')}" target="_blank" style="flex:1;background:#22c55e;color:#fff;border:none;border-radius:8px;padding:12px;text-align:center;font-weight:700;font-size:13px;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px">
