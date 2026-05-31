@@ -1511,19 +1511,15 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.18.6/umd/index.min.js"></script>
 <script>
 // ════════════════════════════════════════════════════════════════
-// ZP MOBILE ZONE — HYBRID ENGINE v4.0
-// Primary: IndexedDB (always works, instant, offline)
-// Secondary: Supabase (background sync when internet available)
+// ZP MOBILE ZONE — MONGODB ENGINE v5.0
+// Primary: IndexedDB (instant, offline)
+// Secondary: MongoDB via Render API (permanent cloud storage)
 // ════════════════════════════════════════════════════════════════
 
-// ═══ SUPABASE CONFIG ═══
-const SB_URL = 'https://pnfqwaejdkycckplkvfh.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBuZnF3YWVqZGt5Y2NrcGxrdmZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNTk5ODAsImV4cCI6MjA5MzgzNTk4MH0.S32fvgVWsYkTD2bYFCUyjPgoD4zrs0Owkmr71tnk2f0';
-const sb = supabase.createClient(SB_URL, SB_KEY);
+const BACKEND = 'https://zp-backend-v0i2.onrender.com';
 
 // ═══ INDEXEDDB SETUP ═══
 const DB_NAME = 'ZPMobileZone';
@@ -1594,12 +1590,24 @@ function setSyncing(s) {
 }
 
 // ═══ ONLINE / OFFLINE detection ═══
-window.addEventListener('online',  () => { isOnline = true;  setSyncing('syncing'); syncToSupabase(); });
+window.addEventListener('online',  () => { isOnline = true;  setSyncing('syncing'); syncQueueToMongo(); });
 window.addEventListener('offline', () => { isOnline = false; setSyncing('offline'); });
+
+// ═══ MONGO API HELPER ═══
+async function api(method, path, body) {
+  const res = await fetch(BACKEND + path, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: body ? JSON.stringify(body) : undefined,
+    signal: AbortSignal.timeout(10000)
+  });
+  return res.json();
+}
 
 // ═══ DB FIELD MAPPERS ═══
 function dbToStock(r) {
-  return { _id: r.id, imei: r.imei, model: r.model, variant: r.variant, supplier: r.supplier,
+  return { _id: r._id || r.id, _mongoId: r._id,
+    imei: r.imei, model: r.model, variant: r.variant, supplier: r.supplier,
     storage: r.storage, color: r.color, buyPrice: r.buy_price, status: r.status,
     addedDate: r.added_date, addedMonth: r.added_month, addedYear: r.added_year,
     customer: r.customer, sellPrice: r.sell_price, sellDate: r.sell_date,
@@ -1607,7 +1615,7 @@ function dbToStock(r) {
     paidAmount: r.paid_amount, balance: r.balance, dueDate: r.due_date, payments: r.payments || [] };
 }
 function stockToDb(m) {
-  return { user_id: 'local-owner', imei: m.imei, model: m.model, variant: m.variant,
+  return { imei: m.imei, model: m.model, variant: m.variant,
     supplier: m.supplier, storage: m.storage, color: m.color, buy_price: m.buyPrice,
     status: m.status, added_date: m.addedDate, added_month: m.addedMonth, added_year: m.addedYear,
     customer: m.customer, sell_price: m.sellPrice, sell_date: m.sellDate,
@@ -1615,21 +1623,79 @@ function stockToDb(m) {
     paid_amount: m.paidAmount, balance: m.balance, due_date: m.dueDate, payments: m.payments };
 }
 
-// ═══ CORE SAVE — IndexedDB first, Supabase background ═══
+// ═══ SYNC QUEUE — local changes jab offline hon ═══
+let syncRunning = false;
+async function syncQueueToMongo() {
+  if (syncRunning || !isOnline) return;
+  syncRunning = true;
+  try {
+    const queue = await idb.getAll('syncQueue');
+    for (const entry of queue) {
+      try {
+        if (entry.table === 'stock') {
+          if (entry.action === 'upsert') {
+            const existing = stock.find(x => x.imei === entry.data.imei);
+            if (existing && existing._mongoId) {
+              await api('PATCH', '/api/stock/' + existing._mongoId, entry.data);
+            } else {
+              const res = await api('POST', '/api/stock', entry.data);
+              if (res.success && res.item) {
+                const idx = stock.findIndex(x => x.imei === entry.data.imei);
+                if (idx >= 0) { stock[idx]._mongoId = res.item._id; stock[idx]._id = res.item._id; }
+              }
+            }
+          } else if (entry.action === 'delete') {
+            if (entry.mongoId) await api('DELETE', '/api/stock/' + entry.mongoId);
+          }
+        } else if (entry.table === 'customers') {
+          const existing = customers.find(x => x.phone === entry.data.phone && x._mongoId);
+          if (existing) {
+            await api('PATCH', '/api/customers/' + existing._mongoId, entry.data);
+          } else {
+            const res = await api('POST', '/api/customers', entry.data);
+            if (res.success && res.customer) {
+              const idx = customers.findIndex(x => x.phone === entry.data.phone);
+              if (idx >= 0) customers[idx]._mongoId = res.customer._id;
+            }
+          }
+        }
+        await idb.del('syncQueue', entry.qid);
+      } catch(e) { break; }
+    }
+    setSyncing('synced');
+  } finally { syncRunning = false; }
+}
+
+// ═══ CORE SAVE — IndexedDB first, MongoDB background ═══
 async function saveStockItem(item) {
   setSyncing('syncing');
-  // 1. Save to IndexedDB immediately (works offline)
   const savedId = await idb.put('stock', item);
   if (!item._id) item._id = savedId;
-  // Update in-memory array
   const idx = stock.findIndex(x => x._id === item._id || x.imei === item.imei);
   if (idx >= 0) stock[idx] = item; else stock.unshift(item);
-  setSyncing(isOnline ? 'syncing' : 'offline');
-  // 2. Queue for Supabase sync
-  await idb.put('syncQueue', { table: 'stock', action: 'upsert', data: stockToDb(item), localId: item._id });
-  // 3. Try Supabase now if online
-  if (isOnline) syncToSupabase();
-  else setSyncing('offline');
+
+  if (isOnline) {
+    try {
+      if (item._mongoId) {
+        await api('PATCH', '/api/stock/' + item._mongoId, stockToDb(item));
+      } else {
+        const res = await api('POST', '/api/stock', stockToDb(item));
+        if (res.success && res.item) {
+          item._mongoId = res.item._id;
+          await idb.put('stock', item);
+          const i2 = stock.findIndex(x => x.imei === item.imei);
+          if (i2 >= 0) stock[i2]._mongoId = res.item._id;
+        }
+      }
+      setSyncing('synced');
+    } catch(e) {
+      await idb.put('syncQueue', { table: 'stock', action: 'upsert', data: stockToDb(item) });
+      setSyncing('offline');
+    }
+  } else {
+    await idb.put('syncQueue', { table: 'stock', action: 'upsert', data: stockToDb(item) });
+    setSyncing('offline');
+  }
   return item;
 }
 
@@ -1637,10 +1703,12 @@ async function deleteStockItem(imei) {
   const item = stock.find(x => x.imei === imei);
   if (!item) return;
   await idb.del('stock', item._id);
-  if (isOnline && item._sbId) {
-    try { await sb.from('stock').delete().eq('id', item._sbId); } catch(e){}
-  }
   stock = stock.filter(x => x.imei !== imei);
+  if (isOnline && item._mongoId) {
+    try { await api('DELETE', '/api/stock/' + item._mongoId); } catch(e){}
+  } else if (item._mongoId) {
+    await idb.put('syncQueue', { table: 'stock', action: 'delete', mongoId: item._mongoId });
+  }
 }
 
 async function saveCustItem(c) {
@@ -1649,38 +1717,33 @@ async function saveCustItem(c) {
   await idb.put('customers', c);
   const idx = customers.findIndex(x => x.id === c.id || x.phone === c.phone);
   if (idx >= 0) customers[idx] = c; else customers.unshift(c);
-  await idb.put('syncQueue', { table: 'customers', action: 'upsert', data: c });
-  if (isOnline) syncToSupabase();
-  else setSyncing('offline');
+
+  if (isOnline) {
+    try {
+      if (c._mongoId) {
+        await api('PATCH', '/api/customers/' + c._mongoId, c);
+      } else {
+        const res = await api('POST', '/api/customers', c);
+        if (res.success && res.customer) {
+          c._mongoId = res.customer._id;
+          await idb.put('customers', c);
+        }
+      }
+      setSyncing('synced');
+    } catch(e) {
+      await idb.put('syncQueue', { table: 'customers', action: 'upsert', data: c });
+      setSyncing('offline');
+    }
+  } else {
+    await idb.put('syncQueue', { table: 'customers', action: 'upsert', data: c });
+    setSyncing('offline');
+  }
   return c;
 }
 
-// ═══ SYNC QUEUE — push local changes to Supabase ═══
-let syncRunning = false;
-async function syncToSupabase() {
-  if (syncRunning || !isOnline) return;
-  syncRunning = true;
-  try {
-    const queue = await idb.getAll('syncQueue');
-    for (const entry of queue) {
-      try {
-        if (entry.table === 'stock') {
-          const { error } = await sb.from('stock').upsert(entry.data, { onConflict: 'imei' });
-          if (!error) await idb.del('syncQueue', entry.qid);
-        } else if (entry.table === 'customers') {
-          const dbC = { user_id: 'local-owner', name: entry.data.name, phone: entry.data.phone, cnic: entry.data.cnic||'', address: entry.data.address||'', added_date: entry.data.addedDate||'' };
-          const { error } = await sb.from('customers').upsert(dbC, { onConflict: 'phone' });
-          if (!error) await idb.del('syncQueue', entry.qid);
-        }
-      } catch(e) { break; } // network error, stop and retry later
-    }
-    setSyncing('synced');
-  } finally { syncRunning = false; }
-}
-
-// ═══ LOAD DATA — IndexedDB first, then Supabase freshen ═══
+// ═══ LOAD DATA — IndexedDB first, then MongoDB freshen ═══
 async function loadAllData() {
-  // Step 1: Load from IndexedDB instantly (works offline always)
+  // Step 1: Load from IndexedDB instantly
   const [localStock, localCust, localOrders] = await Promise.all([
     idb.getAll('stock'), idb.getAll('customers'), idb.getAll('orders')
   ]);
@@ -1694,55 +1757,92 @@ async function loadAllData() {
 
   if (!isOnline) { setSyncing('offline'); return; }
 
-  // Step 2: Freshen from Supabase in background
+  // Step 2: Freshen from MongoDB
   setSyncing('syncing');
   try {
-    const [{ data: sd }, { data: cd }] = await Promise.all([
-      sb.from('stock').select('*').order('created_at', { ascending: false }),
-      sb.from('customers').select('*').order('created_at', { ascending: false }),
+    const [stockRes, custRes, ordRes] = await Promise.all([
+      api('GET', '/api/stock'),
+      api('GET', '/api/customers'),
+      api('GET', '/api/orders'),
     ]);
-    if (sd) {
-      stock = sd.map(dbToStock);
+
+    if (Array.isArray(stockRes)) {
+      stock = stockRes.map(r => dbToStock(r));
       await idb.clear('stock');
       for (const item of stock) await idb.put('stock', item);
     }
-    if (cd) {
-      customers = cd;
+    if (Array.isArray(custRes)) {
+      customers = custRes.map(c => ({ ...c, _mongoId: c._id, id: c._id }));
       await idb.clear('customers');
       for (const c of customers) await idb.put('customers', c);
     }
-    // ── ORDERS: MongoDB (Render API) se fetch karo ──
-    try {
-      const ordRes = await fetch('https://zp-backend-v0i2.onrender.com/api/orders');
-      if (ordRes.ok) {
-        const od = await ordRes.json();
-        orders = od;
-        await idb.clear('orders');
-        for (const o of orders) await idb.put('orders', { ...o, id: o._id });
-        if (typeof renderOrders === 'function') renderOrders();
-      }
-    } catch(oe) { console.log('[Orders] MongoDB fetch error:', oe); }
+    if (Array.isArray(ordRes)) {
+      orders = ordRes;
+      await idb.clear('orders');
+      for (const o of orders) await idb.put('orders', { ...o, id: o._id });
+      if (typeof renderOrders === 'function') renderOrders();
+    }
+
+    // Also load expenses, advances, bills, cashbook, suppliers from MongoDB
+    await loadPersistedData();
+
     updateStats();
     if (typeof supPopulateDropdowns === 'function') supPopulateDropdowns();
     setSyncing('synced');
-    // Also push any pending local changes
-    syncToSupabase();
+    syncQueueToMongo();
   } catch(e) {
     setSyncing('offline');
-    console.log('[Sync] Supabase unreachable, using local data');
+    console.log('[Sync] MongoDB unreachable, using local data');
   }
 }
 
-// ═══ ORDERS — MongoDB (Render API) se poll karo har 20 sec ═══
+// ═══ LOAD PERSISTED DATA (expenses, advances, bills, cashbook, suppliers) ═══
+async function loadPersistedData() {
+  if (!isOnline) return;
+  try {
+    const [expRes, advRes, billsRes, cbRes, supRes, supTxnRes] = await Promise.all([
+      api('GET', '/api/expenses'),
+      api('GET', '/api/advances'),
+      api('GET', '/api/bills'),
+      api('GET', '/api/cashbook'),
+      api('GET', '/api/suppliers'),
+      api('GET', '/api/sup-txns'),
+    ]);
+    if (Array.isArray(expRes) && expRes.length > 0) {
+      expenses = expRes.map(e => ({ ...e, id: e._id }));
+    }
+    if (Array.isArray(advRes) && advRes.length > 0) {
+      advances = advRes.map(a => ({ ...a, id: a._id }));
+      localStorage.setItem('zpmobile_advances_v1', JSON.stringify(advances));
+    }
+    if (Array.isArray(billsRes) && billsRes.length > 0) {
+      bills = billsRes.map(b => ({ ...b.data, _mongoId: b._id, bill_id: b.bill_id }));
+      localStorage.setItem('zpmobile_bills_v1', JSON.stringify(bills));
+    }
+    if (Array.isArray(cbRes) && cbRes.length > 0) {
+      cashEntries = cbRes.map(c => ({ ...c, id: c._id }));
+      localStorage.setItem('zpmobile_cashbook_v1', JSON.stringify(cashEntries));
+    }
+    if (Array.isArray(supRes) && supRes.length > 0) {
+      suppliers = supRes.map(s => ({ ...s, id: s._id || s.sup_id }));
+      localStorage.setItem('zpmobile_suppliers_v1', JSON.stringify(suppliers));
+    }
+    if (Array.isArray(supTxnRes) && supTxnRes.length > 0) {
+      supTxns = supTxnRes.map(t => ({ ...t, id: t._id || t.txn_id }));
+      localStorage.setItem('zpmobile_sup_txn_v1', JSON.stringify(supTxns));
+    }
+  } catch(e) { console.log('[loadPersistedData] error:', e); }
+}
+
+// ═══ ORDERS — MongoDB poll har 20 sec ═══
 let orderPollInterval = null;
 let lastOrderCount = 0;
 function subscribeOrders() {
   if (!isOnline || orderPollInterval) return;
   orderPollInterval = setInterval(async () => {
     try {
-      const res = await fetch('https://zp-backend-v0i2.onrender.com/api/orders');
-      if (!res.ok) return;
-      const newOrders = await res.json();
+      const newOrders = await api('GET', '/api/orders');
+      if (!Array.isArray(newOrders)) return;
       if (newOrders.length > lastOrderCount && lastOrderCount > 0) {
         const added = newOrders.slice(0, newOrders.length - lastOrderCount);
         added.forEach(order => showOrderNotification(order));
@@ -1752,320 +1852,8 @@ function subscribeOrders() {
       await idb.clear('orders');
       for (const o of orders) await idb.put('orders', { ...o, id: o._id });
       if (typeof renderOrders === 'function') renderOrders();
-    } catch(e) { console.log('[Orders Poll] Error:', e); }
+    } catch(e) {}
   }, 20000);
-}
-
-function showOrderNotification(order) {
-  const existing = document.getElementById('order-notif');
-  if (existing) existing.remove();
-  const el = document.createElement('div');
-  el.id = 'order-notif';
-  el.style.cssText = 'position:fixed;top:20px;right:20px;z-index:99999;background:linear-gradient(135deg,#1a1200,#2a1f00);border:1.5px solid #c9a227;border-radius:14px;padding:16px 20px;min-width:280px;box-shadow:0 8px 32px rgba(0,0,0,0.5);animation:slideIn .3s ease';
-  el.innerHTML = `
-    <div style="display:flex;align-items:flex-start;gap:12px">
-      <div style="font-size:22px">🛍️</div>
-      <div style="flex:1">
-        <div style="font-size:13px;font-weight:800;color:#e8c547;margin-bottom:4px">Naya Website Order!</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.8);font-weight:600">${order.customer_name}</div>
-        <div style="font-size:11.5px;color:rgba(255,255,255,0.5)">${order.phone} • ${order.model || 'Inquiry'}</div>
-      </div>
-      <button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:18px;line-height:1">×</button>
-    </div>
-    <button onclick="switchTab('orders');document.getElementById('order-notif').remove()" style="width:100%;margin-top:10px;background:rgba(201,162,39,0.15);border:1px solid rgba(201,162,39,0.3);border-radius:8px;padding:8px;color:#e8c547;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">View Order →</button>`;
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), 8000);
-}
-
-// ═══ OLD COMPAT STUBS ═══
-function save() {}
-function saveCust() {}
-function switchMode() {}
-function sendResetEmail() {}
-function doResetPassword() {}
-function doSignup() {}
-function doLogin() {}
-
-// ═══ PIN AUTH SYSTEM ═══
-let pinBuffer = '', pinMode = 'login', pinFirst = '';
-
-async function initAuth() {
-  await openDB();
-  const savedPin = await idb.setting('pin');
-  const shopName = await idb.setting('shopName') || 'ZP Mobile Zone';
-  document.querySelectorAll('.login-brand').forEach(el => el.textContent = shopName);
-  if (!savedPin) {
-    pinMode = 'setup';
-    document.getElementById('pin-title').textContent = 'Setup PIN 🔐';
-    document.getElementById('pin-sub').textContent = 'Apna 4-digit PIN banayein';
-    document.getElementById('pin-setup-extra').style.display = 'block';
-  }
-  document.getElementById('load-overlay').classList.add('hidden');
-  document.getElementById('login-screen').classList.remove('hidden');
-  document.addEventListener('keydown', e => {
-    if (document.getElementById('login-screen').classList.contains('hidden')) return;
-    if (e.key >= '0' && e.key <= '9') pinPress(e.key);
-    else if (e.key === 'Backspace') pinPress('del');
-    else if (e.key === 'Escape') pinPress('clr');
-  });
-}
-
-function pinPress(key) {
-  document.getElementById('pin-err').classList.remove('show');
-  if (key === 'clr') { pinBuffer = ''; updatePinDots(); return; }
-  if (key === 'del') { pinBuffer = pinBuffer.slice(0,-1); updatePinDots(); return; }
-  if (pinBuffer.length >= 4) return;
-  pinBuffer += key;
-  updatePinDots();
-  if (pinBuffer.length === 4) setTimeout(() => handlePin(pinBuffer), 120);
-}
-
-function updatePinDots() {
-  for (let i = 0; i < 4; i++) {
-    const d = document.getElementById('pd' + i);
-    if (d) d.classList.toggle('filled', i < pinBuffer.length);
-  }
-}
-
-async function handlePin(pin) {
-  const errEl = document.getElementById('pin-err');
-  if (pinMode === 'login') {
-    const saved = await idb.setting('pin');
-    if (pin === saved) {
-      await showApp();
-    } else {
-      errEl.textContent = '❌ Galat PIN — dobara try karein';
-      errEl.classList.add('show');
-      pinBuffer = ''; updatePinDots();
-      document.querySelectorAll('.pin-dot').forEach(d => {
-        d.classList.add('shake'); setTimeout(() => d.classList.remove('shake'), 500);
-      });
-    }
-  } else if (pinMode === 'setup') {
-    pinFirst = pin; pinMode = 'confirm'; pinBuffer = ''; updatePinDots();
-    document.getElementById('pin-title').textContent = 'Confirm PIN ✅';
-    document.getElementById('pin-sub').textContent = 'Dobara wahi PIN daalen';
-    document.getElementById('pin-setup-extra').style.display = 'none';
-  } else if (pinMode === 'confirm') {
-    if (pin === pinFirst) {
-      const shopName = document.getElementById('shop-name-input')?.value.trim() || 'ZP Mobile Zone';
-      await idb.setting('pin', pin);
-      await idb.setting('shopName', shopName);
-      await showApp();
-    } else {
-      errEl.textContent = '❌ PIN match nahi hua — phir se try karein';
-      errEl.classList.add('show');
-      pinBuffer = ''; pinFirst = ''; pinMode = 'setup'; updatePinDots();
-      document.getElementById('pin-title').textContent = 'Setup PIN 🔐';
-      document.getElementById('pin-sub').textContent = 'Apna 4-digit PIN banayein';
-      document.getElementById('pin-setup-extra').style.display = 'block';
-    }
-  }
-}
-
-async function showApp() {
-  document.getElementById('load-overlay').classList.add('hidden');
-  document.getElementById('login-screen').classList.add('hidden');
-  document.getElementById('app-wrap').style.display = 'block';
-  const shopName = await idb.setting('shopName') || 'ZP Mobile Zone';
-  const el = document.getElementById('uemail'); if (el) el.textContent = shopName;
-  const ud = document.getElementById('udot'); if (ud) ud.textContent = 'ZP';
-  setDateDisplay();
-  if (typeof buildColorPicker === 'function') buildColorPicker('');
-  await loadAllData();
-  if (typeof supPopulateDropdowns === 'function') supPopulateDropdowns();
-  subscribeOrders();
-}
-
-function setDateDisplay() {
-  const d = new Date();
-  const mn = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const el = document.getElementById('topdate');
-  if (el) el.textContent = days[d.getDay()] + ', ' + d.getDate() + ' ' + mn[d.getMonth()] + ' ' + d.getFullYear();
-  const ry = document.getElementById('r-year');
-  if (ry) ry.querySelectorAll('option').forEach(o => { if (o.value == d.getFullYear()) o.selected = true; });
-}
-
-async function doLogout() {
-  if (!confirm('Logout karna chahte hain?')) return;
-  document.getElementById('app-wrap').style.display = 'none';
-  document.getElementById('login-screen').classList.remove('hidden');
-  pinBuffer = ''; pinMode = 'login'; pinFirst = '';
-  updatePinDots();
-  document.getElementById('pin-title').textContent = 'Welcome Back 👋';
-  document.getElementById('pin-sub').textContent = '4-digit PIN daalen';
-  document.getElementById('pin-err').classList.remove('show');
-  if (orderPollInterval) { clearInterval(orderPollInterval); orderPollInterval = null; }
-}
-
-async function changePin() {
-  const cur = prompt('Pehle purana PIN daalen:');
-  const saved = await idb.setting('pin');
-  if (cur !== saved) { alert('Galat PIN!'); return; }
-  const n1 = prompt('Naya 4-digit PIN:');
-  if (!n1 || n1.length !== 4 || isNaN(n1)) { alert('4 digits ka PIN chahiye!'); return; }
-  const n2 = prompt('Confirm naya PIN:');
-  if (n1 !== n2) { alert('PIN match nahi hua!'); return; }
-  await idb.setting('pin', n1);
-  alert('✅ PIN change ho gaya!');
-}
-
-async function deleteDevice(imei) {
-  const m = stock.find(x => x.imei === imei);
-  if (!m) return;
-  if (!confirm(`Permanently delete?\n\nModel: ${m.model} ${m.storage||''}\nIMEI: ${m.imei}\n\nYeh undo nahi hoga.`)) return;
-  await deleteStockItem(imei);
-  renderStock();
-  typeof renderPending === 'function' && renderPending();
-  updateStats();
-}
-
-async function returnToStock(imei) {
-  const m = stock.find(x => x.imei === imei);
-  if (!m) return;
-  if (!confirm(`Return to stock?\n\nModel: ${m.model} ${m.storage||''}\nIMEI: ${m.imei}\n\nSale data remove ho jayega.`)) return;
-  const updated = {...m, status:'available', customer:null, sellPrice:null, paidAmount:null, balance:null, paymentType:'full', sellDate:null, sellMonth:null, sellYear:null, dueDate:null, payments:[]};
-  await saveStockItem(updated);
-  renderStock();
-  typeof renderPending === 'function' && renderPending();
-  alert(`✅ ${m.model} wapas stock mein aa gaya.`);
-}
-
-// PWA Install
-let deferredInstallPrompt = null;
-window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstallPrompt = e; const b = document.getElementById('install-btn'); if(b) b.style.display='flex'; });
-window.addEventListener('appinstalled', () => { deferredInstallPrompt = null; const b = document.getElementById('install-btn'); if(b) b.style.display='none'; });
-function installApp() {
-  if (deferredInstallPrompt) { deferredInstallPrompt.prompt(); deferredInstallPrompt.userChoice.then(() => { deferredInstallPrompt = null; }); }
-  else alert('📱 Android: 3 dots → "Add to Home Screen"\n💻 Laptop: Address bar mein install icon\n\n100% offline kaam karta hai!');
-}
-if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{})); }
-
-// ═══ ORDERS TAB RENDERER ═══
-function renderOrders() {
-  const tbody = document.getElementById('orders-body');
-  if (!tbody) return;
-  const badge = document.getElementById('orders-badge');
-  const newOrders = orders.filter(o => o.status === 'new' || o.status === 'pending');
-  if (badge) { badge.textContent = newOrders.length; badge.style.display = newOrders.length ? 'inline-flex' : 'none'; }
-  // update stats
-  const tot = document.getElementById('ord-total'); if(tot) tot.textContent = orders.length;
-  const nw = document.getElementById('ord-new'); if(nw) nw.textContent = newOrders.length;
-  const dn = document.getElementById('ord-done'); if(dn) dn.textContent = orders.filter(o=>o.status==='done').length;
-  if (!orders.length) { tbody.innerHTML = '<tr><td colspan="9" class="empty"><div class="empty-icon">📭</div>Abhi koi order nahi — website se order aayenge yahan</td></tr>'; return; }
-  tbody.innerHTML = orders.map(o => {
-    const items = Array.isArray(o.items) ? o.items : (typeof o.items === 'string' ? JSON.parse(o.items||'[]') : []);
-    const itemsStr = items.length ? items.map(i => `${i.emoji||'📱'} ${i.name} ${i.storage||''}`).join('<br>') : (o.model || '—');
-    const pmtLabel = {full:'Cash',instalment:'Instalment',bank:'Bank Transfer',easypaisa:'EasyPaisa/JazzCash'}[o.payment_method] || o.payment_method || '—';
-    const oid = o.id || o.qid;
-    return `<tr onclick="showOrderDetail('${oid}')" style="cursor:pointer">
-      <td style="font-size:11px;color:var(--gold2);font-family:'IBM Plex Mono',monospace;font-weight:700">${o.qid||'—'}</td>
-      <td style="font-size:11px;color:var(--txt3);font-family:'IBM Plex Mono',monospace">${new Date(o.created_at||Date.now()).toLocaleDateString('en-GB')}</td>
-      <td style="font-weight:700">${o.customer_name||'—'}</td>
-      <td><a href="tel:${o.customer_phone||''}" style="color:var(--gold2);font-family:'IBM Plex Mono',monospace;font-size:12px;text-decoration:none" onclick="event.stopPropagation()">${o.customer_phone||o.phone||'—'}</a></td>
-      <td style="font-size:12px;line-height:1.6">${itemsStr}</td>
-      <td style="font-weight:700;color:var(--gold2)">Rs. ${(o.total||o.total_amount||0).toLocaleString()}</td>
-      <td style="font-size:12px;color:var(--txt2)">${pmtLabel}</td>
-      <td><span class="badge ${o.status==='done'?'bg-g':o.status==='cancelled'?'bg-r':'bg-a'}">${o.status==='done'?'Done':o.status==='cancelled'?'Cancelled':'New'}</span></td>
-      <td>
-        <div style="display:flex;gap:6px" onclick="event.stopPropagation()">
-          ${o.status!=='done'?`<button class="btn btn-gold" style="font-size:11px;padding:5px 10px" onclick="updateOrderStatus('${oid}','done')">✓ Done</button>`:''}
-          ${o.status!=='cancelled'?`<button class="btn" style="font-size:11px;padding:5px 10px;background:var(--rl);color:var(--rt);border:1px solid var(--r-border)" onclick="updateOrderStatus('${oid}','cancelled')">✗</button>`:''}
-        </div>
-      </td>
-    </tr>`;
-  }).join('');
-}
-
-function showOrderDetail(id) {
-  const o = orders.find(x => x.id == id || x.qid == id);
-  if (!o) return;
-  const items = Array.isArray(o.items) ? o.items : (typeof o.items === 'string' ? JSON.parse(o.items||'[]') : []);
-  const pmtLabel = {full:'Full Cash Payment',instalment:'Instalment Plan',bank:'Bank Transfer',easypaisa:'EasyPaisa / JazzCash'}[o.payment_method] || o.payment_method || '—';
-  const existing = document.getElementById('order-detail-modal');
-  if (existing) existing.remove();
-  const modal = document.createElement('div');
-  modal.id = 'order-detail-modal';
-  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
-  modal.innerHTML = `
-    <div style="background:var(--dark2);border:1px solid var(--bor);border-radius:16px;width:100%;max-width:480px;padding:28px;position:relative;max-height:90vh;overflow-y:auto">
-      <button onclick="document.getElementById('order-detail-modal').remove()" style="position:absolute;top:16px;right:16px;background:var(--dark3);border:1px solid var(--bor2);border-radius:6px;color:var(--txt2);width:32px;height:32px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center">×</button>
-      <div style="font-size:11px;color:var(--gold2);font-family:'IBM Plex Mono',monospace;margin-bottom:4px">${o.qid||''}</div>
-      <div style="font-size:18px;font-weight:800;margin-bottom:20px">Order Details</div>
-      
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
-        <div style="background:var(--dark3);border-radius:10px;padding:14px">
-          <div style="font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Customer</div>
-          <div style="font-weight:700;font-size:15px">${o.customer_name||'—'}</div>
-        </div>
-        <div style="background:var(--dark3);border-radius:10px;padding:14px">
-          <div style="font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Phone</div>
-          <a href="tel:${o.customer_phone||''}" style="font-weight:700;font-size:15px;color:var(--gold2);text-decoration:none">${o.customer_phone||o.phone||'—'}</a>
-        </div>
-        <div style="background:var(--dark3);border-radius:10px;padding:14px">
-          <div style="font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">City / Address</div>
-          <div style="font-weight:600">${o.customer_address||o.city||'—'}</div>
-        </div>
-        <div style="background:var(--dark3);border-radius:10px;padding:14px">
-          <div style="font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Date</div>
-          <div style="font-weight:600">${new Date(o.created_at||Date.now()).toLocaleDateString('en-GB')}</div>
-        </div>
-      </div>
-
-      <div style="background:var(--dark3);border-radius:10px;padding:16px;margin-bottom:12px">
-        <div style="font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Items Ordered</div>
-        ${items.length ? items.map(i => `
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bor2)">
-            <div><span style="font-size:20px;margin-right:8px">${i.emoji||'📱'}</span><span style="font-weight:600">${i.name}</span> <span style="color:var(--txt3);font-size:12px">${i.storage||''}</span></div>
-            <div style="font-weight:700;color:var(--gold2)">Rs. ${(i.price||0).toLocaleString()}</div>
-          </div>`).join('') : `<div style="color:var(--txt3)">${o.model||'—'}</div>`}
-        <div style="display:flex;justify-content:space-between;padding-top:12px;font-weight:800;font-size:16px">
-          <span>Total</span><span style="color:var(--gold2)">Rs. ${(o.total||o.total_amount||0).toLocaleString()}</span>
-        </div>
-      </div>
-
-      <div style="background:var(--dark3);border-radius:10px;padding:14px;margin-bottom:12px">
-        <div style="font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Payment</div>
-        <div style="font-weight:600">${pmtLabel}</div>
-        ${o.notes ? `<div style="margin-top:8px;font-size:13px;color:var(--txt2)">📝 ${o.notes}</div>` : ''}
-      </div>
-
-      ${o.slip_url ? `
-      <div style="background:var(--dark3);border-radius:10px;padding:14px;margin-bottom:12px">
-        <div style="font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">✅ Payment Screenshot</div>
-        ${o.slip_url.startsWith('data:image') ? `<img src="${o.slip_url}" alt="Payment Screenshot" style="width:100%;max-width:400px;border-radius:8px;border:1px solid rgba(201,162,39,0.3);cursor:pointer;display:block" onclick="window.open('${o.slip_url}','_blank')">
-        <div style="font-size:11px;color:var(--txt3);margin-top:6px">Tap image to view full size</div>` : `<a href="${o.slip_url}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:rgba(201,162,39,0.1);border:1px solid rgba(201,162,39,0.3);padding:8px 14px;border-radius:8px;color:var(--gold2);text-decoration:none;font-size:13px;font-weight:600">🧾 Slip Dekhein</a>`}
-      </div>` : ''}
-
-      <div style="display:flex;gap:10px;margin-top:16px">
-        <a href="https://wa.me/92${(o.customer_phone||'').replace(/^0/,'').replace(/\D/g,'')}" target="_blank" style="flex:1;background:#22c55e;color:#fff;border:none;border-radius:8px;padding:12px;text-align:center;font-weight:700;font-size:13px;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px">
-          💬 WhatsApp
-        </a>
-        <a href="tel:${o.customer_phone||''}" style="flex:1;background:var(--dark3);border:1px solid var(--bor2);color:var(--txt);border-radius:8px;padding:12px;text-align:center;font-weight:700;font-size:13px;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px">
-          📞 Call
-        </a>
-      </div>
-    </div>`;
-  document.body.appendChild(modal);
-  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
-}
-
-async function updateOrderStatus(id, status) {
-  const idx = orders.findIndex(o => String(o.id) == String(id) || String(o.qid) == String(id));
-  if (idx < 0) return;
-  orders[idx].status = status;
-  await idb.put('orders', orders[idx]);
-  if (isOnline) { try { await fetch(`https://zp-backend-v0i2.onrender.com/api/orders/${orders[idx]._id||orders[idx].id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status}) }); } catch(e){} }
-  renderOrders();
-}
-
-function switchTab(tab) {
-  document.querySelectorAll('.ntab').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.sec').forEach(s => s.classList.remove('active'));
-  const sec = document.getElementById(tab);
-  if (sec) sec.classList.add('active');
-  document.querySelectorAll('.ntab').forEach(b => { if (b.dataset.tab === tab) b.classList.add('active'); });
 }
 
 window.addEventListener('load', initAuth);
@@ -2306,7 +2094,6 @@ function closeAllScanners() { ['purchase','sell','stocklist'].forEach(closeScann
 // ═══ IMEI AUTO-FILL SYSTEM ═══
 // Uses our own backend (zp-backend-v0i2.onrender.com/api/imei/:imei)
 // Works for ALL brands: iPhone, Samsung, Xiaomi, Oppo, Vivo, OnePlus, etc.
-const BACKEND = 'https://zp-backend-v0i2.onrender.com';
 let imeiLookupTimer = null;
 
 // Map brand+model string to our dropdown options
@@ -3115,7 +2902,13 @@ function backupData() {
 // ═══ BILLS ═══
 const BKEY = 'zpmobile_bills_v1';
 let bills = JSON.parse(localStorage.getItem(BKEY) || '[]');
-function saveBills() { localStorage.setItem(BKEY, JSON.stringify(bills)); }
+function saveBills() {
+  localStorage.setItem(BKEY, JSON.stringify(bills));
+}
+async function saveBillToMongo(bill) {
+  if (!isOnline) return;
+  try { await api('POST', '/api/bills', { bill_id: bill.id, imei: bill.imei || '', data: bill }); } catch(e) {}
+}
 let lastBillImei = null;
 
 function genBillNo() {
@@ -3137,7 +2930,7 @@ function createBillForSale(imei) {
     balance: m.balance || 0,
     paymentType: m.paymentType, dueDate: m.dueDate || ''
   };
-  bills.push(bill); saveBills(); return bill;
+  bills.push(bill); saveBills(); saveBillToMongo(bill); return bill;
 }
 
 function getBillHTML(bill) {
@@ -3697,7 +3490,10 @@ const EXP_LABELS = {
   other_expense:'Other Expense',partner1:'',partner2:''
 };
 
-function expSaveData(){ localStorage.setItem(EXP_KEY, JSON.stringify(expenses)); }
+function expSaveData(){
+  localStorage.setItem(EXP_KEY, JSON.stringify(expenses));
+  if(isOnline) { api('DELETE','/api/expenses/all').catch(()=>{}); expenses.forEach(e => api('POST','/api/expenses', e).catch(()=>{})); }
+}
 function expSavePartners(){
   const p1 = document.getElementById('p1-name');
   const p2 = document.getElementById('p2-name');
@@ -3858,7 +3654,10 @@ showTab = function(t, el){
 // ═══════════════════════════════════════════════
 const ADV_KEY = 'zpmobile_advances_v1';
 let advances = JSON.parse(localStorage.getItem(ADV_KEY) || '[]');
-function advSave(){ localStorage.setItem(ADV_KEY, JSON.stringify(advances)); }
+function advSave(){
+  localStorage.setItem(ADV_KEY, JSON.stringify(advances));
+  if(isOnline) { api('DELETE','/api/advances/all').catch(()=>{}); advances.forEach(a => api('POST','/api/advances', a).catch(()=>{})); }
+}
 
 // Returns net balance: positive = humara dena (we owe customer), negative = customer ka dena
 function advBalance(phone){
@@ -3942,11 +3741,9 @@ async function custEditSave(){
     if(conflict){ alert('⚠️ #'+custNo+' pehle se assign hai: '+conflict.name); return; }
   }
   customers[idx] = {...customers[idx], name, phone: newPhone||phone, cnic, address, custNo: custNo || null};
-  // Update Supabase if has real id
-  if(customers[idx].id && !String(customers[idx].id).startsWith('local_')){
-    try{
-      await sb.from('customers').update({name, phone: newPhone||phone, cnic, address}).eq('id', customers[idx].id);
-    }catch(e){ console.log('DB update error',e); }
+  // Update MongoDB
+  if(isOnline && customers[idx]._mongoId){
+    try{ await api('PATCH', '/api/customers/' + customers[idx]._mongoId, {name, phone: newPhone||phone, cnic, address}); }catch(e){}
   }
   localStorage.setItem(CKEY, JSON.stringify(customers.filter(x=>!x.id?.toString().startsWith('local_'))));
   document.getElementById('cdp-edit-form').style.display='none';
@@ -3966,8 +3763,8 @@ async function custDeleteConfirm(){
     : cust.name+' delete hoga. Sure?';
   if(!confirm(msg)) return;
   customers = customers.filter(x=>x.phone!==phone);
-  if(cust.id && !String(cust.id).startsWith('local_')){
-    try{ await sb.from('customers').delete().eq('id', cust.id); }catch(e){}
+  if(isOnline && cust._mongoId){
+    try{ await api('DELETE', '/api/customers/' + cust._mongoId); }catch(e){}
   }
   localStorage.setItem(CKEY, JSON.stringify(customers.filter(x=>!x.id?.toString().startsWith('local_'))));
   closeCustDetail();
@@ -3979,7 +3776,10 @@ async function custDeleteConfirm(){
 // ═══════════════════════════════════════════════
 const CB_KEY = 'zpmobile_cashbook_v1';
 let cashEntries = JSON.parse(localStorage.getItem(CB_KEY) || '[]');
-function cbSave(){ localStorage.setItem(CB_KEY, JSON.stringify(cashEntries)); }
+function cbSave(){
+  localStorage.setItem(CB_KEY, JSON.stringify(cashEntries));
+  if(isOnline) { api('DELETE','/api/cashbook/all').catch(()=>{}); cashEntries.forEach(e => api('POST','/api/cashbook', e).catch(()=>{})); }
+}
 
 const CB_IN_TYPES = ['sale_cash','cust_payment','loan_return','other_in'];
 const CB_LABELS = {
@@ -4115,8 +3915,14 @@ const SUP_TXN_KEY = 'zpmobile_sup_txn_v1';
 let suppliers = JSON.parse(localStorage.getItem(SUP_KEY) || '[]');
 let supTxns = JSON.parse(localStorage.getItem(SUP_TXN_KEY) || '[]');
 let openSupId = null;
-function supSave(){ localStorage.setItem(SUP_KEY, JSON.stringify(suppliers)); }
-function supTxnSave(){ localStorage.setItem(SUP_TXN_KEY, JSON.stringify(supTxns)); }
+function supSave(){
+  localStorage.setItem(SUP_KEY, JSON.stringify(suppliers));
+  if(isOnline) { api('DELETE','/api/suppliers/all').catch(()=>{}); suppliers.forEach(s => api('POST','/api/suppliers', s).catch(()=>{})); }
+}
+function supTxnSave(){
+  localStorage.setItem(SUP_TXN_KEY, JSON.stringify(supTxns));
+  if(isOnline) { api('DELETE','/api/sup-txns/all').catch(()=>{}); supTxns.forEach(t => api('POST','/api/sup-txns', t).catch(()=>{})); }
+}
 
 // Balance: positive = humara dena (we owe them), negative = unka dena (they owe us)
 function supBalance(id){
