@@ -707,7 +707,7 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
           <input type="text" id="cust-name" placeholder="Type name or search existing..." oninput="searchCustSuggest()">
           <div id="cust-suggest" class="cust-suggest"></div>
         </div>
-        <div class="fg"><label>Phone Number <span class="req">*</span></label><input type="text" id="cust-phone" placeholder="03xx-xxxxxxx"></div>
+        <div class="fg"><label>Phone Number <span style="color:var(--txt3);font-weight:400;text-transform:none;font-size:10px">(optional)</span></label><input type="text" id="cust-phone" placeholder="03xx-xxxxxxx"></div>
       </div>
       <div class="frow">
         <div class="fg"><label>CNIC <span style="color:var(--txt3);font-weight:400;text-transform:none;font-size:10px">(optional)</span></label><input type="text" id="cust-cnic" placeholder="xxxxx-xxxxxxx-x"></div>
@@ -2774,7 +2774,7 @@ async function completeSell() {
   const cnic = document.getElementById('cust-cnic').value.trim();
   const price = document.getElementById('sell-price').value;
   const date = document.getElementById('sell-date').value;
-  if (!name || !phone || !price) { alert('Required fields missing:\n• Customer Name\n• Phone Number\n• Sale Price'); return; }
+  if (!name || !price) { alert('Required fields missing:\n• Customer Name\n• Sale Price'); return; }
   // Customer ka existing balance check karo
   const custDues = stock.filter(m => m.status === 'sold' && m.paymentType === 'partial' && m.balance > 0 && m.customer && m.customer.phone === phone);
   if (custDues.length > 0) {
