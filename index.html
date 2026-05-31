@@ -1590,7 +1590,7 @@ function setSyncing(s) {
 }
 
 // ═══ ONLINE / OFFLINE detection ═══
-window.addEventListener('online',  () => { isOnline = true;  setSyncing('syncing'); syncQueueToMongo(); });
+window.addEventListener('online',  () => { isOnline = true;  setSyncing('syncing'); syncQueueToMongo(); subscribeOrders(); });
 window.addEventListener('offline', () => { isOnline = false; setSyncing('offline'); });
 
 // ═══ MONGO API HELPER ═══
@@ -1834,12 +1834,17 @@ async function loadPersistedData() {
   } catch(e) { console.log('[loadPersistedData] error:', e); }
 }
 
-// ═══ ORDERS — MongoDB poll har 20 sec ═══
+// ═══ ORDERS — auto poll har 10 sec (no isOnline guard) ═══
 let orderPollInterval = null;
 let lastOrderCount = -1;
 async function fetchOrders() {
   try {
-    const newOrders = await api('GET', '/api/orders');
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 15000); // 15 sec timeout Render cold start ke liye
+    const res = await fetch(BACKEND + '/api/orders', { signal: ctrl.signal });
+    clearTimeout(timer);
+    if (!res.ok) return;
+    const newOrders = await res.json();
     if (!Array.isArray(newOrders)) return;
     if (lastOrderCount >= 0 && newOrders.length > lastOrderCount) {
       const added = newOrders.slice(0, newOrders.length - lastOrderCount);
@@ -1850,12 +1855,12 @@ async function fetchOrders() {
     await idb.clear('orders');
     for (const o of orders) await idb.put('orders', { ...o, id: o._id });
     if (typeof renderOrders === 'function') renderOrders();
-  } catch(e) {}
+  } catch(e) {} // timeout ya network error — silently skip, next interval mein retry
 }
 function subscribeOrders() {
-  if (!isOnline || orderPollInterval) return;
-  fetchOrders();
-  orderPollInterval = setInterval(fetchOrders, 20000);
+  if (orderPollInterval) return; // already running
+  fetchOrders(); // pehli baar turant
+  orderPollInterval = setInterval(fetchOrders, 10000); // har 10 sec
 }
 
 
