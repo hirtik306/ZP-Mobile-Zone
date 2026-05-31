@@ -1757,13 +1757,28 @@ async function loadAllData() {
 
   if (!isOnline) { setSyncing('offline'); return; }
 
-  // Step 2: Freshen from MongoDB
+  // Step 2: Freshen from MongoDB — orders alag try/catch mein
   setSyncing('syncing');
+
+  // Orders — independent fetch, fail hone par bhi polling chalti rahe
+  fetch(BACKEND + '/api/orders', { signal: AbortSignal.timeout(90000) })
+    .then(r => r.json())
+    .then(async ordRes => {
+      if (Array.isArray(ordRes)) {
+        orders = ordRes;
+        await idb.clear('orders');
+        for (const o of orders) await idb.put('orders', { ...o, id: o._id });
+        if (typeof renderOrders === 'function') renderOrders();
+        lastOrderCount = orders.length;
+      }
+    })
+    .catch(() => {});
+
+  // Stock + Customers + rest
   try {
-    const [stockRes, custRes, ordRes] = await Promise.all([
+    const [stockRes, custRes] = await Promise.all([
       api('GET', '/api/stock'),
       api('GET', '/api/customers'),
-      api('GET', '/api/orders'),
     ]);
 
     if (Array.isArray(stockRes)) {
@@ -1776,14 +1791,7 @@ async function loadAllData() {
       await idb.clear('customers');
       for (const c of customers) await idb.put('customers', c);
     }
-    if (Array.isArray(ordRes)) {
-      orders = ordRes;
-      await idb.clear('orders');
-      for (const o of orders) await idb.put('orders', { ...o, id: o._id });
-      if (typeof renderOrders === 'function') renderOrders();
-    }
 
-    // Also load expenses, advances, bills, cashbook, suppliers from MongoDB
     await loadPersistedData();
 
     updateStats();
@@ -1792,7 +1800,6 @@ async function loadAllData() {
     syncQueueToMongo();
   } catch(e) {
     setSyncing('offline');
-    console.log('[Sync] MongoDB unreachable, using local data');
   }
 }
 
