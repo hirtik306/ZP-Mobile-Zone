@@ -1845,7 +1845,7 @@ async function fetchOrders() {
     });
     if (!res.ok) { console.warn('[Orders] HTTP error:', res.status); return; }
     const newOrders = await res.json();
-    console.log('[Orders] got', newOrders.length, 'orders');
+    if (newOrders.length > 0) console.log('[Orders] got', newOrders.length, 'orders');
     if (!Array.isArray(newOrders)) return;
     if (lastOrderCount >= 0 && newOrders.length > lastOrderCount) {
       const added = newOrders.slice(0, newOrders.length - lastOrderCount);
@@ -1942,6 +1942,13 @@ async function handlePin(pin) {
   }
 }
 
+async function wakeBackend() {
+  // Render free tier sleep mode se jagao — silent ping
+  try {
+    await fetch(BACKEND + '/api/orders', { signal: AbortSignal.timeout(90000) });
+  } catch(e) {}
+}
+
 async function showApp() {
   document.getElementById('load-overlay').classList.add('hidden');
   document.getElementById('login-screen').classList.add('hidden');
@@ -2018,7 +2025,10 @@ function installApp() {
   if (deferredInstallPrompt) { deferredInstallPrompt.prompt(); deferredInstallPrompt.userChoice.then(() => { deferredInstallPrompt = null; }); }
 }
 
-window.addEventListener('load', initAuth);
+window.addEventListener('load', () => {
+  wakeBackend(); // Render backend ko background mein jagao immediately
+  initAuth();
+});
 </script>
 
 <script>
