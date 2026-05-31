@@ -12,7 +12,7 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap');
 :root{
-  --gold:#1a56db;--gold2:#1e429f;--gold3:#1c3faa;--gold-dark:#1a3a8f;--gold-bg:#eff6ff;--gold-border:#93c5fd;
+  --gold:#c9a227;--gold2:#e8c547;--gold3:#f5d76e;--gold-dark:#7a5f10;--gold-bg:#fffbeb;--gold-border:#f0d060;
   --black:#08090a;--dark:#111318;--dark2:#1c1f26;--dark3:#252931;
   --g:#0e9f6e;--gd:#057a55;--gl:#f0fdf4;--gt:#064e3b;--g-border:#6ee7b7;
   --b:#2563eb;--bl:#eff6ff;--bt:#1e40af;
@@ -20,7 +20,7 @@
   --a:#f59e0b;--al:#fffbeb;--at:#78350f;
   --bg:#f9fafb;--sur:#ffffff;--sur2:#f3f4f6;
   --bor:#e5e7eb;--bor2:#d1d5db;
-  --txt:#ffffff;--txt2:#9ca3af;--txt3:#6b7280;
+  --txt:#111318;--txt2:#9ca3af;--txt3:#6b7280;
   --rad:12px;--rad-s:8px;--rad-xs:6px;
   --shadow:0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.04);
   --shadow-md:0 4px 6px rgba(0,0,0,0.05),0 2px 4px rgba(0,0,0,0.04);
@@ -719,16 +719,47 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
     <div class="scard"><div class="scard-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div class="slbl">Total Outstanding</div><div class="sval r sm" id="c-due-total">Rs.0</div></div>
   </div>
 
+  <!-- QUICK PHONE LOOKUP -->
+  <div class="card" style="border:2px solid var(--gold);background:linear-gradient(135deg,var(--gold-bg),#fff)">
+    <div class="card-hd"><div class="card-hd-accent"></div>&#9889; Quick Phone Lookup</div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <div style="flex:1;position:relative">
+        <svg style="position:absolute;left:13px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:var(--txt3)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.21 2.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.16 6.16l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+        <input type="text" id="quick-phone-input" placeholder="Customer ID, name or phone number..." 
+          style="width:100%;padding:13px 14px 13px 42px;border:2px solid var(--gold-border);border-radius:var(--rad-s);font-size:15px;font-family:'IBM Plex Mono',monospace;letter-spacing:1px;background:#fff;color:var(--txt);outline:none;transition:all .15s"
+          oninput="quickPhoneLookup(this.value)"
+          onkeydown="if(event.key==='Enter')quickPhoneGo()"
+          onfocus="this.style.borderColor='var(--gold)';this.style.boxShadow='0 0 0 3px rgba(201,162,39,0.18)'"
+          onblur="this.style.boxShadow=''">
+      </div>
+      <button class="btn btn-gold" onclick="quickPhoneGo()" style="padding:13px 22px;font-size:13px;flex-shrink:0">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Dhundo
+      </button>
+    </div>
+    <div id="quick-lookup-result" style="margin-top:12px;display:none"></div>
+  </div>
+
   <!-- ADD NEW CUSTOMER CARD -->
   <div class="card">
     <div class="card-hd"><div class="card-hd-accent"></div>Add New Customer</div>
     <div class="frow">
-      <div class="fg"><label>Full Name <span class="req">*</span></label><input type="text" id="nc-name" placeholder="Customer full name"></div>
-      <div class="fg"><label>Phone Number <span class="req">*</span></label><input type="text" id="nc-phone" placeholder="03xx-xxxxxxx"></div>
+      <div class="fg"><label>Full Name <span class="req">*</span></label><input type="text" id="nc-name" placeholder="Customer full name" onfocus="autoAssignCustNo()"></div>
+      <div class="fg"><label>Customer Shop Name <span class="req">*</span></label><input type="text" id="nc-phone" placeholder="Enter shop name..."></div>
     </div>
     <div class="frow" style="margin-bottom:0">
       <div class="fg"><label>CNIC <span style="color:var(--txt3);font-weight:400;text-transform:none;font-size:10px">(optional)</span></label><input type="text" id="nc-cnic" placeholder="xxxxx-xxxxxxx-x"></div>
       <div class="fg"><label>Address <span style="color:var(--txt3);font-weight:400;text-transform:none;font-size:10px">(optional)</span></label><input type="text" id="nc-address" placeholder="City / Area"></div>
+    </div>
+    <div class="frow" style="margin-bottom:0;margin-top:10px">
+      <div class="fg">
+        <label>Customer ID <span style="color:var(--txt3);font-weight:400;text-transform:none;font-size:10px">(auto-assigned)</span></label>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:16px;font-weight:800;color:var(--gold-dark);padding:10px 4px 10px 2px">#</span>
+          <input type="number" id="nc-custno" readonly style="width:100%;padding:10px 13px;border:1px solid var(--gold-border);border-radius:var(--rad-s);font-size:14px;font-family:'IBM Plex Mono',monospace;font-weight:700;background:var(--gold-bg);color:var(--gold-dark);outline:none;cursor:default">
+        </div>
+        <div style="font-size:11px;color:var(--txt3);margin-top:4px">Customer ID is automatically assigned — no manual entry needed</div>
+      </div>
     </div>
     <button class="btn btn-gold" style="margin-top:14px" onclick="addNewCustomer()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -776,6 +807,7 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
           <div class="fg"><label>Phone</label><input type="text" id="cdp-edit-phone" placeholder="Phone number"></div>
           <div class="fg"><label>CNIC</label><input type="text" id="cdp-edit-cnic" placeholder="CNIC (optional)"></div>
           <div class="fg"><label>Address</label><input type="text" id="cdp-edit-address" placeholder="Address (optional)"></div>
+          <div class="fg"><label>Customer # <span style="color:var(--txt3);font-weight:400;text-transform:none;font-size:10px">(fix number)</span></label><input type="number" id="cdp-edit-custno" placeholder="e.g. 1, 2, 3" min="1"></div>
         </div>
         <div style="display:flex;gap:8px;margin-top:12px">
           <button class="btn btn-gold" onclick="custEditSave()" style="flex:1;font-size:12px">Save Changes</button>
@@ -2040,14 +2072,113 @@ function openScanner(target, mode) {
 function closeScanner(t) { const w = document.getElementById('sc-' + t); if (w) w.classList.remove('open'); if (scanReaders[t]) { try { scanReaders[t].reset(); } catch(e) {} delete scanReaders[t]; } }
 function closeAllScanners() { ['purchase','sell'].forEach(closeScanner); }
 
-// ═══ STOCK IN ═══
+// ═══ IMEI AUTO-FILL SYSTEM ═══
+// Uses our own backend (zp-backend-v0i2.onrender.com/api/imei/:imei)
+// Works for ALL brands: iPhone, Samsung, Xiaomi, Oppo, Vivo, OnePlus, etc.
+const BACKEND = 'https://zp-backend-v0i2.onrender.com';
+let imeiLookupTimer = null;
+
+// Map brand+model string to our dropdown options
+function matchModelDropdown(modelStr) {
+  if (!modelStr) return null;
+  const modelSel = document.getElementById('model');
+  if (!modelSel) return null;
+  const r = modelStr.toLowerCase();
+  // Try exact match first
+  for (let i = 0; i < modelSel.options.length; i++) {
+    if (modelSel.options[i].text.toLowerCase() === r) return i;
+  }
+  // Try partial match (longest match wins)
+  let bestIdx = -1, bestLen = 0;
+  for (let i = 1; i < modelSel.options.length; i++) {
+    const opt = modelSel.options[i].text.toLowerCase();
+    if (r.includes(opt) || opt.includes(r.substring(0, Math.min(r.length, 20)))) {
+      if (opt.length > bestLen) { bestLen = opt.length; bestIdx = i; }
+    }
+  }
+  return bestIdx > 0 ? bestIdx : null;
+}
+
+function applyImeiInfo(info) {
+  const el = document.getElementById('pur-status');
+  if (!info || !info.model) {
+    el.innerHTML = `<div class="alert alert-g"><span class="alert-icon">✓</span><span>New IMEI — please fill in device details below.</span></div>`;
+    return;
+  }
+
+  let filled = [];
+
+  // Auto-fill model dropdown
+  const modelSel = document.getElementById('model');
+  const idx = matchModelDropdown(info.model);
+  if (idx !== null && modelSel) {
+    modelSel.selectedIndex = idx;
+    filled.push(modelSel.options[idx].text);
+    if (typeof buildColorPicker === 'function') buildColorPicker(modelSel.options[idx].text);
+  }
+
+  // Auto-fill storage dropdown
+  if (info.storage) {
+    const storageSel = document.getElementById('storage');
+    if (storageSel) {
+      for (let i = 0; i < storageSel.options.length; i++) {
+        if (storageSel.options[i].text === info.storage) {
+          storageSel.selectedIndex = i;
+          filled.push(info.storage);
+          break;
+        }
+      }
+    }
+  }
+
+  const filledStr = filled.length ? filled.join(' · ') : info.model;
+  el.innerHTML = `<div class="alert alert-g">
+    <span class="alert-icon">✓</span>
+    <span>
+      <strong>Auto-filled:</strong> ${filledStr}<br>
+      <span style="font-size:11px;color:var(--txt3)">Raw: ${info.raw || info.model} &nbsp;·&nbsp; Please verify Variant, Supplier &amp; Color.</span>
+    </span>
+  </div>`;
+}
+
+async function lookupImeiOnline(imei) {
+  const el = document.getElementById('pur-status');
+  el.innerHTML = `<div class="alert alert-gold"><span class="alert-icon">⏳</span><span>Looking up IMEI <span style="font-family:'IBM Plex Mono',monospace">${imei}</span> — please wait...</span></div>`;
+  try {
+    const res = await fetch(`${BACKEND}/api/imei/${imei}`, { signal: AbortSignal.timeout(12000) });
+    const data = await res.json();
+    if (data.success && data.model) {
+      applyImeiInfo(data);
+    } else {
+      el.innerHTML = `<div class="alert alert-g"><span class="alert-icon">✓</span><span>New IMEI — device not found in database. Please fill details manually.</span></div>`;
+    }
+  } catch(e) {
+    el.innerHTML = `<div class="alert alert-gold"><span class="alert-icon">⚠</span><span>IMEI lookup failed (no internet or server offline). Please fill details manually.</span></div>`;
+  }
+}
+
 function liveCheckImei() {
-  const imei = document.getElementById('imei-input').value.trim(), el = document.getElementById('pur-status');
+  const imei = document.getElementById('imei-input').value.trim();
+  const el = document.getElementById('pur-status');
   if (!imei) { el.innerHTML = ''; return; }
+
+  // Check if already in stock
   const f = stock.find(m => m.imei === imei);
-  if (f) el.innerHTML = `<div class="alert alert-r"><span class="alert-icon">⚠</span><span>This IMEI already exists: <strong>${f.model}</strong> (${f.variant}) — ${f.status === 'available' ? 'In Stock' : 'Sold'}</span></div>`;
-  else if (imei.length >= 10) el.innerHTML = `<div class="alert alert-g"><span class="alert-icon">✓</span><span>New IMEI detected — fill in device details below</span></div>`;
-  else el.innerHTML = '';
+  if (f) {
+    el.innerHTML = `<div class="alert alert-r"><span class="alert-icon">⚠</span><span>This IMEI already exists: <strong>${f.model}</strong> (${f.variant}) — ${f.status === 'available' ? 'In Stock' : 'Sold'}</span></div>`;
+    return;
+  }
+
+  clearTimeout(imeiLookupTimer);
+
+  // Show typing progress for short IMEIs
+  if (imei.length < 14) {
+    el.innerHTML = `<div class="alert alert-gold"><span class="alert-icon">⌨</span><span>Keep typing IMEI... (${imei.length}/15 digits)</span></div>`;
+    return;
+  }
+
+  // Full IMEI — lookup with small debounce
+  imeiLookupTimer = setTimeout(() => lookupImeiOnline(imei), 300);
 }
 
 function clearForm() {
@@ -2088,18 +2219,34 @@ async function addNewCustomer() {
   const phone = document.getElementById('nc-phone').value.trim();
   const cnic = document.getElementById('nc-cnic').value.trim();
   const address = document.getElementById('nc-address').value.trim();
+  const custNoRaw = document.getElementById('nc-custno') ? document.getElementById('nc-custno').value.trim() : '';
+  const custNo = custNoRaw ? parseInt(custNoRaw) : null;
   if (!name || !phone) { alert('Name and Phone are required.'); return; }
   const exists = customers.find(c => c.phone === phone);
   if (exists) { alert('A customer with this phone number already exists:\n' + exists.name); return; }
+  if (custNo && customers.find(c => c.custNo === custNo)) {
+    alert('⚠️ Yeh number (#' + custNo + ') pehle se kisi aur customer ko diya hua hai!\n' + customers.find(c => c.custNo === custNo).name);
+    return;
+  }
   try {
-    await saveCustItem({ name, phone, cnic, address, addedDate: new Date().toLocaleDateString('en-GB') });
+    await saveCustItem({ name, phone, cnic, address, custNo: custNo || null, addedDate: new Date().toLocaleDateString('en-GB') });
   } catch(e) { alert('Error saving: ' + e.message); return; }
   document.getElementById('nc-name').value = '';
   document.getElementById('nc-phone').value = '';
   document.getElementById('nc-cnic').value = '';
   document.getElementById('nc-address').value = '';
+  if (document.getElementById('nc-custno')) document.getElementById('nc-custno').value = '';
   renderCustomers(); updateStats();
-  alert(`✓ Customer "${name}" added successfully.`);
+  autoAssignCustNo();
+  alert(`✓ Customer "${name}" added successfully.${custNo ? ' Customer #'+custNo+' assign kiya gaya.' : ''}`);
+}
+
+function autoAssignCustNo() {
+  const used = customers.map(c => c.custNo).filter(n => n && !isNaN(n)).map(Number);
+  let next = 1;
+  while (used.includes(next)) next++;
+  const el = document.getElementById('nc-custno');
+  if (el) el.value = next;
 }
 
 // Get or create customer by phone
@@ -2167,7 +2314,10 @@ function renderCustomers() {
         <div style="display:flex;align-items:center;gap:10px;flex:1">
           <div class="cust-avatar">${initials}</div>
           <div>
-            <div class="cust-name">${c.name}</div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <div class="cust-name">${c.name}</div>
+              ${c.custNo ? `<span style="background:var(--gold);color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;letter-spacing:0.3px;flex-shrink:0">#${c.custNo}</span>` : ''}
+            </div>
             <div class="cust-phone-sm">${c.phone}</div>
             ${c.address ? `<div style="font-size:11px;color:var(--txt3);margin-top:2px">${c.address}</div>` : ''}
           </div>
@@ -2191,7 +2341,7 @@ function openCustDetail(phone) {
   const initials = c.name.split(' ').map(w => w[0]).join('').toUpperCase().substr(0, 2);
 
   document.getElementById('cdp-avatar').textContent = initials;
-  document.getElementById('cdp-name').textContent = c.name;
+  document.getElementById('cdp-name').textContent = c.name + (c.custNo ? '  #' + c.custNo : '');
   document.getElementById('cdp-phone').textContent = c.phone;
   document.getElementById('cdp-devices').textContent = st.devices;
   document.getElementById('cdp-paid').textContent = 'Rs. ' + st.totalPaid.toLocaleString();
@@ -2206,6 +2356,7 @@ function openCustDetail(phone) {
   const phoneEl=document.getElementById('cdp-edit-phone'); if(phoneEl) phoneEl.value=c.phone||'';
   const cnicEl=document.getElementById('cdp-edit-cnic'); if(cnicEl) cnicEl.value=c.cnic||'';
   const addrEl=document.getElementById('cdp-edit-address'); if(addrEl) addrEl.value=c.address||'';
+  const custNoEditEl=document.getElementById('cdp-edit-custno'); if(custNoEditEl) custNoEditEl.value=c.custNo||'';
   // Advance list
   advRender(phone);
 
@@ -3168,6 +3319,7 @@ var _mbOrigShowTab = showTab;
 showTab = function(t, el) {
   _mbOrigShowTab(t, el);
   if (t === 'multibill') mbInitTab();
+  if (t === 'customers') autoAssignCustNo();
 };
 // ═══════════════════════════════════════════════
 // END MULTI BILL
@@ -3418,8 +3570,14 @@ async function custEditSave(){
   const newPhone = document.getElementById('cdp-edit-phone').value.trim();
   const cnic = document.getElementById('cdp-edit-cnic').value.trim();
   const address = document.getElementById('cdp-edit-address').value.trim();
+  const custNoEl = document.getElementById('cdp-edit-custno');
+  const custNo = custNoEl && custNoEl.value.trim() ? parseInt(custNoEl.value.trim()) : null;
   if(!name){ alert('Name is required!'); return; }
-  customers[idx] = {...customers[idx], name, phone: newPhone||phone, cnic, address};
+  if(custNo) {
+    const conflict = customers.find((c,i) => c.custNo === custNo && i !== idx);
+    if(conflict){ alert('⚠️ #'+custNo+' pehle se assign hai: '+conflict.name); return; }
+  }
+  customers[idx] = {...customers[idx], name, phone: newPhone||phone, cnic, address, custNo: custNo || null};
   // Update Supabase if has real id
   if(customers[idx].id && !String(customers[idx].id).startsWith('local_')){
     try{
@@ -3928,6 +4086,205 @@ showTab = function(t, el){
 };
 // ═══════════════════════════════════════════════
 // END ALL MODULES
+// ═══════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════
+// QUICK PHONE LOOKUP
+// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+// QUICK PHONE LOOKUP — FULL DETAIL VIEW
+// ═══════════════════════════════════════════════
+function quickPhoneLookup(val) {
+  const res = document.getElementById('quick-lookup-result');
+  const v = val.trim();
+  if (!v || v.length < 2) { res.style.display = 'none'; return; }
+  const matches = customers.filter(c => c.phone.includes(v) || c.name.toLowerCase().includes(v.toLowerCase()) || (c.custNo && String(c.custNo) === v));
+  if (!matches.length) {
+    res.style.display = 'block';
+    res.innerHTML = '<div style="padding:12px 16px;background:var(--rl);border:1px solid var(--r-border);border-radius:var(--rad-s);font-size:13px;color:var(--rt)">❌ Koi customer nahi mila — phone number, naam ya customer # check karo</div>';
+    return;
+  }
+  // If exactly one match — show full detail directly
+  if (matches.length === 1) {
+    quickShowFullDetail(matches[0].phone);
+    return;
+  }
+  // Multiple matches — show list to pick
+  res.style.display = 'block';
+  res.innerHTML = '<div style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">' + matches.length + ' customers mile — select karo:</div>' +
+    matches.slice(0, 6).map(c => {
+      const st = custStats(c.phone);
+      const hasDue = st.totalBalance > 0;
+      const initials = c.name.split(' ').map(w=>w[0]).join('').toUpperCase().substr(0,2);
+      return `<div onclick="quickShowFullDetail('${c.phone}')" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border:1px solid var(--bor2);border-radius:var(--rad-s);margin-bottom:6px;cursor:pointer;transition:all .15s" onmouseover="this.style.background='var(--gold-bg)';this.style.borderColor='var(--gold)'" onmouseout="this.style.background='#fff';this.style.borderColor='var(--bor2)'">
+        <div style="width:36px;height:36px;border-radius:8px;background:var(--gold-bg);border:1px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--gold-dark);flex-shrink:0">${initials}</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:13px;font-weight:800;color:var(--txt)">${c.name}</span>
+            ${c.custNo ? `<span style="background:var(--gold);color:#fff;font-size:10px;font-weight:800;padding:1px 7px;border-radius:20px">#${c.custNo}</span>` : ''}
+          </div>
+          <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--txt3)">${c.phone}</div>
+        </div>
+        <span style="font-size:12px;font-weight:700;color:${hasDue?'var(--r)':'var(--gd)'};">${hasDue ? 'Due: Rs.'+st.totalBalance.toLocaleString() : '✓ Clear'}</span>
+      </div>`;
+    }).join('');
+}
+
+function quickShowFullDetail(phone) {
+  const res = document.getElementById('quick-lookup-result');
+  const c = customers.find(x => x.phone === phone);
+  if (!c) return;
+  const st = custStats(phone);
+  const advBal = advBalance(phone);
+  const hasDue = st.totalBalance > 0;
+  const initials = c.name.split(' ').map(w=>w[0]).join('').toUpperCase().substr(0,2);
+  const fmt = n => 'Rs. ' + Number(n).toLocaleString();
+
+  // Build mobile rows
+  const mobileRows = st.sales.length ? st.sales.map(m => {
+    const bal = m.balance || 0;
+    return `<tr>
+      <td style="padding:9px 12px;font-size:12px;font-weight:700;color:var(--txt)">${m.model} ${m.variant||''}</td>
+      <td style="padding:9px 12px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--txt3)">${m.imei}</td>
+      <td style="padding:9px 12px;font-size:12px;color:var(--txt3)">${m.color||'—'} ${m.storage||''}</td>
+      <td style="padding:9px 12px;font-size:12px;font-weight:700">${fmt(m.sellPrice)}</td>
+      <td style="padding:9px 12px;font-size:12px;font-weight:700;color:var(--gd)">${fmt(m.paidAmount||m.sellPrice)}</td>
+      <td style="padding:9px 12px;font-size:12px;font-weight:700;color:${bal>0?'var(--r)':'var(--gd)'};">${bal>0 ? fmt(bal) : '✅ Clear'}</td>
+      <td style="padding:9px 12px;font-size:11px;color:var(--txt3)">${m.sellDate||'—'}</td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="7" style="padding:20px;text-align:center;color:var(--txt3);font-size:13px">Koi purchase nahi abhi tak</td></tr>`;
+
+  res.style.display = 'block';
+  res.innerHTML = `
+    <div style="background:#fff;border:1px solid var(--bor);border-radius:var(--rad);overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08)">
+
+      <!-- Header -->
+      <div style="background:linear-gradient(135deg,var(--dark),var(--dark2));padding:16px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:48px;height:48px;border-radius:12px;background:rgba(201,162,39,0.2);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:var(--gold2)">${initials}</div>
+          <div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:17px;font-weight:800;color:#fff">${c.name}</span>
+              ${c.custNo ? `<span style="background:var(--gold);color:#fff;font-size:11px;font-weight:800;padding:2px 9px;border-radius:20px">#${c.custNo}</span>` : ''}
+            </div>
+            <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:rgba(255,255,255,0.5);margin-top:2px">${c.phone}${c.address ? ' · '+c.address : ''}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button onclick="quickExportExcel('${phone}')" style="background:rgba(14,159,110,0.2);border:1px solid rgba(14,159,110,0.4);color:#6ee7b7;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;display:flex;align-items:center;gap:6px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Excel Export
+          </button>
+          <button onclick="document.getElementById('quick-lookup-result').style.display='none';document.getElementById('quick-phone-input').value=''" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);padding:7px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif">✕ Band Karo</button>
+        </div>
+      </div>
+
+      <!-- Stats Row -->
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);border-bottom:1px solid var(--bor)">
+        <div style="padding:14px 16px;text-align:center;border-right:1px solid var(--bor)">
+          <div style="font-size:20px;font-weight:800;color:var(--b)">${st.devices}</div>
+          <div style="font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:0.5px;margin-top:3px">Mobiles</div>
+        </div>
+        <div style="padding:14px 16px;text-align:center;border-right:1px solid var(--bor)">
+          <div style="font-size:16px;font-weight:800;color:var(--gold-dark)">${fmt(st.totalSale)}</div>
+          <div style="font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:0.5px;margin-top:3px">Total Business</div>
+        </div>
+        <div style="padding:14px 16px;text-align:center;border-right:1px solid var(--bor)">
+          <div style="font-size:16px;font-weight:800;color:var(--gd)">${fmt(st.totalPaid)}</div>
+          <div style="font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:0.5px;margin-top:3px">Total Paid</div>
+        </div>
+        <div style="padding:14px 16px;text-align:center;border-right:1px solid var(--bor)">
+          <div style="font-size:16px;font-weight:800;color:${hasDue?'var(--r)':'var(--gd)'};">${hasDue ? fmt(st.totalBalance) : '✅ Clear'}</div>
+          <div style="font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:0.5px;margin-top:3px">Baaki / Due</div>
+        </div>
+        <div style="padding:14px 16px;text-align:center">
+          <div style="font-size:16px;font-weight:800;color:var(--a)">${advBal !== 0 ? fmt(Math.abs(advBal)) : '—'}</div>
+          <div style="font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:0.5px;margin-top:3px">${advBal>0?'Advance (unka)':advBal<0?'Advance (hamara)':'Advance'}</div>
+        </div>
+      </div>
+
+      <!-- Mobile Table -->
+      <div style="padding:16px 20px">
+        <div style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px">📱 Mobile History</div>
+        <div style="overflow-x:auto;border-radius:8px;border:1px solid var(--bor)">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:600px">
+            <thead>
+              <tr style="background:var(--sur2)">
+                <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--bor)">Model</th>
+                <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--bor)">IMEI</th>
+                <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--bor)">Color/Storage</th>
+                <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--bor)">Sale Price</th>
+                <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--bor)">Paid</th>
+                <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--bor)">Balance</th>
+                <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--bor)">Date</th>
+              </tr>
+            </thead>
+            <tbody>${mobileRows}</tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>`;
+}
+
+function quickPhoneGo() {
+  const val = document.getElementById('quick-phone-input').value.trim();
+  if (!val) return;
+  const exact = customers.find(c => c.phone === val || (c.custNo && String(c.custNo) === val));
+  if (exact) { quickShowFullDetail(exact.phone); return; }
+  quickPhoneLookup(val);
+}
+
+function quickPhoneOpen(phone) {
+  document.getElementById('quick-phone-input').value = '';
+  document.getElementById('quick-lookup-result').style.display = 'none';
+  openCustDetail(phone);
+  document.getElementById('cust-detail-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function quickExportExcel(phone) {
+  const c = customers.find(x => x.phone === phone);
+  if (!c) return;
+  const st = custStats(phone);
+  const advBal = advBalance(phone);
+
+  // Build CSV content
+  const rows = [];
+  rows.push(['ZP Mobile Zone — Customer Report']);
+  rows.push(['']);
+  rows.push(['Customer Name', c.name]);
+  rows.push(['Customer #', c.custNo ? '#' + c.custNo : '—']);
+  rows.push(['Phone', c.phone]);
+  rows.push(['Address', c.address || '—']);
+  rows.push(['CNIC', c.cnic || '—']);
+  rows.push(['']);
+  rows.push(['SUMMARY']);
+  rows.push(['Total Mobiles', st.devices]);
+  rows.push(['Total Business', 'Rs. ' + st.totalSale.toLocaleString()]);
+  rows.push(['Total Paid', 'Rs. ' + st.totalPaid.toLocaleString()]);
+  rows.push(['Outstanding Due', st.totalBalance > 0 ? 'Rs. ' + st.totalBalance.toLocaleString() : 'CLEAR']);
+  rows.push(['Advance/Loan', advBal !== 0 ? 'Rs. ' + Math.abs(advBal).toLocaleString() : '—']);
+  rows.push(['']);
+  rows.push(['MOBILE HISTORY']);
+  rows.push(['Model', 'Variant', 'IMEI', 'Color', 'Storage', 'Sale Price', 'Paid', 'Balance', 'Date']);
+  st.sales.forEach(m => {
+    rows.push([
+      m.model, m.variant || '—', m.imei, m.color || '—', m.storage || '—',
+      m.sellPrice, m.paidAmount || m.sellPrice, m.balance || 0, m.sellDate || '—'
+    ]);
+  });
+
+  const csv = rows.map(r => r.map(cell => '"' + String(cell).replace(/"/g,'""') + '"').join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'Customer_' + c.name.replace(/\s+/g,'_') + '_' + c.phone + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+// ═══════════════════════════════════════════════
+// END QUICK PHONE LOOKUP
 // ═══════════════════════════════════════════════
 
 </script>
