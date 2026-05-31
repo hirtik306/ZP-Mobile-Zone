@@ -947,7 +947,25 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
   </div>
   <div class="card">
     <div style="margin-bottom:10px">
-      <input type="text" id="stock-search" placeholder="🔍  IMEI, model, color ya supplier search karo..." oninput="renderStock()" style="width:100%;padding:10px 14px;border:1.5px solid var(--gold-border);border-radius:var(--rad-s);font-size:13px;background:var(--card);color:var(--txt1);outline:none;box-sizing:border-box">
+      <div class="irow">
+        <input type="text" id="stock-search" placeholder="🔍  IMEI, model, color ya supplier search karo..." oninput="renderStock()" style="font-size:13px;letter-spacing:1px">
+        <button class="btn btn-b" onclick="openScanner('stocklist','camera')" title="Use device camera to scan barcode">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Camera
+        </button>
+        <button class="btn btn-ghost" onclick="focusUsbField('stock-search')" title="Use USB or Bluetooth barcode scanner" style="padding:8px 14px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="7" height="7"/><rect x="15" y="2" width="7" height="7"/><rect x="2" y="15" width="7" height="7"/><path d="M15 15h.01M15 19h.01M19 15h.01M19 19h.01"/></svg>
+          USB Scanner
+        </button>
+      </div>
+      <div id="sc-stocklist" class="scwrap">
+        <div style="display:flex;justify-content:flex-end;background:#0a0a0a;padding:8px 10px">
+          <button class="btn btn-ghost" onclick="closeScanner('stocklist')" style="font-size:11px;padding:5px 12px;color:#666;border-color:#333">✕ Close Camera</button>
+        </div>
+        <video id="vid-stocklist" autoplay playsinline muted></video>
+        <div class="scanbar"></div>
+        <div class="scanlbl">Align barcode within the frame</div>
+      </div>
     </div>
     <div class="filter-bar">
       <select id="f-model" onchange="renderStock()"><option value="">All Models</option><option>iPhone 17 Air</option><option>iPhone 17</option><option>iPhone 17 Pro</option><option>iPhone 17 Pro Max</option><option>iPhone 16</option><option>iPhone 16 Plus</option><option>iPhone 16 Pro</option><option>iPhone 16 Pro Max</option><option>iPhone 15</option><option>iPhone 15 Pro</option><option>iPhone 15 Pro Max</option><option>iPhone 14</option><option>iPhone 14 Pro</option><option>iPhone 14 Pro Max</option></select>
@@ -2265,7 +2283,7 @@ function focusUsbField(fieldId) {
   el.placeholder = '🔌 USB Scanner ready — scan now...';
   setTimeout(() => {
     el.style.boxShadow = '';
-    el.placeholder = fieldId === 'sell-imei' ? 'Scan or type IMEI...' : 'Scan or type IMEI number...';
+    el.placeholder = fieldId === 'sell-imei' ? 'Scan or type IMEI...' : fieldId === 'stock-search' ? '🔍  IMEI, model, color ya supplier search karo...' : 'Scan or type IMEI number...';
   }, 4000);
 }
 
@@ -2277,12 +2295,13 @@ function openScanner(target, mode) {
   reader.decodeFromVideoDevice(null, 'vid-' + target, (result) => {
     if (result) { closeScanner(target); const code = result.getText();
       if (target === 'purchase') { document.getElementById('imei-input').value = code; liveCheckImei(); }
-      else { document.getElementById('sell-imei').value = code; findForSell(); }
+      else if (target === 'sell') { document.getElementById('sell-imei').value = code; findForSell(); }
+      else if (target === 'stocklist') { document.getElementById('stock-search').value = code; renderStock(); }
     }
   });
 }
 function closeScanner(t) { const w = document.getElementById('sc-' + t); if (w) w.classList.remove('open'); if (scanReaders[t]) { try { scanReaders[t].reset(); } catch(e) {} delete scanReaders[t]; } }
-function closeAllScanners() { ['purchase','sell'].forEach(closeScanner); }
+function closeAllScanners() { ['purchase','sell','stocklist'].forEach(closeScanner); }
 
 // ═══ IMEI AUTO-FILL SYSTEM ═══
 // Uses our own backend (zp-backend-v0i2.onrender.com/api/imei/:imei)
@@ -2940,11 +2959,11 @@ function updateStats() {
   const todayExpenses = typeof expenses !== 'undefined' ? expenses.filter(e => e.date === new Date().toISOString().split('T')[0]).reduce((s, e) => s + e.amount, 0) : 0;
   const summaryEl = document.getElementById('daily-summary');
   if (summaryEl) {
+    summaryEl.style.display = 'block';
     if (todaySold.length > 0) {
-      summaryEl.style.display = 'block';
       summaryEl.innerHTML = '📅 Aaj: <strong>' + todaySold.length + ' device</strong> sell — Revenue: <strong>Rs. ' + todayRevenue.toLocaleString() + '</strong> — Profit: <strong style="color:var(--gd)">Rs. ' + todayProfit.toLocaleString() + '</strong>' + (todayExpenses > 0 ? ' — Expenses: <strong style="color:var(--r)">Rs. ' + todayExpenses.toLocaleString() + '</strong>' : '');
     } else {
-      summaryEl.style.display = 'none';
+      summaryEl.innerHTML = '📅 Aaj: <strong>0 device</strong> sell — Revenue: <strong>Rs. 0</strong> — Profit: <strong style="color:var(--gd)">Rs. 0</strong>' + (todayExpenses > 0 ? ' — Expenses: <strong style="color:var(--r)">Rs. ' + todayExpenses.toLocaleString() + '</strong>' : '');
     }
   }
 }
