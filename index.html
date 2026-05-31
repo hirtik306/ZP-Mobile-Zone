@@ -501,6 +501,7 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
 
 <!-- ══ STOCK IN ══════════════════════════════════════════ -->
 <div id="purchase" class="sec active">
+  <div id="daily-summary" style="display:none;margin-bottom:14px;padding:11px 16px;background:var(--gl);border:1.5px solid var(--g);border-radius:10px;font-size:13px;color:var(--gd)"></div>
   <div class="page-header">
     <div class="page-title">Add to Stock</div>
     <div class="page-sub">Scan IMEI barcode or enter manually to add a new device</div>
@@ -573,18 +574,66 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
         <span style="font-size:11px;color:var(--txt3);font-weight:600">Other Color:</span>
         <select id="other-color-sel" onchange="selectOtherColor(this.value)" style="font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid var(--gold-border);background:var(--card);color:var(--txt1);outline:none;cursor:pointer">
           <option value="">— Select —</option>
-          <option>Black</option><option>White</option><option>Silver</option><option>Gold</option>
-          <option>Space Gray</option><option>Graphite</option><option>Titanium</option>
-          <option>Blue</option><option>Navy Blue</option><option>Sky Blue</option><option>Midnight Blue</option><option>Ocean Blue</option><option>Ice Blue</option><option>Pacific Blue</option><option>Sierra Blue</option><option>Ultramarine</option>
-          <option>Green</option><option>Midnight Green</option><option>Alpine Green</option><option>Forest Green</option><option>Mint Green</option><option>Olive Green</option><option>Teal</option>
-          <option>Red</option><option>Product Red</option><option>Dark Red</option><option>Coral Red</option>
-          <option>Pink</option><option>Rose Gold</option><option>Lavender</option><option>Purple</option><option>Deep Purple</option><option>Violet</option>
-          <option>Yellow</option><option>Gold Yellow</option><option>Sand</option><option>Beige</option><option>Cream</option><option>Starlight</option><option>Midnight</option>
-          <option>Orange</option><option>Copper</option><option>Bronze</option>
-          <option>Peach</option><option>Lilac</option><option>Aqua</option><option>Cyan</option>
-          <option>Gray</option><option>Dark Gray</option><option>Light Gray</option>
-          <option>Brown</option><option>Champagne</option><option>Mocha</option>
-          <option>Natural Titanium</option><option>Desert Titanium</option><option>Black Titanium</option><option>White Titanium</option><option>Blue Titanium</option>
+          <option>Alpine Green</option>
+          <option>Aqua</option>
+          <option>Aquamarine</option>
+          <option>Beige</option>
+          <option>Black</option>
+          <option>Black Titanium</option>
+          <option>Blue</option>
+          <option>Blue Titanium</option>
+          <option>Bronze</option>
+          <option>Brown</option>
+          <option>Champagne</option>
+          <option>Copper</option>
+          <option>Coral Red</option>
+          <option>Cream</option>
+          <option>Cyan</option>
+          <option>Dark Gray</option>
+          <option>Dark Red</option>
+          <option>Deep Purple</option>
+          <option>Desert Titanium</option>
+          <option>Forest Green</option>
+          <option>Gold</option>
+          <option>Gold Yellow</option>
+          <option>Graphite</option>
+          <option>Gray</option>
+          <option>Green</option>
+          <option>Ice Blue</option>
+          <option>Ivory</option>
+          <option>Lavender</option>
+          <option>Light Gray</option>
+          <option>Lilac</option>
+          <option>Midnight</option>
+          <option>Midnight Blue</option>
+          <option>Midnight Green</option>
+          <option>Mint Green</option>
+          <option>Mocha</option>
+          <option>Natural Titanium</option>
+          <option>Navy Blue</option>
+          <option>Ocean Blue</option>
+          <option>Olive Green</option>
+          <option>Orange</option>
+          <option>Pacific Blue</option>
+          <option>Peach</option>
+          <option>Pink</option>
+          <option>Product Red</option>
+          <option>Purple</option>
+          <option>Red</option>
+          <option>Rose Gold</option>
+          <option>Sand</option>
+          <option>Sierra Blue</option>
+          <option>Silver</option>
+          <option>Sky Blue</option>
+          <option>Space Gray</option>
+          <option>Starlight</option>
+          <option>Teal</option>
+          <option>Titanium</option>
+          <option>Ultramarine</option>
+          <option>Violet</option>
+          <option>White</option>
+          <option>White Titanium</option>
+          <option>Yellow</option>
         </select>
       </div>
     </div>
@@ -883,6 +932,9 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
 
 <!-- ══ STOCK LIST ══════════════════════════════════════════ -->
 <div id="stocklist" class="sec">
+  <div id="low-stock-banner" style="display:none;margin-bottom:14px;padding:12px 16px;background:#fef3c7;border:1.5px solid #f59e0b;border-radius:10px;font-size:13px;color:#92400e;font-weight:600">
+    ⚠️ <span id="low-stock-text"></span>
+  </div>
   <div class="page-header">
     <div class="page-title">Stock List</div>
     <div class="page-sub">View and filter all devices in inventory</div>
@@ -894,6 +946,9 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
     <div class="scard"><div class="scard-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div class="slbl">Investment</div><div class="sval sm" id="s-invest">Rs.0</div></div>
   </div>
   <div class="card">
+    <div style="margin-bottom:10px">
+      <input type="text" id="stock-search" placeholder="🔍  IMEI, model, color ya supplier search karo..." oninput="renderStock()" style="width:100%;padding:10px 14px;border:1.5px solid var(--gold-border);border-radius:var(--rad-s);font-size:13px;background:var(--card);color:var(--txt1);outline:none;box-sizing:border-box">
+    </div>
     <div class="filter-bar">
       <select id="f-model" onchange="renderStock()"><option value="">All Models</option><option>iPhone 17 Air</option><option>iPhone 17</option><option>iPhone 17 Pro</option><option>iPhone 17 Pro Max</option><option>iPhone 16</option><option>iPhone 16 Plus</option><option>iPhone 16 Pro</option><option>iPhone 16 Pro Max</option><option>iPhone 15</option><option>iPhone 15 Pro</option><option>iPhone 15 Pro Max</option><option>iPhone 14</option><option>iPhone 14 Pro</option><option>iPhone 14 Pro Max</option></select>
       <select id="f-variant" onchange="renderStock()"><option value="">All Variants</option><option>Non PTA</option><option>PTA Approved</option><option>JV</option></select>
@@ -1105,7 +1160,9 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
             <option value="partner1">Umer Withdrawal</option>
             <option value="partner2">Nijesh Withdrawal</option>
           </optgroup>
+          <option value="__other__">Other (Type karo)</option>
         </select>
+        <input type="text" id="exp-type-other" placeholder="Type likho..." style="display:none;margin-top:8px;width:100%;padding:9px 12px;border:1px solid var(--gold-border);border-radius:var(--rad-s);font-size:13px;background:var(--card);color:var(--txt1);outline:none">
       </div>
       <div class="fg">
         <label>Amount (Rs.) <span class="req">*</span></label>
@@ -1188,7 +1245,7 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
       <div class="fg">
         <label>Type <span class="req">*</span></label>
-        <select id="cb-type">
+        <select id="cb-type" onchange="cbTypeChange()">
           <optgroup label="Cash In">
             <option value="sale_cash">Phone Sale Cash</option>
             <option value="cust_payment">Customer Due Payment</option>
@@ -1203,7 +1260,9 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
             <option value="supplier_pay">Supplier Payment</option>
             <option value="other_out">Other Cash Out</option>
           </optgroup>
+          <option value="__other__">Other (Type karo)</option>
         </select>
+        <input type="text" id="cb-type-other" placeholder="Type likho..." style="display:none;margin-top:8px;width:100%;padding:9px 12px;border:1px solid var(--gold-border);border-radius:var(--rad-s);font-size:13px;background:var(--card);color:var(--txt1);outline:none">
       </div>
       <div class="fg">
         <label>Amount (Rs.) <span class="req">*</span></label>
@@ -2697,6 +2756,14 @@ async function completeSell() {
   const price = document.getElementById('sell-price').value;
   const date = document.getElementById('sell-date').value;
   if (!name || !phone || !price) { alert('Required fields missing:\n• Customer Name\n• Phone Number\n• Sale Price'); return; }
+  // Customer ka existing balance check karo
+  const custDues = stock.filter(m => m.status === 'sold' && m.paymentType === 'partial' && m.balance > 0 && m.customer && m.customer.phone === phone);
+  if (custDues.length > 0) {
+    const totalDue = custDues.reduce((s, m) => s + (m.balance || 0), 0);
+    const dueList = custDues.map(m => m.model + ': Rs. ' + m.balance.toLocaleString()).join('\n');
+    const go = confirm('⚠️ Is customer ka pehle se due balance hai!\n\n' + dueList + '\n\nTotal Due: Rs. ' + totalDue.toLocaleString() + '\n\nPhir bhi sell karna chahte ho?');
+    if (!go) return;
+  }
   const idx = stock.findIndex(m => m.imei === currentSellImei);
   if (idx === -1) { alert('Device not found.'); return; }
   const sellDate = date ? new Date(date) : new Date();
@@ -2757,9 +2824,15 @@ function vBadge(v) { if (v === 'PTA Approved') return 'bg-g'; if (v === 'JV') re
 function renderStock() {
   const fm = document.getElementById('f-model').value, fv = document.getElementById('f-variant').value,
     fs = document.getElementById('f-supplier').value, fst = document.getElementById('f-status').value;
+  const sq = (document.getElementById('stock-search') ? document.getElementById('stock-search').value.toLowerCase().trim() : '');
   let filtered = stock.filter(m => {
     if (fm && m.model !== fm) return false; if (fv && m.variant !== fv) return false;
-    if (fs && m.supplier !== fs) return false; if (fst && m.status !== fst) return false; return true;
+    if (fs && m.supplier !== fs) return false; if (fst && m.status !== fst) return false;
+    if (sq) {
+      const hay = [m.imei, m.model, m.color, m.supplier, m.storage, m.variant, m.customer?.name, m.customer?.phone].filter(Boolean).join(' ').toLowerCase();
+      if (!hay.includes(sq)) return false;
+    }
+    return true;
   });
   const tb = document.getElementById('stock-body');
   if (!filtered.length) { tb.innerHTML = '<tr><td colspan="10" class="empty"><div class="empty-icon">📦</div>No devices match filters</td></tr>'; return; }
@@ -2776,6 +2849,10 @@ function renderStock() {
     <td>
       <div style="display:flex;gap:6px;align-items:center">
         ${m.status === 'sold' ? `
+        <button class="btn" style="font-size:11px;padding:6px 11px;background:var(--gl);color:var(--gd);border:1px solid var(--g)" onclick="printQuickReceipt('${m.imei}')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Receipt
+        </button>
         <button class="btn" style="font-size:11px;padding:6px 11px;background:var(--al);color:var(--at);border:1px solid var(--a)" onclick="returnToStock('${m.imei}')">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
           Return
@@ -2790,6 +2867,45 @@ function renderStock() {
   updateStats();
 }
 
+function printQuickReceipt(imei) {
+  const m = stock.find(x => x.imei === imei);
+  if (!m) return;
+  const shopName = document.getElementById('shop-name-input') ? document.getElementById('shop-name-input').value.trim() || 'ZP Mobile Zone' : 'ZP Mobile Zone';
+  const w = window.open('', '_blank', 'width=400,height=600');
+  w.document.write(`<!DOCTYPE html><html><head><title>Receipt</title><style>
+    body{font-family:Arial,sans-serif;padding:20px;max-width:350px;margin:0 auto;font-size:13px}
+    h2{text-align:center;margin:0 0 4px;font-size:16px}
+    .sub{text-align:center;color:#666;font-size:11px;margin-bottom:14px}
+    hr{border:none;border-top:1px dashed #ccc;margin:10px 0}
+    .row{display:flex;justify-content:space-between;margin:5px 0}
+    .label{color:#666}.val{font-weight:600}
+    .total{font-size:15px;font-weight:800;color:#000}
+    .footer{text-align:center;margin-top:14px;font-size:11px;color:#999}
+    @media print{body{padding:0}}
+  </style></head><body>
+    <h2>${shopName}</h2>
+    <div class="sub">Sale Receipt</div>
+    <hr>
+    <div class="row"><span class="label">Date:</span><span class="val">${m.sellDate || new Date().toLocaleDateString('en-GB')}</span></div>
+    <div class="row"><span class="label">Customer:</span><span class="val">${m.customer?.name || '—'}</span></div>
+    <div class="row"><span class="label">Phone:</span><span class="val">${m.customer?.phone || '—'}</span></div>
+    <hr>
+    <div class="row"><span class="label">Model:</span><span class="val">${m.model}</span></div>
+    <div class="row"><span class="label">Variant:</span><span class="val">${m.variant}</span></div>
+    <div class="row"><span class="label">Storage:</span><span class="val">${m.storage || '—'}</span></div>
+    <div class="row"><span class="label">Color:</span><span class="val">${m.color || '—'}</span></div>
+    <div class="row"><span class="label">IMEI:</span><span class="val" style="font-size:11px;font-family:monospace">${m.imei}</span></div>
+    <hr>
+    <div class="row total"><span>Sale Price:</span><span>Rs. ${(m.sellPrice||0).toLocaleString()}</span></div>
+    ${m.paymentType==='partial' ? `<div class="row"><span class="label">Paid:</span><span class="val" style="color:green">Rs. ${(m.paidAmount||0).toLocaleString()}</span></div>
+    <div class="row"><span class="label">Balance:</span><span class="val" style="color:red">Rs. ${(m.balance||0).toLocaleString()}</span></div>` : '<div class="row"><span class="label">Payment:</span><span class="val" style="color:green">Full Paid ✓</span></div>'}
+    <hr>
+    <div class="footer">Shukriya! Dobara zaroor aana 🙏</div>
+    <script>window.onload=()=>{window.print();}<\/script>
+  </body></html>`);
+  w.document.close();
+}
+
 function updateStats() {
   const avail = stock.filter(m => m.status === 'available').length;
   const sold = stock.filter(m => m.status === 'sold').length;
@@ -2797,6 +2913,40 @@ function updateStats() {
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
   set('s-total', stock.length); set('s-avail', avail); set('s-sold', sold);
   set('s-invest', 'Rs. ' + invest.toLocaleString());
+
+  // Low stock alert — model wise check
+  const modelCount = {};
+  stock.filter(m => m.status === 'available').forEach(m => {
+    modelCount[m.model] = (modelCount[m.model] || 0) + 1;
+  });
+  const lowModels = Object.entries(modelCount).filter(([,c]) => c <= 2).map(([model, c]) => model + ' (' + c + ')');
+  const banner = document.getElementById('low-stock-banner');
+  const bannerText = document.getElementById('low-stock-text');
+  if (banner && bannerText) {
+    if (lowModels.length > 0) {
+      bannerText.textContent = 'Low Stock: ' + lowModels.join(', ');
+      banner.style.display = 'block';
+    } else {
+      banner.style.display = 'none';
+    }
+  }
+
+  // Daily summary
+  const today = new Date().toLocaleDateString('en-GB');
+  const todaySold = stock.filter(m => m.status === 'sold' && m.sellDate === today);
+  const todayRevenue = todaySold.reduce((s, m) => s + (m.sellPrice || 0), 0);
+  const todayCost = todaySold.reduce((s, m) => s + (m.buyPrice || 0), 0);
+  const todayProfit = todayRevenue - todayCost;
+  const todayExpenses = typeof expenses !== 'undefined' ? expenses.filter(e => e.date === new Date().toISOString().split('T')[0]).reduce((s, e) => s + e.amount, 0) : 0;
+  const summaryEl = document.getElementById('daily-summary');
+  if (summaryEl) {
+    if (todaySold.length > 0) {
+      summaryEl.style.display = 'block';
+      summaryEl.innerHTML = '📅 Aaj: <strong>' + todaySold.length + ' device</strong> sell — Revenue: <strong>Rs. ' + todayRevenue.toLocaleString() + '</strong> — Profit: <strong style="color:var(--gd)">Rs. ' + todayProfit.toLocaleString() + '</strong>' + (todayExpenses > 0 ? ' — Expenses: <strong style="color:var(--r)">Rs. ' + todayExpenses.toLocaleString() + '</strong>' : '');
+    } else {
+      summaryEl.style.display = 'none';
+    }
+  }
 }
 
 // returnToStock and deleteDevice are defined in the IndexedDB engine above
@@ -3159,7 +3309,7 @@ function renderBills() {
         <div id="mb-cust-suggest" class="cust-suggest"></div>
       </div>
       <div class="fg">
-        <label>Phone Number <span class="req">*</span></label>
+        <label>Phone Number <span style="color:var(--txt3);font-weight:400;text-transform:none;font-size:10px">(optional)</span></label>
         <input type="text" id="mb-cust-phone" placeholder="03xx-xxxxxxx">
       </div>
     </div>
@@ -3403,7 +3553,7 @@ function mbGenerateBill() {
     document.getElementById('mb-cust-cnic').value = custCnic;
   }
 
-  if (!custName || !custPhone) { alert('Please enter customer name and phone number.'); return; }
+  if (!custName) { alert('Please enter customer name.'); return; }
 
   var billNo = 'ZP-' + new Date().getFullYear() + '-M' + String(bills.length + 1).padStart(3, '0');
   var html = mbGetBillHTML({
@@ -3544,13 +3694,20 @@ function expTypeChange(){
   const t = document.getElementById('exp-type').value;
   const note = document.getElementById('exp-partner-note');
   const pname = document.getElementById('exp-pname');
+  const otherInp = document.getElementById('exp-type-other');
   if(t === 'partner1'){ note.style.display='block'; pname.textContent=expPartners.p1; }
   else if(t === 'partner2'){ note.style.display='block'; pname.textContent=expPartners.p2; }
   else note.style.display='none';
+  if(t === '__other__'){ otherInp.style.display='block'; otherInp.focus(); }
+  else otherInp.style.display='none';
 }
 
 function expAdd(){
-  const type = document.getElementById('exp-type').value;
+  let type = document.getElementById('exp-type').value;
+  if(type === '__other__'){
+    type = document.getElementById('exp-type-other').value.trim();
+    if(!type){ alert('Please type the expense type!'); document.getElementById('exp-type-other').focus(); return; }
+  }
   const amount = parseFloat(document.getElementById('exp-amount').value);
   const date = document.getElementById('exp-date').value;
   const desc = document.getElementById('exp-desc').value.trim();
@@ -3816,13 +3973,24 @@ const CB_LABELS = {
 
 function cbIsIn(type){ return CB_IN_TYPES.includes(type); }
 
+function cbTypeChange(){
+  const t = document.getElementById('cb-type').value;
+  const otherInp = document.getElementById('cb-type-other');
+  if(t === '__other__'){ otherInp.style.display='block'; otherInp.focus(); }
+  else otherInp.style.display='none';
+}
+
 function cbAdd(){
   const typeEl = document.getElementById('cb-type');
   const amtEl = document.getElementById('cb-amount');
   const dateEl = document.getElementById('cb-date');
   const descEl = document.getElementById('cb-desc');
   if(!typeEl||!amtEl||!dateEl){alert('Form not ready, please try again.');return;}
-  const type = typeEl.value;
+  let type = typeEl.value;
+  if(type === '__other__'){
+    type = document.getElementById('cb-type-other').value.trim();
+    if(!type){ alert('Please type the entry type!'); document.getElementById('cb-type-other').focus(); return; }
+  }
   const amt = parseFloat(amtEl.value);
   // Auto-fill today if date empty
   if(!dateEl.value){ const d=new Date(); dateEl.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
