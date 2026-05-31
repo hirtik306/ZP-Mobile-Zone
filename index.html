@@ -2192,19 +2192,22 @@ let imeiLookupTimer = null;
 function matchModelDropdown(modelStr) {
   if (!modelStr) return null;
   const modelSel = document.getElementById('model');
-  // Agar already text input hai (non-iPhone) to null return karo
   if (!modelSel || modelSel.tagName !== 'SELECT') return null;
+  // Sirf iPhone models dropdown mein hain
+  if (!modelStr.toLowerCase().includes('iphone')) return null;
   const r = modelStr.toLowerCase().trim();
-  // Try exact match first
+  // Exact match
   for (let i = 0; i < modelSel.options.length; i++) {
     if (modelSel.options[i].text.toLowerCase().trim() === r) return i;
   }
-  // Try partial match — sirf iPhone models ke liye (dropdown sirf iPhones hain)
-  if (!r.includes('iphone')) return null;
+  // Partial match — longest option jo model string se exactly match kare
   let bestIdx = -1, bestLen = 0;
   for (let i = 1; i < modelSel.options.length; i++) {
     const opt = modelSel.options[i].text.toLowerCase().trim();
-    if (r === opt || r.includes(opt)) {
+    // opt aur r dono same hon — sirf words level par
+    if (r === opt) { return i; }
+    // r mein opt ho lekin opt ke baad koi aur word na ho
+    if (r.startsWith(opt) && (r.length === opt.length || r[opt.length] === ' ')) {
       if (opt.length > bestLen) { bestLen = opt.length; bestIdx = i; }
     }
   }
