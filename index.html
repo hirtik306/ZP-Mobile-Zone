@@ -1856,6 +1856,160 @@ function subscribeOrders() {
   }, 20000);
 }
 
+
+// ═══ PIN AUTH SYSTEM ═══
+let pinBuffer = '', pinMode = 'login', pinFirst = '';
+
+async function initAuth() {
+  await openDB();
+  const savedPin = await idb.setting('pin');
+  const shopName = await idb.setting('shopName') || 'ZP Mobile Zone';
+  document.querySelectorAll('.login-brand').forEach(el => el.textContent = shopName);
+  if (!savedPin) {
+    pinMode = 'setup';
+    document.getElementById('pin-title').textContent = 'Setup PIN 🔐';
+    document.getElementById('pin-sub').textContent = 'Apna 4-digit PIN banayein';
+    document.getElementById('pin-setup-extra').style.display = 'block';
+  }
+  document.getElementById('load-overlay').classList.add('hidden');
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.addEventListener('keydown', e => {
+    if (document.getElementById('login-screen').classList.contains('hidden')) return;
+    if (e.key >= '0' && e.key <= '9') pinPress(e.key);
+    else if (e.key === 'Backspace') pinPress('del');
+    else if (e.key === 'Escape') pinPress('clr');
+  });
+}
+
+function pinPress(key) {
+  document.getElementById('pin-err').classList.remove('show');
+  if (key === 'clr') { pinBuffer = ''; updatePinDots(); return; }
+  if (key === 'del') { pinBuffer = pinBuffer.slice(0,-1); updatePinDots(); return; }
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += key;
+  updatePinDots();
+  if (pinBuffer.length === 4) setTimeout(() => handlePin(pinBuffer), 120);
+}
+
+function updatePinDots() {
+  for (let i = 0; i < 4; i++) {
+    const d = document.getElementById('pd' + i);
+    if (d) d.classList.toggle('filled', i < pinBuffer.length);
+  }
+}
+
+async function handlePin(pin) {
+  const errEl = document.getElementById('pin-err');
+  if (pinMode === 'login') {
+    const saved = await idb.setting('pin');
+    if (pin === saved) {
+      await showApp();
+    } else {
+      errEl.textContent = '❌ Galat PIN — dobara try karein';
+      errEl.classList.add('show');
+      pinBuffer = ''; updatePinDots();
+      document.querySelectorAll('.pin-dot').forEach(d => {
+        d.classList.add('shake'); setTimeout(() => d.classList.remove('shake'), 500);
+      });
+    }
+  } else if (pinMode === 'setup') {
+    pinFirst = pin; pinMode = 'confirm'; pinBuffer = ''; updatePinDots();
+    document.getElementById('pin-title').textContent = 'Confirm PIN ✅';
+    document.getElementById('pin-sub').textContent = 'Dobara wahi PIN daalen';
+    document.getElementById('pin-setup-extra').style.display = 'none';
+  } else if (pinMode === 'confirm') {
+    if (pin === pinFirst) {
+      const shopName = document.getElementById('shop-name-input')?.value.trim() || 'ZP Mobile Zone';
+      await idb.setting('pin', pin);
+      await idb.setting('shopName', shopName);
+      await showApp();
+    } else {
+      errEl.textContent = '❌ PIN match nahi hua — phir se try karein';
+      errEl.classList.add('show');
+      pinBuffer = ''; pinFirst = ''; pinMode = 'setup'; updatePinDots();
+      document.getElementById('pin-title').textContent = 'Setup PIN 🔐';
+      document.getElementById('pin-sub').textContent = 'Apna 4-digit PIN banayein';
+      document.getElementById('pin-setup-extra').style.display = 'block';
+    }
+  }
+}
+
+async function showApp() {
+  document.getElementById('load-overlay').classList.add('hidden');
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app-wrap').style.display = 'block';
+  const shopName = await idb.setting('shopName') || 'ZP Mobile Zone';
+  const el = document.getElementById('uemail'); if (el) el.textContent = shopName;
+  const ud = document.getElementById('udot'); if (ud) ud.textContent = 'ZP';
+  setDateDisplay();
+  if (typeof buildColorPicker === 'function') buildColorPicker('');
+  await loadAllData();
+  if (typeof supPopulateDropdowns === 'function') supPopulateDropdowns();
+  subscribeOrders();
+}
+
+function setDateDisplay() {
+  const d = new Date();
+  const mn = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const el = document.getElementById('topdate');
+  if (el) el.textContent = days[d.getDay()] + ', ' + d.getDate() + ' ' + mn[d.getMonth()] + ' ' + d.getFullYear();
+  const ry = document.getElementById('r-year');
+  if (ry) ry.querySelectorAll('option').forEach(o => { if (o.value == d.getFullYear()) o.selected = true; });
+}
+
+async function doLogout() {
+  if (!confirm('Logout karna chahte hain?')) return;
+  document.getElementById('app-wrap').style.display = 'none';
+  document.getElementById('login-screen').classList.remove('hidden');
+  pinBuffer = ''; pinMode = 'login'; pinFirst = '';
+  updatePinDots();
+  document.getElementById('pin-title').textContent = 'Welcome Back 👋';
+  document.getElementById('pin-sub').textContent = '4-digit PIN daalen';
+  document.getElementById('pin-err').classList.remove('show');
+  if (orderPollInterval) { clearInterval(orderPollInterval); orderPollInterval = null; }
+}
+
+async function changePin() {
+  const cur = prompt('Pehle purana PIN daalen:');
+  const saved = await idb.setting('pin');
+  if (cur !== saved) { alert('Galat PIN!'); return; }
+  const n1 = prompt('Naya 4-digit PIN:');
+  if (!n1 || n1.length !== 4 || isNaN(n1)) { alert('4 digits ka PIN chahiye!'); return; }
+  const n2 = prompt('Confirm naya PIN:');
+  if (n1 !== n2) { alert('PIN match nahi hua!'); return; }
+  await idb.setting('pin', n1);
+  alert('✅ PIN change ho gaya!');
+}
+
+async function deleteDevice(imei) {
+  const m = stock.find(x => x.imei === imei);
+  if (!m) return;
+  if (!confirm(`Permanently delete?\n\nModel: ${m.model} ${m.storage||''}\nIMEI: ${m.imei}\n\nYeh undo nahi hoga.`)) return;
+  await deleteStockItem(imei);
+  renderStock();
+  typeof renderPending === 'function' && renderPending();
+  updateStats();
+}
+
+async function returnToStock(imei) {
+  const m = stock.find(x => x.imei === imei);
+  if (!m) return;
+  if (!confirm(`Return to stock?\n\nModel: ${m.model} ${m.storage||''}\nIMEI: ${m.imei}\n\nSale data remove ho jayega.`)) return;
+  const updated = {...m, status:'available', customer:null, sellPrice:null, paidAmount:null, balance:null, paymentType:'full', sellDate:null, sellMonth:null, sellYear:null, dueDate:null, payments:[]};
+  await saveStockItem(updated);
+  renderStock();
+  typeof renderPending === 'function' && renderPending();
+  alert(`✅ ${m.model} wapas stock mein aa gaya.`);
+}
+
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstallPrompt = e; const b = document.getElementById('install-btn'); if(b) b.style.display='flex'; });
+window.addEventListener('appinstalled', () => { deferredInstallPrompt = null; const b = document.getElementById('install-btn'); if(b) b.style.display='none'; });
+function installApp() {
+  if (deferredInstallPrompt) { deferredInstallPrompt.prompt(); deferredInstallPrompt.userChoice.then(() => { deferredInstallPrompt = null; }); }
+}
+
 window.addEventListener('load', initAuth);
 </script>
 
