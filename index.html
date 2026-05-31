@@ -2082,17 +2082,19 @@ let imeiLookupTimer = null;
 function matchModelDropdown(modelStr) {
   if (!modelStr) return null;
   const modelSel = document.getElementById('model');
-  if (!modelSel) return null;
-  const r = modelStr.toLowerCase();
+  // Agar already text input hai (non-iPhone) to null return karo
+  if (!modelSel || modelSel.tagName !== 'SELECT') return null;
+  const r = modelStr.toLowerCase().trim();
   // Try exact match first
   for (let i = 0; i < modelSel.options.length; i++) {
-    if (modelSel.options[i].text.toLowerCase() === r) return i;
+    if (modelSel.options[i].text.toLowerCase().trim() === r) return i;
   }
-  // Try partial match (longest match wins)
+  // Try partial match — sirf iPhone models ke liye (dropdown sirf iPhones hain)
+  if (!r.includes('iphone')) return null;
   let bestIdx = -1, bestLen = 0;
   for (let i = 1; i < modelSel.options.length; i++) {
-    const opt = modelSel.options[i].text.toLowerCase();
-    if (r.includes(opt) || opt.includes(r.substring(0, Math.min(r.length, 20)))) {
+    const opt = modelSel.options[i].text.toLowerCase().trim();
+    if (r === opt || r.includes(opt)) {
       if (opt.length > bestLen) { bestLen = opt.length; bestIdx = i; }
     }
   }
@@ -2112,9 +2114,21 @@ function applyImeiInfo(info) {
   const modelSel = document.getElementById('model');
   const idx = matchModelDropdown(info.model);
   if (idx !== null && modelSel) {
+    // Model found in dropdown — select it
     modelSel.selectedIndex = idx;
     filled.push(modelSel.options[idx].text);
     if (typeof buildColorPicker === 'function') buildColorPicker(modelSel.options[idx].text);
+  } else if (modelSel) {
+    // Model NOT in dropdown — replace select with text input and auto-fill
+    const parent = modelSel.parentNode;
+    const txt = document.createElement('input');
+    txt.type = 'text';
+    txt.id = 'model';
+    txt.value = info.model;
+    txt.style.cssText = modelSel.style.cssText;
+    txt.className = modelSel.className;
+    parent.replaceChild(txt, modelSel);
+    filled.push(info.model);
   }
 
   // Auto-fill storage dropdown
@@ -2183,7 +2197,21 @@ function liveCheckImei() {
 
 function clearForm() {
   ['imei-input','buy-price'].forEach(id => document.getElementById(id).value = '');
-  ['model','variant','supplier','storage'].forEach(id => document.getElementById(id).value = '');
+  // Restore model field to dropdown if it was replaced with text input
+  const modelEl = document.getElementById('model');
+  if (modelEl && modelEl.tagName === 'INPUT') {
+    const sel = document.createElement('select');
+    sel.id = 'model';
+    sel.innerHTML = `<option value="">— Select Model —</option>
+      <optgroup label="iPhone 17 Series"><option>iPhone 17 Air</option><option>iPhone 17 Air</option><option>iPhone 17</option><option>iPhone 17 Pro</option><option>iPhone 17 Pro Max</option></optgroup>
+      <optgroup label="iPhone 16 Series"><option>iPhone 16</option><option>iPhone 16 Plus</option><option>iPhone 16 Pro</option><option>iPhone 16 Pro Max</option></optgroup>
+      <optgroup label="iPhone 15 Series"><option>iPhone 15</option><option>iPhone 15 Plus</option><option>iPhone 15 Pro</option><option>iPhone 15 Pro Max</option></optgroup>
+      <optgroup label="iPhone 14 Series"><option>iPhone 14</option><option>iPhone 14 Plus</option><option>iPhone 14 Pro</option><option>iPhone 14 Pro Max</option></optgroup>`;
+    modelEl.parentNode.replaceChild(sel, modelEl);
+  } else if (modelEl) {
+    modelEl.value = '';
+  }
+  ['variant','supplier','storage'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('selected-color').value = '';
   document.getElementById('color-name').textContent = '';
   document.querySelectorAll('.color-opt').forEach(x => x.classList.remove('selected'));
