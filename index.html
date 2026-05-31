@@ -745,7 +745,7 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
     <div class="card-hd"><div class="card-hd-accent"></div>Add New Customer</div>
     <div class="frow">
       <div class="fg"><label>Full Name <span class="req">*</span></label><input type="text" id="nc-name" placeholder="Customer full name" onfocus="autoAssignCustNo()"></div>
-      <div class="fg"><label>Customer Shop Name <span class="req">*</span></label><input type="text" id="nc-phone" placeholder="Enter shop name..."></div>
+      <div class="fg"><label>Phone Number <span style="color:var(--txt3);font-weight:400;text-transform:none;font-size:10px">(optional)</span></label><input type="text" id="nc-phone" placeholder="03xx-xxxxxxx"></div>
     </div>
     <div class="frow" style="margin-bottom:0">
       <div class="fg"><label>CNIC <span style="color:var(--txt3);font-weight:400;text-transform:none;font-size:10px">(optional)</span></label><input type="text" id="nc-cnic" placeholder="xxxxx-xxxxxxx-x"></div>
@@ -1978,6 +1978,22 @@ window.addEventListener('load', initAuth);
 <script>
 // ═══ COLORS ═══
 const COLORS = {
+  // ── iPhone 17 Series ──
+  'iPhone 17 Air':[{name:'Black',hex:'#1c1c1e'},{name:'White',hex:'#f5f5f0'},{name:'Sky Blue',hex:'#7fb3d3'},{name:'Pink',hex:'#f0a8b8'},{name:'Sand',hex:'#cfc0a5'}],
+  'iPhone 17':[{name:'Black',hex:'#1c1c1e'},{name:'White',hex:'#f5f5f0'},{name:'Sky Blue',hex:'#7fb3d3'},{name:'Pink',hex:'#f0a8b8'},{name:'Sand',hex:'#cfc0a5'}],
+  'iPhone 17 Pro':[{name:'Black Titanium',hex:'#2a2825'},{name:'White Titanium',hex:'#e5e0d8'},{name:'Natural Titanium',hex:'#b0a18a'},{name:'Desert Titanium',hex:'#c8a97a'}],
+  'iPhone 17 Pro Max':[{name:'Black Titanium',hex:'#2a2825'},{name:'White Titanium',hex:'#e5e0d8'},{name:'Natural Titanium',hex:'#b0a18a'},{name:'Desert Titanium',hex:'#c8a97a'}],
+  // ── iPhone 16 Series ──
+  'iPhone 16':[{name:'Black',hex:'#1c1c1e'},{name:'White',hex:'#f5f5f0'},{name:'Pink',hex:'#f2a7bb'},{name:'Teal',hex:'#4a9a8a'},{name:'Ultramarine',hex:'#3a4a8a'}],
+  'iPhone 16 Plus':[{name:'Black',hex:'#1c1c1e'},{name:'White',hex:'#f5f5f0'},{name:'Pink',hex:'#f2a7bb'},{name:'Teal',hex:'#4a9a8a'},{name:'Ultramarine',hex:'#3a4a8a'}],
+  'iPhone 16 Pro':[{name:'Black Titanium',hex:'#2a2825'},{name:'White Titanium',hex:'#e5e0d8'},{name:'Natural Titanium',hex:'#b0a18a'},{name:'Desert Titanium',hex:'#c8a97a'}],
+  'iPhone 16 Pro Max':[{name:'Black Titanium',hex:'#2a2825'},{name:'White Titanium',hex:'#e5e0d8'},{name:'Natural Titanium',hex:'#b0a18a'},{name:'Desert Titanium',hex:'#c8a97a'}],
+  // ── iPhone 15 Series ──
+  'iPhone 15':[{name:'Black',hex:'#1c1c1e'},{name:'Blue',hex:'#aac4d4'},{name:'Green',hex:'#a8c8a0'},{name:'Yellow',hex:'#f5e278'},{name:'Pink',hex:'#f4b8c1'}],
+  'iPhone 15 Plus':[{name:'Black',hex:'#1c1c1e'},{name:'Blue',hex:'#aac4d4'},{name:'Green',hex:'#a8c8a0'},{name:'Yellow',hex:'#f5e278'},{name:'Pink',hex:'#f4b8c1'}],
+  'iPhone 15 Pro':[{name:'Black Titanium',hex:'#2a2825'},{name:'White Titanium',hex:'#e5e0d8'},{name:'Natural Titanium',hex:'#b0a18a'},{name:'Blue Titanium',hex:'#4a6878'}],
+  'iPhone 15 Pro Max':[{name:'Black Titanium',hex:'#2a2825'},{name:'White Titanium',hex:'#e5e0d8'},{name:'Natural Titanium',hex:'#b0a18a'},{name:'Blue Titanium',hex:'#4a6878'}],
+  // ── iPhone 14 Series ──
   'iPhone 14':[{name:'Midnight',hex:'#1c1c2e'},{name:'Starlight',hex:'#f2ede4'},{name:'Blue',hex:'#9ab8d6'},{name:'Purple',hex:'#ccc0d8'},{name:'Product Red',hex:'#bf0000'},{name:'Yellow',hex:'#fada5e'}],
   'iPhone 14 Plus':[{name:'Midnight',hex:'#1c1c2e'},{name:'Starlight',hex:'#f2ede4'},{name:'Blue',hex:'#9ab8d6'},{name:'Purple',hex:'#ccc0d8'},{name:'Product Red',hex:'#bf0000'},{name:'Yellow',hex:'#fada5e'}],
   'iPhone 14 Pro':[{name:'Space Black',hex:'#2c2c2e'},{name:'Silver',hex:'#e5e4e0'},{name:'Gold',hex:'#c8a97e'},{name:'Deep Purple',hex:'#4b3a6e'}],
@@ -2363,9 +2379,9 @@ async function addNewCustomer() {
   const address = document.getElementById('nc-address').value.trim();
   const custNoRaw = document.getElementById('nc-custno') ? document.getElementById('nc-custno').value.trim() : '';
   const custNo = custNoRaw ? parseInt(custNoRaw) : null;
-  if (!name || !phone) { alert('Name and Phone are required.'); return; }
-  const exists = customers.find(c => c.phone === phone);
-  if (exists) { alert('A customer with this phone number already exists:\n' + exists.name); return; }
+  if (!name) { alert('Customer name required hai.'); return; }
+  const exists = phone ? customers.find(c => c.phone === phone) : null;
+  if (exists) { alert('Is phone number ka customer pehle se hai:\n' + exists.name); return; }
   if (custNo && customers.find(c => c.custNo === custNo)) {
     alert('⚠️ Yeh number (#' + custNo + ') pehle se kisi aur customer ko diya hua hai!\n' + customers.find(c => c.custNo === custNo).name);
     return;
