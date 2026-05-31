@@ -569,6 +569,24 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
       <div id="color-picker" class="color-grid"></div>
       <input type="hidden" id="selected-color">
       <div id="color-name" style="font-size:12px;color:var(--txt2);margin-top:6px;min-height:18px;font-weight:500"></div>
+      <div style="margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-size:11px;color:var(--txt3);font-weight:600">Other Color:</span>
+        <select id="other-color-sel" onchange="selectOtherColor(this.value)" style="font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid var(--gold-border);background:var(--card);color:var(--txt1);outline:none;cursor:pointer">
+          <option value="">— Select —</option>
+          <option>Black</option><option>White</option><option>Silver</option><option>Gold</option>
+          <option>Space Gray</option><option>Graphite</option><option>Titanium</option>
+          <option>Blue</option><option>Navy Blue</option><option>Sky Blue</option><option>Midnight Blue</option><option>Ocean Blue</option><option>Ice Blue</option><option>Pacific Blue</option><option>Sierra Blue</option><option>Ultramarine</option>
+          <option>Green</option><option>Midnight Green</option><option>Alpine Green</option><option>Forest Green</option><option>Mint Green</option><option>Olive Green</option><option>Teal</option>
+          <option>Red</option><option>Product Red</option><option>Dark Red</option><option>Coral Red</option>
+          <option>Pink</option><option>Rose Gold</option><option>Lavender</option><option>Purple</option><option>Deep Purple</option><option>Violet</option>
+          <option>Yellow</option><option>Gold Yellow</option><option>Sand</option><option>Beige</option><option>Cream</option><option>Starlight</option><option>Midnight</option>
+          <option>Orange</option><option>Copper</option><option>Bronze</option>
+          <option>Peach</option><option>Lilac</option><option>Aqua</option><option>Cyan</option>
+          <option>Gray</option><option>Dark Gray</option><option>Light Gray</option>
+          <option>Brown</option><option>Champagne</option><option>Mocha</option>
+          <option>Natural Titanium</option><option>Desert Titanium</option><option>Black Titanium</option><option>White Titanium</option><option>Blue Titanium</option>
+        </select>
+      </div>
     </div>
     <div class="section-label">Pricing</div>
     <div class="fg" style="margin-bottom:6px">
@@ -748,6 +766,7 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
       <div class="fg"><label>Phone Number <span style="color:var(--txt3);font-weight:400;text-transform:none;font-size:10px">(optional)</span></label><input type="text" id="nc-phone" placeholder="03xx-xxxxxxx"></div>
     </div>
     <div class="frow" style="margin-bottom:0">
+      <div class="fg"><label>Shop Name <span style="color:var(--txt3);font-weight:400;text-transform:none;font-size:10px">(optional)</span></label><input type="text" id="nc-shopname" placeholder="Shop / Business name"></div>
       <div class="fg"><label>CNIC <span style="color:var(--txt3);font-weight:400;text-transform:none;font-size:10px">(optional)</span></label><input type="text" id="nc-cnic" placeholder="xxxxx-xxxxxxx-x"></div>
       <div class="fg"><label>Address <span style="color:var(--txt3);font-weight:400;text-transform:none;font-size:10px">(optional)</span></label><input type="text" id="nc-address" placeholder="City / Area"></div>
     </div>
@@ -1988,28 +2007,30 @@ const COLORS = {
   'iPhone 16 Plus':[{name:'Black',hex:'#1c1c1e'},{name:'White',hex:'#f5f5f0'},{name:'Pink',hex:'#f2a7bb'},{name:'Teal',hex:'#4a9a8a'},{name:'Ultramarine',hex:'#3a4a8a'}],
   'iPhone 16 Pro':[{name:'Black Titanium',hex:'#2a2825'},{name:'White Titanium',hex:'#e5e0d8'},{name:'Natural Titanium',hex:'#b0a18a'},{name:'Desert Titanium',hex:'#c8a97a'}],
   'iPhone 16 Pro Max':[{name:'Black Titanium',hex:'#2a2825'},{name:'White Titanium',hex:'#e5e0d8'},{name:'Natural Titanium',hex:'#b0a18a'},{name:'Desert Titanium',hex:'#c8a97a'}],
-  // ── iPhone 15 Series ──
-  'iPhone 15':[{name:'Black',hex:'#1c1c1e'},{name:'Blue',hex:'#aac4d4'},{name:'Green',hex:'#a8c8a0'},{name:'Yellow',hex:'#f5e278'},{name:'Pink',hex:'#f4b8c1'}],
-  'iPhone 15 Plus':[{name:'Black',hex:'#1c1c1e'},{name:'Blue',hex:'#aac4d4'},{name:'Green',hex:'#a8c8a0'},{name:'Yellow',hex:'#f5e278'},{name:'Pink',hex:'#f4b8c1'}],
-  'iPhone 15 Pro':[{name:'Black Titanium',hex:'#2a2825'},{name:'White Titanium',hex:'#e5e0d8'},{name:'Natural Titanium',hex:'#b0a18a'},{name:'Blue Titanium',hex:'#4a6878'}],
-  'iPhone 15 Pro Max':[{name:'Black Titanium',hex:'#2a2825'},{name:'White Titanium',hex:'#e5e0d8'},{name:'Natural Titanium',hex:'#b0a18a'},{name:'Blue Titanium',hex:'#4a6878'}],
   // ── iPhone 14 Series ──
   'iPhone 14':[{name:'Midnight',hex:'#1c1c2e'},{name:'Starlight',hex:'#f2ede4'},{name:'Blue',hex:'#9ab8d6'},{name:'Purple',hex:'#ccc0d8'},{name:'Product Red',hex:'#bf0000'},{name:'Yellow',hex:'#fada5e'}],
   'iPhone 14 Plus':[{name:'Midnight',hex:'#1c1c2e'},{name:'Starlight',hex:'#f2ede4'},{name:'Blue',hex:'#9ab8d6'},{name:'Purple',hex:'#ccc0d8'},{name:'Product Red',hex:'#bf0000'},{name:'Yellow',hex:'#fada5e'}],
   'iPhone 14 Pro':[{name:'Space Black',hex:'#2c2c2e'},{name:'Silver',hex:'#e5e4e0'},{name:'Gold',hex:'#c8a97e'},{name:'Deep Purple',hex:'#4b3a6e'}],
   'iPhone 14 Pro Max':[{name:'Space Black',hex:'#2c2c2e'},{name:'Silver',hex:'#e5e4e0'},{name:'Gold',hex:'#c8a97e'},{name:'Deep Purple',hex:'#4b3a6e'}],
+  // ── iPhone 13 Series ──
+  'iPhone 13':[{name:'Midnight',hex:'#1c1c2e'},{name:'Starlight',hex:'#f2ede4'},{name:'Blue',hex:'#9ab8d6'},{name:'Pink',hex:'#f4b8c1'},{name:'Green',hex:'#a8c8a0'},{name:'Product Red',hex:'#bf0000'}],
+  'iPhone 13 Mini':[{name:'Midnight',hex:'#1c1c2e'},{name:'Starlight',hex:'#f2ede4'},{name:'Blue',hex:'#9ab8d6'},{name:'Pink',hex:'#f4b8c1'},{name:'Green',hex:'#a8c8a0'},{name:'Product Red',hex:'#bf0000'}],
+  'iPhone 13 Pro':[{name:'Silver',hex:'#e5e4e0'},{name:'Gold',hex:'#c8a97e'},{name:'Graphite',hex:'#4a4a4a'},{name:'Alpine Green',hex:'#4a7858'},{name:'Sierra Blue',hex:'#7fb3d3'}],
+  'iPhone 13 Pro Max':[{name:'Silver',hex:'#e5e4e0'},{name:'Gold',hex:'#c8a97e'},{name:'Graphite',hex:'#4a4a4a'},{name:'Alpine Green',hex:'#4a7858'},{name:'Sierra Blue',hex:'#7fb3d3'}],
+  // ── iPhone 12 Series ──
+  'iPhone 12':[{name:'Black',hex:'#1c1c1e'},{name:'White',hex:'#f5f5f0'},{name:'Product Red',hex:'#bf0000'},{name:'Blue',hex:'#004f87'},{name:'Green',hex:'#4a7858'},{name:'Purple',hex:'#9b59b6'}],
+  'iPhone 12 Mini':[{name:'Black',hex:'#1c1c1e'},{name:'White',hex:'#f5f5f0'},{name:'Product Red',hex:'#bf0000'},{name:'Blue',hex:'#004f87'},{name:'Green',hex:'#4a7858'},{name:'Purple',hex:'#9b59b6'}],
+  'iPhone 12 Pro':[{name:'Silver',hex:'#e5e4e0'},{name:'Gold',hex:'#c8a97e'},{name:'Graphite',hex:'#4a4a4a'},{name:'Pacific Blue',hex:'#3a6a8a'}],
+  'iPhone 12 Pro Max':[{name:'Silver',hex:'#e5e4e0'},{name:'Gold',hex:'#c8a97e'},{name:'Graphite',hex:'#4a4a4a'},{name:'Pacific Blue',hex:'#3a6a8a'}],
+  // ── iPhone 11 Series ──
+  'iPhone 11':[{name:'Black',hex:'#1c1c1e'},{name:'White',hex:'#f5f5f0'},{name:'Product Red',hex:'#bf0000'},{name:'Yellow',hex:'#f5e278'},{name:'Purple',hex:'#9b59b6'},{name:'Green',hex:'#4a7858'}],
+  'iPhone 11 Pro':[{name:'Space Gray',hex:'#3a3a3c'},{name:'Silver',hex:'#e5e4e0'},{name:'Gold',hex:'#c8a97e'},{name:'Midnight Green',hex:'#2d4a3e'}],
+  'iPhone 11 Pro Max':[{name:'Space Gray',hex:'#3a3a3c'},{name:'Silver',hex:'#e5e4e0'},{name:'Gold',hex:'#c8a97e'},{name:'Midnight Green',hex:'#2d4a3e'}],
+  // ── iPhone 15 Series ──
   'iPhone 15':[{name:'Black',hex:'#1c1c1e'},{name:'Blue',hex:'#aac4d4'},{name:'Green',hex:'#a8c8a0'},{name:'Yellow',hex:'#f5e278'},{name:'Pink',hex:'#f4b8c1'}],
   'iPhone 15 Plus':[{name:'Black',hex:'#1c1c1e'},{name:'Blue',hex:'#aac4d4'},{name:'Green',hex:'#a8c8a0'},{name:'Yellow',hex:'#f5e278'},{name:'Pink',hex:'#f4b8c1'}],
-  'iPhone 15 Pro':[{name:'Black Titanium',hex:'#2e2c2b'},{name:'White Titanium',hex:'#e8e3da'},{name:'Blue Titanium',hex:'#5c7485'},{name:'Natural Titanium',hex:'#b4a98c'}],
-  'iPhone 15 Pro Max':[{name:'Black Titanium',hex:'#2e2c2b'},{name:'White Titanium',hex:'#e8e3da'},{name:'Blue Titanium',hex:'#5c7485'},{name:'Natural Titanium',hex:'#b4a98c'}],
-  'iPhone 16':[{name:'Black',hex:'#1c1c1e'},{name:'White',hex:'#f5f5f0'},{name:'Pink',hex:'#f2a7b7'},{name:'Teal',hex:'#5b9e9a'},{name:'Ultramarine',hex:'#3d5a9e'}],
-  'iPhone 16 Plus':[{name:'Black',hex:'#1c1c1e'},{name:'White',hex:'#f5f5f0'},{name:'Pink',hex:'#f2a7b7'},{name:'Teal',hex:'#5b9e9a'},{name:'Ultramarine',hex:'#3d5a9e'}],
-  'iPhone 16 Pro':[{name:'Black Titanium',hex:'#2a2825'},{name:'White Titanium',hex:'#e5e0d8'},{name:'Natural Titanium',hex:'#b0a18a'},{name:'Desert Titanium',hex:'#c8a97a'}],
-  'iPhone 16 Pro Max':[{name:'Black Titanium',hex:'#2a2825'},{name:'White Titanium',hex:'#e5e0d8'},{name:'Natural Titanium',hex:'#b0a18a'},{name:'Desert Titanium',hex:'#c8a97a'}],
-  'iPhone 17 Air':[{name:'Black',hex:'#1c1c1e'},{name:'White',hex:'#f5f5f0'},{name:'Sky Blue',hex:'#7fb3d3'},{name:'Pink',hex:'#f0a8b8'},{name:'Sand',hex:'#cfc0a5'}],
-  'iPhone 17':[{name:'Black',hex:'#1c1c1e'},{name:'White',hex:'#f5f5f0'},{name:'Sky Blue',hex:'#7fb3d3'},{name:'Pink',hex:'#f0a8b8'},{name:'Sand',hex:'#cfc0a5'}],
-  'iPhone 17 Pro':[{name:'Black Titanium',hex:'#2a2825'},{name:'White Titanium',hex:'#e5e0d8'},{name:'Natural Titanium',hex:'#b0a18a'},{name:'Desert Titanium',hex:'#c8a97a'}],
-  'iPhone 17 Pro Max':[{name:'Black Titanium',hex:'#2a2825'},{name:'White Titanium',hex:'#e5e0d8'},{name:'Natural Titanium',hex:'#b0a18a'},{name:'Desert Titanium',hex:'#c8a97a'}],
+  'iPhone 15 Pro':[{name:'Black Titanium',hex:'#2a2825'},{name:'White Titanium',hex:'#e5e0d8'},{name:'Natural Titanium',hex:'#b0a18a'},{name:'Blue Titanium',hex:'#4a6878'}],
+  'iPhone 15 Pro Max':[{name:'Black Titanium',hex:'#2a2825'},{name:'White Titanium',hex:'#e5e0d8'},{name:'Natural Titanium',hex:'#b0a18a'},{name:'Blue Titanium',hex:'#4a6878'}],
   // ── Samsung Galaxy S25 Series ──
   'Samsung Galaxy S25 Ultra':[{name:'Titanium Black',hex:'#2a2825'},{name:'Titanium Silver Blue',hex:'#8fa8b8'},{name:'Titanium White Silver',hex:'#e8e4dc'},{name:'Titanium Gray',hex:'#7a7a78'}],
   'Samsung Galaxy S25+':[{name:'Icyblue',hex:'#b8d4e0'},{name:'Mint',hex:'#a8d4b8'},{name:'Navy',hex:'#1a2744'},{name:'Silver Shadow',hex:'#c8c8c8'}],
@@ -2138,7 +2159,14 @@ function buildColorPicker(m) {
     grid.appendChild(div);
   });
 }
-document.getElementById('model').addEventListener('change', function() { buildColorPicker(this.value); });
+function selectOtherColor(val) {
+  if (!val) return;
+  document.getElementById('selected-color').value = val;
+  document.getElementById('color-name').textContent = val;
+  document.querySelectorAll('.color-opt').forEach(x => x.classList.remove('selected'));
+  document.getElementById('other-color-sel').value = val;
+}
+document.getElementById('model').addEventListener('change', function() { buildColorPicker(this.value); document.getElementById('other-color-sel').value=''; });
 buildColorPicker('');
 
 // Date
@@ -2343,7 +2371,7 @@ function clearForm() {
   }
   ['variant','supplier','storage'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('selected-color').value = '';
-  document.getElementById('color-name').textContent = '';
+  document.getElementById('color-name').textContent = ''; if(document.getElementById('other-color-sel')) document.getElementById('other-color-sel').value='';
   document.querySelectorAll('.color-opt').forEach(x => x.classList.remove('selected'));
   document.getElementById('pur-status').innerHTML = ''; buildColorPicker('');
 }
@@ -2375,6 +2403,7 @@ function genCustId() { return Date.now() + Math.floor(Math.random() * 9999); }
 async function addNewCustomer() {
   const name = document.getElementById('nc-name').value.trim();
   const phone = document.getElementById('nc-phone').value.trim();
+  const shopname = document.getElementById('nc-shopname') ? document.getElementById('nc-shopname').value.trim() : '';
   const cnic = document.getElementById('nc-cnic').value.trim();
   const address = document.getElementById('nc-address').value.trim();
   const custNoRaw = document.getElementById('nc-custno') ? document.getElementById('nc-custno').value.trim() : '';
@@ -2387,10 +2416,11 @@ async function addNewCustomer() {
     return;
   }
   try {
-    await saveCustItem({ name, phone, cnic, address, custNo: custNo || null, addedDate: new Date().toLocaleDateString('en-GB') });
+    await saveCustItem({ name, phone, shopname: shopname||'', cnic, address, custNo: custNo || null, addedDate: new Date().toLocaleDateString('en-GB') });
   } catch(e) { alert('Error saving: ' + e.message); return; }
   document.getElementById('nc-name').value = '';
   document.getElementById('nc-phone').value = '';
+  if(document.getElementById('nc-shopname')) document.getElementById('nc-shopname').value = '';
   document.getElementById('nc-cnic').value = '';
   document.getElementById('nc-address').value = '';
   if (document.getElementById('nc-custno')) document.getElementById('nc-custno').value = '';
