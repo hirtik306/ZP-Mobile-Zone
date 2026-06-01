@@ -1958,9 +1958,9 @@ async function showApp() {
   const ud = document.getElementById('udot'); if (ud) ud.textContent = 'ZP';
   setDateDisplay();
   if (typeof buildColorPicker === 'function') buildColorPicker('');
+  subscribeOrders(); // orders polling turant shuru — loadAllData ka wait nahi
   await loadAllData();
   if (typeof supPopulateDropdowns === 'function') supPopulateDropdowns();
-  subscribeOrders();
 }
 
 function setDateDisplay() {
@@ -1983,6 +1983,7 @@ async function doLogout() {
   document.getElementById('pin-sub').textContent = '4-digit PIN daalen';
   document.getElementById('pin-err').classList.remove('show');
   if (orderPollInterval) { clearInterval(orderPollInterval); orderPollInterval = null; }
+  knownOrderIds = new Set(); lastOrderCount = -1;
 }
 
 async function changePin() {
