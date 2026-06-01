@@ -1760,19 +1760,8 @@ async function loadAllData() {
   // Step 2: Freshen from MongoDB — orders alag try/catch mein
   setSyncing('syncing');
 
-  // Orders — independent fetch, fail hone par bhi polling chalti rahe
-  fetch(BACKEND + '/api/orders', { signal: AbortSignal.timeout(90000) })
-    .then(r => r.json())
-    .then(async ordRes => {
-      if (Array.isArray(ordRes)) {
-        orders = ordRes;
-        await idb.clear('orders');
-        for (const o of orders) await idb.put('orders', { ...o, id: o._id });
-        if (typeof renderOrders === 'function') renderOrders();
-        lastOrderCount = orders.length;
-      }
-    })
-    .catch(() => {});
+  // Orders — subscribeOrders handle karega, yahan sirf lastOrderCount reset karo
+  lastOrderCount = -1;
 
   // Stock + Customers + rest
   try {
@@ -1841,13 +1830,14 @@ async function loadPersistedData() {
   } catch(e) { console.log('[loadPersistedData] error:', e); }
 }
 
-// ═══ ORDERS — auto poll har 10 sec (no isOnline guard) ═══
+// ═══ ORDERS — auto poll har 10 sec ═══
 let orderPollInterval = null;
 let lastOrderCount = -1;
+let knownOrderIds = new Set();
 let orderFetchBusy = false;
 
 async function fetchOrders() {
-  if (orderFetchBusy) return; // agar pehle se fetch chal rahi ho skip karo
+  if (orderFetchBusy) return;
   orderFetchBusy = true;
   try {
     const res = await fetch(BACKEND + '/api/orders', {
@@ -1856,11 +1846,16 @@ async function fetchOrders() {
     if (!res.ok) { orderFetchBusy = false; return; }
     const newOrders = await res.json();
     if (!Array.isArray(newOrders)) { orderFetchBusy = false; return; }
-    if (lastOrderCount >= 0 && newOrders.length > lastOrderCount) {
-      const added = newOrders.slice(0, newOrders.length - lastOrderCount);
-      added.forEach(order => showOrderNotification(order));
+
+    // Naye orders dhundo ID se — count se nahi
+    const addedOrders = newOrders.filter(o => !knownOrderIds.has(String(o._id || o.id)));
+    if (knownOrderIds.size > 0 && addedOrders.length > 0) {
+      addedOrders.forEach(order => showOrderNotification(order));
     }
+    // IDs update karo
+    knownOrderIds = new Set(newOrders.map(o => String(o._id || o.id)));
     lastOrderCount = newOrders.length;
+
     orders = newOrders;
     await idb.clear('orders');
     for (const o of orders) await idb.put('orders', { ...o, id: o._id });
@@ -1871,6 +1866,7 @@ async function fetchOrders() {
 
 function subscribeOrders() {
   if (orderPollInterval) return;
+  knownOrderIds = new Set(); // reset so pehli fetch se IDs set hon
   fetchOrders();
   orderPollInterval = setInterval(fetchOrders, 10000);
 }
