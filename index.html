@@ -1847,19 +1847,20 @@ async function fetchOrders() {
     const newOrders = await res.json();
     if (!Array.isArray(newOrders)) { orderFetchBusy = false; return; }
 
-    // Naye orders dhundo ID se — count se nahi
     const addedOrders = newOrders.filter(o => !knownOrderIds.has(String(o._id || o.id)));
     if (knownOrderIds.size > 0 && addedOrders.length > 0) {
       addedOrders.forEach(order => showOrderNotification(order));
     }
-    // IDs update karo
     knownOrderIds = new Set(newOrders.map(o => String(o._id || o.id)));
     lastOrderCount = newOrders.length;
-
     orders = newOrders;
     await idb.clear('orders');
     for (const o of orders) await idb.put('orders', { ...o, id: o._id });
     if (typeof renderOrders === 'function') renderOrders();
+    // Orders badge update
+    const badge = document.getElementById('orders-badge');
+    const newCount = orders.filter(o => o.status === 'new' || o.status === 'pending').length;
+    if (badge) { if (newCount > 0) { badge.textContent = newCount; badge.style.display = 'inline-block'; } else { badge.style.display = 'none'; } }
   } catch(e) {}
   orderFetchBusy = false;
 }
@@ -3288,7 +3289,10 @@ function renderOrders() {
   const badge   = document.getElementById('orders-badge');
 
   if (!Array.isArray(orders) || orders.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="9" class="empty"><div class="empty-icon">📭</div>Abhi koi order nahi — website se orders aayenge yahan</td></tr>';
+    const isLoading = knownOrderIds.size === 0; // pehli fetch abhi nahi hui
+    tbody.innerHTML = isLoading
+      ? '<tr><td colspan="9" class="empty"><div class="empty-icon">⏳</div>Orders load ho rahe hain...</td></tr>'
+      : '<tr><td colspan="9" class="empty"><div class="empty-icon">📭</div>Abhi koi order nahi — website se orders aayenge yahan</td></tr>';
     if (totalEl) totalEl.textContent = '0';
     if (newEl)   newEl.textContent   = '0';
     if (doneEl)  doneEl.textContent  = '0';
