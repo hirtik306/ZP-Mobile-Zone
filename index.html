@@ -1760,8 +1760,7 @@ async function loadAllData() {
   // Step 2: Freshen from MongoDB — orders alag try/catch mein
   setSyncing('syncing');
 
-  // Orders — subscribeOrders handle karega, knownOrderIds reset karo
-  knownOrderIds = new Set();
+  // Orders — subscribeOrders handle karega
 
   // Stock + Customers + rest
   try {
@@ -1832,44 +1831,33 @@ async function loadPersistedData() {
 
 // ═══ ORDERS — auto poll har 10 sec ═══
 let orderPollInterval = null;
-let lastOrderCount = -1;
 let knownOrderIds = new Set();
-let orderFetchBusy = false;
 
 async function fetchOrders() {
-  if (orderFetchBusy) return;
-  orderFetchBusy = true;
   try {
     const res = await fetch(BACKEND + '/api/orders', {
-      signal: AbortSignal.timeout(90000)
+      signal: AbortSignal.timeout(15000)
     });
-    if (!res.ok) { orderFetchBusy = false; return; }
+    if (!res.ok) return;
     const newOrders = await res.json();
-    if (!Array.isArray(newOrders)) { orderFetchBusy = false; return; }
+    if (!Array.isArray(newOrders)) return;
 
-    // Naye orders: jo backend mein hain lekin knownOrderIds mein nahi
     const freshIds = new Set(newOrders.map(o => String(o._id || o.id)));
-    const addedOrders = newOrders.filter(o => !knownOrderIds.has(String(o._id || o.id)));
-
-    // Sirf tab notification do jab pehli fetch ho chuki ho (knownOrderIds populated)
-    if (knownOrderIds.size > 0 && addedOrders.length > 0) {
-      addedOrders.forEach(order => showOrderNotification(order));
+    if (knownOrderIds.size > 0) {
+      newOrders.filter(o => !knownOrderIds.has(String(o._id || o.id)))
+               .forEach(o => showOrderNotification(o));
     }
-
-    // knownOrderIds ko exactly backend ke orders se sync karo
     knownOrderIds = freshIds;
-
     orders = newOrders;
     await idb.clear('orders');
     for (const o of orders) await idb.put('orders', { ...o, id: o._id });
     if (typeof renderOrders === 'function') renderOrders();
   } catch(e) {}
-  orderFetchBusy = false;
 }
 
 function subscribeOrders() {
-  if (orderPollInterval) return;
-  knownOrderIds = new Set(); // fresh start — pehli fetch se IDs set hongi
+  knownOrderIds = new Set();
+  if (orderPollInterval) { clearInterval(orderPollInterval); orderPollInterval = null; }
   fetchOrders();
   orderPollInterval = setInterval(fetchOrders, 10000);
 }
@@ -1986,7 +1974,7 @@ async function doLogout() {
   document.getElementById('pin-sub').textContent = '4-digit PIN daalen';
   document.getElementById('pin-err').classList.remove('show');
   if (orderPollInterval) { clearInterval(orderPollInterval); orderPollInterval = null; }
-  knownOrderIds = new Set(); lastOrderCount = -1;
+  knownOrderIds = new Set();
 }
 
 async function changePin() {
