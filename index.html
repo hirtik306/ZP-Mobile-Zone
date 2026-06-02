@@ -1760,8 +1760,8 @@ async function loadAllData() {
   // Step 2: Freshen from MongoDB — orders alag try/catch mein
   setSyncing('syncing');
 
-  // Orders — subscribeOrders handle karega, yahan sirf lastOrderCount reset karo
-  lastOrderCount = -1;
+  // Orders — subscribeOrders handle karega, knownOrderIds reset karo
+  knownOrderIds = new Set();
 
   // Stock + Customers + rest
   try {
@@ -1847,27 +1847,29 @@ async function fetchOrders() {
     const newOrders = await res.json();
     if (!Array.isArray(newOrders)) { orderFetchBusy = false; return; }
 
+    // Naye orders: jo backend mein hain lekin knownOrderIds mein nahi
+    const freshIds = new Set(newOrders.map(o => String(o._id || o.id)));
     const addedOrders = newOrders.filter(o => !knownOrderIds.has(String(o._id || o.id)));
+
+    // Sirf tab notification do jab pehli fetch ho chuki ho (knownOrderIds populated)
     if (knownOrderIds.size > 0 && addedOrders.length > 0) {
       addedOrders.forEach(order => showOrderNotification(order));
     }
-    knownOrderIds = new Set(newOrders.map(o => String(o._id || o.id)));
-    lastOrderCount = newOrders.length;
+
+    // knownOrderIds ko exactly backend ke orders se sync karo
+    knownOrderIds = freshIds;
+
     orders = newOrders;
     await idb.clear('orders');
     for (const o of orders) await idb.put('orders', { ...o, id: o._id });
     if (typeof renderOrders === 'function') renderOrders();
-    // Orders badge update
-    const badge = document.getElementById('orders-badge');
-    const newCount = orders.filter(o => o.status === 'new' || o.status === 'pending').length;
-    if (badge) { if (newCount > 0) { badge.textContent = newCount; badge.style.display = 'inline-block'; } else { badge.style.display = 'none'; } }
   } catch(e) {}
   orderFetchBusy = false;
 }
 
 function subscribeOrders() {
   if (orderPollInterval) return;
-  knownOrderIds = new Set(); // reset so pehli fetch se IDs set hon
+  knownOrderIds = new Set(); // fresh start — pehli fetch se IDs set hongi
   fetchOrders();
   orderPollInterval = setInterval(fetchOrders, 10000);
 }
