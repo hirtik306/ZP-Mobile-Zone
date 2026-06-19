@@ -4228,7 +4228,10 @@ function cbEditOpen(id){
   // Remove old edit modal if exists
   const old = document.getElementById('cb-edit-modal');
   if(old) old.remove();
-  const displayType = e.type && e.type.startsWith('__cin__') ? e.type.replace('__cin__','') : (CB_LABELS[e.type]||e.type);
+  const isCustom = !CB_LABELS[e.type] && !(e.type && e.type.startsWith('__cin__') && CB_LABELS[e.type.replace('__cin__','')]);
+  const isCustomCin = e.type && e.type.startsWith('__cin__');
+  const displayType = isCustomCin ? e.type.replace('__cin__','') : (CB_LABELS[e.type]||e.type);
+  const selectVal = isCustomCin ? '__other_in__' : (isCustom ? '__other__' : e.type);
   const modal = document.createElement('div');
   modal.id = 'cb-edit-modal';
   modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
@@ -4237,7 +4240,25 @@ function cbEditOpen(id){
       <div style="font-size:14px;font-weight:700;margin-bottom:16px;color:var(--txt)">✏️ Entry Edit Karo</div>
       <div class="fg" style="margin-bottom:12px">
         <label style="font-size:11px;font-weight:600;color:var(--txt2);display:block;margin-bottom:6px">Type</label>
-        <input type="text" id="cb-edit-type" value="${displayType}" style="width:100%;padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur2);color:var(--txt);outline:none">
+        <select id="cb-edit-type" onchange="cbEditTypeChange()" style="width:100%;padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur2);color:var(--txt);outline:none">
+          <optgroup label="Cash In">
+            <option value="sale_cash"${selectVal==='sale_cash'?' selected':''}>Phone Sale Cash</option>
+            <option value="cust_payment"${selectVal==='cust_payment'?' selected':''}>Customer Due Payment</option>
+            <option value="loan_return"${selectVal==='loan_return'?' selected':''}>Loan Returned</option>
+            <option value="other_in"${selectVal==='other_in'?' selected':''}>Other Cash In</option>
+            <option value="__other_in__"${selectVal==='__other_in__'?' selected':''}>Other (Type karo)</option>
+          </optgroup>
+          <optgroup label="Cash Out">
+            <option value="stock_buy"${selectVal==='stock_buy'?' selected':''}>Stock Purchase</option>
+            <option value="expense_out"${selectVal==='expense_out'?' selected':''}>Shop Expense</option>
+            <option value="partner_draw"${selectVal==='partner_draw'?' selected':''}>Partner Withdrawal</option>
+            <option value="loan_out"${selectVal==='loan_out'?' selected':''}>Customer Ko Loan</option>
+            <option value="supplier_pay"${selectVal==='supplier_pay'?' selected':''}>Supplier Payment</option>
+            <option value="other_out"${selectVal==='other_out'?' selected':''}>Other Cash Out</option>
+            <option value="__other__"${selectVal==='__other__'?' selected':''}>Other (Type karo)</option>
+          </optgroup>
+        </select>
+        <input type="text" id="cb-edit-type-other" value="${isCustom?displayType:''}" placeholder="Type likho..." style="display:${isCustom?'block':'none'};margin-top:8px;width:100%;padding:9px 12px;border:1px solid var(--gold-border);border-radius:var(--rad-s);font-size:13px;background:var(--card);color:var(--txt1);outline:none">
       </div>
       <div class="fg" style="margin-bottom:12px">
         <label style="font-size:11px;font-weight:600;color:var(--txt2);display:block;margin-bottom:6px">Amount (Rs.)</label>
@@ -4252,7 +4273,7 @@ function cbEditOpen(id){
         <input type="text" id="cb-edit-desc" value="${e.desc||''}" style="width:100%;padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur2);color:var(--txt);outline:none">
       </div>
       <div style="display:flex;gap:10px">
-        <button class="btn btn-gold" onclick="cbEditSave(${id})" style="flex:1;font-size:13px">✅ Save</button>
+        <button class="btn btn-gold" onclick="cbEditSave('${id}')" style="flex:1;font-size:13px">✅ Save</button>
         <button class="btn btn-ghost" onclick="document.getElementById('cb-edit-modal').remove()" style="font-size:13px;padding:8px 16px">Cancel</button>
       </div>
     </div>`;
@@ -4260,24 +4281,29 @@ function cbEditOpen(id){
   modal.addEventListener('click', function(ev){ if(ev.target===modal) modal.remove(); });
 }
 
+function cbEditTypeChange(){
+  const t = document.getElementById('cb-edit-type').value;
+  const otherInp = document.getElementById('cb-edit-type-other');
+  if(t === '__other__' || t === '__other_in__'){ otherInp.style.display='block'; otherInp.focus(); }
+  else otherInp.style.display='none';
+}
+
 function cbEditSave(id){
   const e = cashEntries.find(en=>String(en.id)===String(id));
   if(!e){ alert('Entry not found!'); return; }
-  const newType = document.getElementById('cb-edit-type').value.trim();
+  let newType = document.getElementById('cb-edit-type').value;
+  if(newType === '__other__' || newType === '__other_in__'){
+    const isInType = newType === '__other_in__';
+    const typed = document.getElementById('cb-edit-type-other').value.trim();
+    if(!typed){ alert('Please type the entry type!'); document.getElementById('cb-edit-type-other').focus(); return; }
+    newType = isInType ? '__cin__'+typed : typed;
+  }
   const newAmt = parseFloat(document.getElementById('cb-edit-amount').value);
   const newDate = document.getElementById('cb-edit-date').value;
   const newDesc = document.getElementById('cb-edit-desc').value.trim();
-  if(!newType){ alert('Type required!'); return; }
   if(!newAmt||newAmt<=0){ alert('Valid amount required!'); return; }
   if(!newDate){ alert('Date required!'); return; }
-  // Preserve direction: if original was cash in custom, keep prefix
-  const wasCin = e.type && e.type.startsWith('__cin__');
-  const wasKnownOut = ['stock_buy','expense_out','partner_draw','loan_out','supplier_pay','other_out'].includes(e.type);
-  const matchedKey = Object.keys(CB_LABELS).find(k=>CB_LABELS[k]===newType);
-  if(matchedKey){ e.type = matchedKey; }
-  else if(wasCin){ e.type = '__cin__'+newType; }
-  else if(wasKnownOut || !cbIsIn(e.type)){ e.type = newType; }
-  else { e.type = newType; }
+  e.type = newType;
   e.amount = newAmt;
   e.date = newDate;
   e.desc = newDesc;
@@ -4341,7 +4367,7 @@ function cbRender(){
       `<td style="font-size:12px;color:var(--txt2)">${e.desc||'—'}</td>`+
       `<td style="font-weight:700;color:var(--gd)">${isIn?fmt(e.amount):'—'}</td>`+
       `<td style="font-weight:700;color:var(--r)">${!isIn?fmt(e.amount):'—'}</td>`+
-      `<td style="white-space:nowrap"><button onclick="cbEditOpen(${e.id})" class="btn btn-ghost" style="padding:4px 8px;font-size:11px;margin-right:4px">✏️</button><button onclick="cbDelete(${e.id})" class="btn btn-r" style="padding:4px 10px;font-size:11px">Del</button></td>`;
+      `<td style="white-space:nowrap"><button onclick="cbEditOpen('${e.id}')" class="btn btn-ghost" style="padding:4px 8px;font-size:11px;margin-right:4px">✏️</button><button onclick="cbDelete('${e.id}')" class="btn btn-r" style="padding:4px 10px;font-size:11px">Del</button></td>`;
     tbody.appendChild(tr);
   });
 }
