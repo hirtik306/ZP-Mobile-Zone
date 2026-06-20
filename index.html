@@ -754,6 +754,7 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
           <select id="sell-recv-method" onchange="sellRecvMethodChange()" style="padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--card);color:var(--txt1)">
             <option value="cash">💵 Cash (Haath Mein)</option>
             <option value="bank">🏦 Bank / Online Transfer</option>
+            <option value="split">🔀 Split — Kuch Cash, Kuch Bank</option>
           </select>
         </div>
         <div class="fg" id="sell-bank-field" style="display:none">
@@ -766,6 +767,29 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
             <option value="ubl_ameen">🏦 UBL Ameen</option>
           </select>
         </div>
+      </div>
+      <div id="sell-split-fields" style="display:none;background:var(--sur2);border:1px solid var(--bor2);border-radius:var(--rad-s);padding:12px;margin-top:10px">
+        <div class="frow" style="margin-bottom:8px">
+          <div class="fg" style="margin:0">
+            <label>💵 Cash Amount (Rs.)</label>
+            <input type="number" id="sell-split-cash" placeholder="0" min="0" oninput="sellSplitCalc()">
+          </div>
+          <div class="fg" style="margin:0">
+            <label>🏦 Bank Amount (Rs.)</label>
+            <input type="number" id="sell-split-bank-amt" placeholder="0" min="0" oninput="sellSplitCalc()">
+          </div>
+        </div>
+        <div class="fg" style="margin:0 0 8px 0">
+          <label>Konsa Bank Account</label>
+          <select id="sell-split-bank-acc" style="width:100%;padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--card);color:var(--txt1)">
+            <option value="meezan_zp">🏦 ZP Mobile Zone (Meezan)</option>
+            <option value="meezan">🏦 Meezan (Personal)</option>
+            <option value="ubl">🏦 UBL</option>
+            <option value="alfalah">🏦 Alfalah</option>
+            <option value="ubl_ameen">🏦 UBL Ameen</option>
+          </select>
+        </div>
+        <div id="sell-split-check" style="font-size:12px;font-weight:600"></div>
       </div>
 
       <div id="partial-section" style="display:none">
@@ -917,9 +941,52 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
           </div>
           <div class="fg" style="margin:0">
             <label>Amount (Rs.)</label>
-            <input type="number" id="adv-amount" placeholder="0" min="0">
+            <input type="number" id="adv-amount" placeholder="0" min="0" oninput="advSplitCalc()">
           </div>
           <button class="btn btn-gold" onclick="advAdd()" style="padding:9px 14px;white-space:nowrap">+ Add</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;align-items:end">
+          <div class="fg" style="margin:0">
+            <label>Paisa Kaise (Cash/Bank)</label>
+            <select id="adv-method" onchange="advMethodChange()" style="width:100%;padding:9px 10px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur)">
+              <option value="cash">💵 Cash (Haath Mein)</option>
+              <option value="bank">🏦 Bank / Online Transfer</option>
+              <option value="split">🔀 Split — Kuch Cash, Kuch Bank</option>
+            </select>
+          </div>
+          <div class="fg" id="adv-bank-field" style="margin:0;display:none">
+            <label>Konsa Bank Account</label>
+            <select id="adv-bank" style="width:100%;padding:9px 10px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur)">
+              <option value="meezan_zp">🏦 ZP Mobile Zone (Meezan)</option>
+              <option value="meezan">🏦 Meezan (Personal)</option>
+              <option value="ubl">🏦 UBL</option>
+              <option value="alfalah">🏦 Alfalah</option>
+              <option value="ubl_ameen">🏦 UBL Ameen</option>
+            </select>
+          </div>
+        </div>
+        <div id="adv-split-fields" style="display:none;background:var(--sur2);border:1px solid var(--bor2);border-radius:var(--rad-s);padding:12px;margin-bottom:10px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px">
+            <div class="fg" style="margin:0">
+              <label>💵 Cash Amount (Rs.)</label>
+              <input type="number" id="adv-split-cash" placeholder="0" min="0" oninput="advSplitCalc()">
+            </div>
+            <div class="fg" style="margin:0">
+              <label>🏦 Bank Amount (Rs.)</label>
+              <input type="number" id="adv-split-bank-amt" placeholder="0" min="0" oninput="advSplitCalc()">
+            </div>
+          </div>
+          <div class="fg" style="margin:0 0 8px 0">
+            <label>Konsa Bank Account</label>
+            <select id="adv-split-bank-acc" style="width:100%;padding:9px 10px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur)">
+              <option value="meezan_zp">🏦 ZP Mobile Zone (Meezan)</option>
+              <option value="meezan">🏦 Meezan (Personal)</option>
+              <option value="ubl">🏦 UBL</option>
+              <option value="alfalah">🏦 Alfalah</option>
+              <option value="ubl_ameen">🏦 UBL Ameen</option>
+            </select>
+          </div>
+          <div id="adv-split-check" style="font-size:12px;font-weight:600"></div>
         </div>
         <div id="cdp-adv-list"></div>
       </div>
@@ -1122,12 +1189,13 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
     <div style="font-size:17px;font-weight:800;margin-bottom:4px;letter-spacing:-0.3px">Record Payment</div>
     <div style="font-size:13px;color:var(--txt2);margin-bottom:1.25rem">Enter the amount received from customer</div>
     <div id="pay-modal-info" style="margin-bottom:1.25rem"></div>
-    <div class="fg" style="margin-bottom:12px"><label>Amount Received (Rs.) <span class="req">*</span></label><input type="number" id="pay-amount" placeholder="0"></div>
+    <div class="fg" style="margin-bottom:12px"><label>Amount Received (Rs.) <span class="req">*</span></label><input type="number" id="pay-amount" placeholder="0" oninput="paySplitCalc()"></div>
     <div class="fg" style="margin-bottom:12px">
       <label>Paisa Kaise Aya <span class="req">*</span></label>
       <select id="pay-recv-method" onchange="payRecvMethodChange()" style="width:100%;padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur2);color:var(--txt)">
         <option value="cash">💵 Cash (Haath Mein)</option>
         <option value="bank">🏦 Bank / Online Transfer</option>
+        <option value="split">🔀 Split — Kuch Cash, Kuch Bank</option>
       </select>
     </div>
     <div class="fg" id="pay-bank-field" style="display:none;margin-bottom:12px">
@@ -1139,6 +1207,29 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
         <option value="alfalah">🏦 Alfalah</option>
         <option value="ubl_ameen">🏦 UBL Ameen</option>
       </select>
+    </div>
+    <div id="pay-split-fields" style="display:none;background:var(--sur2);border:1px solid var(--bor2);border-radius:var(--rad-s);padding:12px;margin-bottom:12px">
+      <div class="frow" style="margin-bottom:8px">
+        <div class="fg" style="margin:0">
+          <label>💵 Cash Amount (Rs.)</label>
+          <input type="number" id="pay-split-cash" placeholder="0" min="0" oninput="paySplitCalc()">
+        </div>
+        <div class="fg" style="margin:0">
+          <label>🏦 Bank Amount (Rs.)</label>
+          <input type="number" id="pay-split-bank-amt" placeholder="0" min="0" oninput="paySplitCalc()">
+        </div>
+      </div>
+      <div class="fg" style="margin:0 0 8px 0">
+        <label>Konsa Bank Account</label>
+        <select id="pay-split-bank-acc" style="width:100%;padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur2);color:var(--txt)">
+          <option value="meezan_zp">🏦 ZP Mobile Zone (Meezan)</option>
+          <option value="meezan">🏦 Meezan (Personal)</option>
+          <option value="ubl">🏦 UBL</option>
+          <option value="alfalah">🏦 Alfalah</option>
+          <option value="ubl_ameen">🏦 UBL Ameen</option>
+        </select>
+      </div>
+      <div id="pay-split-check" style="font-size:12px;font-weight:600"></div>
     </div>
     <div class="fg" style="margin-bottom:1.5rem"><label>Note <span style="color:var(--txt3);font-weight:400;text-transform:none;font-size:10px">(optional)</span></label><input type="text" id="pay-note" placeholder="e.g. Cash received in full"></div>
     <div style="display:flex;gap:8px">
@@ -1346,13 +1437,14 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
       </div>
       <div class="fg">
         <label>Amount (Rs.) <span class="req">*</span></label>
-        <input type="number" id="cb-amount" placeholder="0" min="0">
+        <input type="number" id="cb-amount" placeholder="0" min="0" oninput="cbSplitCalc()">
       </div>
       <div class="fg">
         <label>Payment Method <span class="req">*</span></label>
         <select id="cb-method" onchange="cbMethodChange()" style="padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur2);color:var(--txt)">
           <option value="cash">💵 Cash (Haath Mein)</option>
           <option value="bank">🏦 Bank / Online Transfer</option>
+          <option value="split">🔀 Split — Kuch Cash, Kuch Bank</option>
         </select>
       </div>
       <div class="fg" id="cb-bank-field" style="display:none">
@@ -1364,6 +1456,29 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
           <option value="alfalah">🏦 Alfalah</option>
           <option value="ubl_ameen">🏦 UBL Ameen</option>
         </select>
+      </div>
+      <div class="fg" id="cb-split-fields" style="display:none;grid-column:1/-1;background:var(--sur2);border:1px solid var(--bor2);border-radius:var(--rad-s);padding:12px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px">
+          <div class="fg" style="margin:0">
+            <label>💵 Cash Amount (Rs.)</label>
+            <input type="number" id="cb-split-cash" placeholder="0" min="0" oninput="cbSplitCalc()">
+          </div>
+          <div class="fg" style="margin:0">
+            <label>🏦 Bank Amount (Rs.)</label>
+            <input type="number" id="cb-split-bank-amt" placeholder="0" min="0" oninput="cbSplitCalc()">
+          </div>
+        </div>
+        <div class="fg" style="margin:0 0 8px 0">
+          <label>Konsa Bank Account</label>
+          <select id="cb-split-bank-acc" style="width:100%;padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur2);color:var(--txt)">
+            <option value="meezan_zp">🏦 ZP Mobile Zone (Meezan)</option>
+            <option value="meezan">🏦 Meezan (Personal)</option>
+            <option value="ubl">🏦 UBL</option>
+            <option value="alfalah">🏦 Alfalah</option>
+            <option value="ubl_ameen">🏦 UBL Ameen</option>
+          </select>
+        </div>
+        <div id="cb-split-check" style="font-size:12px;font-weight:600"></div>
       </div>
       <div class="fg">
         <label>Date <span class="req">*</span></label>
@@ -2670,6 +2785,11 @@ function openCustDetail(phone) {
   const custNoEditEl=document.getElementById('cdp-edit-custno'); if(custNoEditEl) custNoEditEl.value=c.custNo||'';
   // Advance list
   advRender(phone);
+  const advMethodEl = document.getElementById('adv-method'); if(advMethodEl) advMethodEl.value = 'cash';
+  const advBankFieldEl = document.getElementById('adv-bank-field'); if(advBankFieldEl) advBankFieldEl.style.display = 'none';
+  const advSplitFieldsEl = document.getElementById('adv-split-fields'); if(advSplitFieldsEl) advSplitFieldsEl.style.display = 'none';
+  const advSplitCashEl = document.getElementById('adv-split-cash'); if(advSplitCashEl) advSplitCashEl.value = '';
+  const advSplitBankEl = document.getElementById('adv-split-bank-amt'); if(advSplitBankEl) advSplitBankEl.value = '';
 
   // Chips
   let chips = '';
@@ -2785,6 +2905,9 @@ function findForSell() {
   document.getElementById('sell-price').value = '';
   const rm = document.getElementById('sell-recv-method'); if(rm) rm.value = 'cash';
   const rbf = document.getElementById('sell-bank-field'); if(rbf) rbf.style.display = 'none';
+  const ssf = document.getElementById('sell-split-fields'); if(ssf) ssf.style.display = 'none';
+  const ssc = document.getElementById('sell-split-cash'); if(ssc) ssc.value = '';
+  const ssb = document.getElementById('sell-split-bank-amt'); if(ssb) ssb.value = '';
   document.getElementById('sell-existing-note').style.display = 'none';
   document.getElementById('profit-preview').innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Enter sale price to see profit / loss`;
   document.getElementById('profit-preview').style.color = 'var(--txt3)';
@@ -2804,6 +2927,7 @@ function calcBalance() {
     else if (pl < 0) { prev.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg> Loss: Rs. ${Math.abs(pl).toLocaleString()}`; prev.style.color = 'var(--r)'; }
     else { prev.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg> Break even`; prev.style.color = 'var(--txt2)'; }
   }
+  if(typeof sellSplitCalc === 'function') sellSplitCalc();
 }
 
 let payType = 'full';
@@ -2817,7 +2941,23 @@ function setPayType(t) {
 function sellRecvMethodChange(){
   const m = document.getElementById('sell-recv-method').value;
   const f = document.getElementById('sell-bank-field');
+  const sf = document.getElementById('sell-split-fields');
   if(f) f.style.display = (m === 'bank') ? 'block' : 'none';
+  if(sf) sf.style.display = (m === 'split') ? 'block' : 'none';
+  if(m === 'split') sellSplitCalc();
+}
+
+function sellSplitCalc(){
+  const cash = parseFloat(document.getElementById('sell-split-cash')?.value) || 0;
+  const bank = parseFloat(document.getElementById('sell-split-bank-amt')?.value) || 0;
+  const price = parseFloat(document.getElementById('sell-price')?.value) || 0;
+  const paidNow = payType === 'partial' ? (parseFloat(document.getElementById('paid-now')?.value) || 0) : price;
+  const total = cash + bank;
+  const el = document.getElementById('sell-split-check');
+  if(!el) return;
+  if(paidNow <= 0){ el.textContent = ''; return; }
+  if(total === paidNow){ el.innerHTML = '✅ Match: Rs. '+total.toLocaleString()+' (Cash + Bank = Received Amount)'; el.style.color = 'var(--gd)'; }
+  else { el.innerHTML = '⚠️ Cash + Bank (Rs. '+total.toLocaleString()+') Received Amount (Rs. '+paidNow.toLocaleString()+') ke barabar nahi hai!'; el.style.color = 'var(--r)'; }
 }
 
 async function completeSell() {
@@ -2859,20 +2999,38 @@ async function completeSell() {
     paymentType: payType, paidAmount: paidNow, balance: balance, dueDate: dDate,
     payments: [{ date: date || new Date().toISOString().split('T')[0], amount: paidNow, note: pmtNote || 'Initial payment' }]
   };
+  // Split payment validation — agar Cash+Bank match nahi karte to sale yahin rok do
+  const recvMethod = document.getElementById('sell-recv-method')?.value || 'cash';
+  let splitCash = 0, splitBank = 0, splitBankAcc = '';
+  if (recvMethod === 'split') {
+    splitCash = parseFloat(document.getElementById('sell-split-cash')?.value) || 0;
+    splitBank = parseFloat(document.getElementById('sell-split-bank-amt')?.value) || 0;
+    splitBankAcc = document.getElementById('sell-split-bank-acc')?.value || '';
+    if ((splitCash + splitBank) !== paidNow) {
+      alert('⚠️ Cash + Bank ka total (Rs. ' + (splitCash+splitBank).toLocaleString() + ') Received Amount (Rs. ' + paidNow.toLocaleString() + ') ke barabar nahi hai!\n\nDoono amounts check karo.');
+      return;
+    }
+    if ((splitCash + splitBank) <= 0 && paidNow > 0) { alert('Cash aur Bank amount likho!'); return; }
+  }
+
   try {
     await saveStockItem(updatedItem);
     stock[idx] = updatedItem;
   } catch(e) { alert('Error saving: ' + e.message); return; }
   // Cash Book mein entry — sirf jitna paisa actually receive hua
   if (paidNow > 0) {
-    const recvMethod = document.getElementById('sell-recv-method')?.value || 'cash';
-    const recvBank = (recvMethod === 'bank') ? (document.getElementById('sell-recv-bank')?.value || '') : '';
-    cbAutoAdd({
-      type: 'sale_cash', amount: paidNow,
-      date: date || new Date().toISOString().split('T')[0],
-      desc: 'Sale: ' + stock[idx].model + ' — ' + name,
-      method: recvMethod, bank: recvBank
-    });
+    if (recvMethod === 'split') {
+      if (splitCash > 0) cbAutoAdd({ type: 'sale_cash', amount: splitCash, date: date || new Date().toISOString().split('T')[0], desc: 'Sale (Cash Hissa): ' + stock[idx].model + ' — ' + name, method: 'cash', bank: '' });
+      if (splitBank > 0) cbAutoAdd({ type: 'sale_cash', amount: splitBank, date: date || new Date().toISOString().split('T')[0], desc: 'Sale (Bank Hissa): ' + stock[idx].model + ' — ' + name, method: 'bank', bank: splitBankAcc });
+    } else {
+      const recvBank = (recvMethod === 'bank') ? (document.getElementById('sell-recv-bank')?.value || '') : '';
+      cbAutoAdd({
+        type: 'sale_cash', amount: paidNow,
+        date: date || new Date().toISOString().split('T')[0],
+        desc: 'Sale: ' + stock[idx].model + ' — ' + name,
+        method: recvMethod, bank: recvBank
+      });
+    }
   }
   updateStats();
   const pl = sp - stock[idx].buyPrice;
@@ -3085,13 +3243,31 @@ function openPayModal(imei) {
   document.getElementById('pay-amount').value = ''; document.getElementById('pay-note').value = '';
   const rm = document.getElementById('pay-recv-method'); if(rm) rm.value = 'cash';
   const rbf = document.getElementById('pay-bank-field'); if(rbf) rbf.style.display = 'none';
+  const psf = document.getElementById('pay-split-fields'); if(psf) psf.style.display = 'none';
+  const psc = document.getElementById('pay-split-cash'); if(psc) psc.value = '';
+  const psb = document.getElementById('pay-split-bank-amt'); if(psb) psb.value = '';
   document.getElementById('pay-modal').style.display = 'flex';
 }
 
 function payRecvMethodChange(){
   const m = document.getElementById('pay-recv-method').value;
   const f = document.getElementById('pay-bank-field');
+  const sf = document.getElementById('pay-split-fields');
   if(f) f.style.display = (m === 'bank') ? 'block' : 'none';
+  if(sf) sf.style.display = (m === 'split') ? 'block' : 'none';
+  if(m === 'split') paySplitCalc();
+}
+
+function paySplitCalc(){
+  const cash = parseFloat(document.getElementById('pay-split-cash')?.value) || 0;
+  const bank = parseFloat(document.getElementById('pay-split-bank-amt')?.value) || 0;
+  const amount = parseFloat(document.getElementById('pay-amount')?.value) || 0;
+  const total = cash + bank;
+  const el = document.getElementById('pay-split-check');
+  if(!el) return;
+  if(amount <= 0){ el.textContent = ''; return; }
+  if(total === amount){ el.innerHTML = '✅ Match: Rs. '+total.toLocaleString()+' (Cash + Bank = Amount Received)'; el.style.color = 'var(--gd)'; }
+  else { el.innerHTML = '⚠️ Cash + Bank (Rs. '+total.toLocaleString()+') Amount Received (Rs. '+amount.toLocaleString()+') ke barabar nahi hai!'; el.style.color = 'var(--r)'; }
 }
 
 function closePayModal() { document.getElementById('pay-modal').style.display = 'none'; payTargetImei = null; }
@@ -3101,6 +3277,19 @@ async function savePayment() {
   if (!amount || amount <= 0) { alert('Please enter a valid amount!'); return; }
   const idx = stock.findIndex(m => m.imei === payTargetImei); if (idx === -1) return;
   const m = stock[idx];
+  // Split payment validation — agar Cash+Bank match nahi karte to yahin rok do
+  const recvMethod = document.getElementById('pay-recv-method')?.value || 'cash';
+  let splitCash = 0, splitBank = 0, splitBankAcc = '';
+  if (recvMethod === 'split') {
+    splitCash = parseFloat(document.getElementById('pay-split-cash')?.value) || 0;
+    splitBank = parseFloat(document.getElementById('pay-split-bank-amt')?.value) || 0;
+    splitBankAcc = document.getElementById('pay-split-bank-acc')?.value || '';
+    if ((splitCash + splitBank) !== amount) {
+      alert('⚠️ Cash + Bank ka total (Rs. ' + (splitCash+splitBank).toLocaleString() + ') Amount Received (Rs. ' + amount.toLocaleString() + ') ke barabar nahi hai!\n\nDoono amounts check karo.');
+      return;
+    }
+    if ((splitCash + splitBank) <= 0) { alert('Cash aur Bank amount likho!'); return; }
+  }
   // Allow overpayment — extra becomes customer advance/credit
   if (amount <= 0) { alert('Please enter an amount!'); return; }
   const currentBalance = m.balance || 0;
@@ -3117,14 +3306,18 @@ async function savePayment() {
     stock[idx] = updPmt;
   } catch(e) { alert('Error saving: ' + e.message); return; }
   // Cash Book mein entry — customer ka due payment
-  const recvMethod = document.getElementById('pay-recv-method')?.value || 'cash';
-  const recvBank = (recvMethod === 'bank') ? (document.getElementById('pay-recv-bank')?.value || '') : '';
-  cbAutoAdd({
-    type: 'cust_payment', amount: amount,
-    date: new Date().toISOString().split('T')[0],
-    desc: 'Due Payment: ' + m.model + ' — ' + (m.customer ? m.customer.name : ''),
-    method: recvMethod, bank: recvBank
-  });
+  if (recvMethod === 'split') {
+    if (splitCash > 0) cbAutoAdd({ type: 'cust_payment', amount: splitCash, date: new Date().toISOString().split('T')[0], desc: 'Due Payment (Cash Hissa): ' + m.model + ' — ' + (m.customer ? m.customer.name : ''), method: 'cash', bank: '' });
+    if (splitBank > 0) cbAutoAdd({ type: 'cust_payment', amount: splitBank, date: new Date().toISOString().split('T')[0], desc: 'Due Payment (Bank Hissa): ' + m.model + ' — ' + (m.customer ? m.customer.name : ''), method: 'bank', bank: splitBankAcc });
+  } else {
+    const recvBank = (recvMethod === 'bank') ? (document.getElementById('pay-recv-bank')?.value || '') : '';
+    cbAutoAdd({
+      type: 'cust_payment', amount: amount,
+      date: new Date().toISOString().split('T')[0],
+      desc: 'Due Payment: ' + m.model + ' — ' + (m.customer ? m.customer.name : ''),
+      method: recvMethod, bank: recvBank
+    });
+  }
   // If overpaid, save extra as customer advance
   if (extra > 0) {
     const advData = JSON.parse(localStorage.getItem('zpmobile_advances_v1') || '[]');
@@ -4179,16 +4372,65 @@ function advBalance(phone){
   },0);
 }
 
+function advMethodChange(){
+  const m = document.getElementById('adv-method').value;
+  const f = document.getElementById('adv-bank-field');
+  const sf = document.getElementById('adv-split-fields');
+  if(f) f.style.display = (m === 'bank') ? 'block' : 'none';
+  if(sf) sf.style.display = (m === 'split') ? 'block' : 'none';
+  if(m === 'split') advSplitCalc();
+}
+
+function advSplitCalc(){
+  const cash = parseFloat(document.getElementById('adv-split-cash')?.value) || 0;
+  const bank = parseFloat(document.getElementById('adv-split-bank-amt')?.value) || 0;
+  const amt = parseFloat(document.getElementById('adv-amount')?.value) || 0;
+  const total = cash + bank;
+  const el = document.getElementById('adv-split-check');
+  if(!el) return;
+  if(amt <= 0){ el.textContent = ''; return; }
+  if(total === amt){ el.innerHTML = '✅ Match: Rs. '+total.toLocaleString()+' (Cash + Bank = Amount)'; el.style.color = 'var(--gd)'; }
+  else { el.innerHTML = '⚠️ Cash + Bank (Rs. '+total.toLocaleString()+') Amount (Rs. '+amt.toLocaleString()+') ke barabar nahi hai!'; el.style.color = 'var(--r)'; }
+}
+
 function advAdd(){
   const phone = openCustDetailPhone;
   if(!phone) return;
   const type = document.getElementById('adv-type').value;
   const amt = parseFloat(document.getElementById('adv-amount').value);
   if(!amt || amt<=0){ alert('Please enter an amount!'); return; }
+  const method = document.getElementById('adv-method')?.value || 'cash';
+  let bank = (method === 'bank') ? (document.getElementById('adv-bank')?.value || '') : '';
+  let splitCash = 0, splitBank = 0, splitBankAcc = '';
+  if (method === 'split') {
+    splitCash = parseFloat(document.getElementById('adv-split-cash')?.value) || 0;
+    splitBank = parseFloat(document.getElementById('adv-split-bank-amt')?.value) || 0;
+    splitBankAcc = document.getElementById('adv-split-bank-acc')?.value || '';
+    if ((splitCash + splitBank) !== amt) {
+      alert('⚠️ Cash + Bank ka total (Rs. ' + (splitCash+splitBank).toLocaleString() + ') Amount (Rs. ' + amt.toLocaleString() + ') ke barabar nahi hai!\n\nDoono amounts check karo.');
+      return;
+    }
+    if ((splitCash + splitBank) <= 0) { alert('Cash aur Bank amount likho!'); return; }
+  }
   const d = new Date();
   const date = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-  advances.push({ id: Date.now(), phone, type, amount: amt, date });
+  advances.push({ id: Date.now(), phone, type, amount: amt, date, method, bank });
   advSave();
+  // Cash Book mein entry — har advance type ka real cash movement
+  const cust = customers.find(c=>c.phone===phone);
+  const custName = cust ? cust.name : phone;
+  const cbType = (type === 'gave') ? 'other_out' : 'other_in';
+  const descMap = {
+    received: 'Advance Liya: '+custName,
+    returned: 'Advance Wapis (Customer se): '+custName,
+    gave: 'Advance Diya: '+custName
+  };
+  if (method === 'split') {
+    if (splitCash > 0) cbAutoAdd({ type: cbType, amount: splitCash, date, desc: descMap[type]+' (Cash Hissa)', method: 'cash', bank: '' });
+    if (splitBank > 0) cbAutoAdd({ type: cbType, amount: splitBank, date, desc: descMap[type]+' (Bank Hissa)', method: 'bank', bank: splitBankAcc });
+  } else {
+    cbAutoAdd({ type: cbType, amount: amt, date, desc: descMap[type], method, bank });
+  }
   document.getElementById('adv-amount').value='';
   advRender(phone);
   // update stat
@@ -4316,7 +4558,22 @@ function cbTypeChange(){
 function cbMethodChange(){
   const m = document.getElementById('cb-method').value;
   const bankField = document.getElementById('cb-bank-field');
+  const splitFields = document.getElementById('cb-split-fields');
   if(bankField) bankField.style.display = (m==='bank') ? 'block' : 'none';
+  if(splitFields) splitFields.style.display = (m==='split') ? 'block' : 'none';
+  if(m==='split') cbSplitCalc();
+}
+
+function cbSplitCalc(){
+  const cash = parseFloat(document.getElementById('cb-split-cash')?.value) || 0;
+  const bank = parseFloat(document.getElementById('cb-split-bank-amt')?.value) || 0;
+  const amt = parseFloat(document.getElementById('cb-amount')?.value) || 0;
+  const total = cash + bank;
+  const el = document.getElementById('cb-split-check');
+  if(!el) return;
+  if(amt <= 0){ el.textContent = ''; return; }
+  if(total === amt){ el.innerHTML = '✅ Match: Rs. '+total.toLocaleString()+' (Cash + Bank = Amount)'; el.style.color = 'var(--gd)'; }
+  else { el.innerHTML = '⚠️ Cash + Bank (Rs. '+total.toLocaleString()+') Amount (Rs. '+amt.toLocaleString()+') ke barabar nahi hai!'; el.style.color = 'var(--r)'; }
 }
 
 // Auto-add a cash book entry from outside the Cash Book tab (e.g. phone sale, due payment).
@@ -4355,13 +4612,31 @@ function cbAdd(){
   const date = dateEl.value;
   const desc = descEl ? descEl.value.trim() : '';
   const method = methodEl ? methodEl.value : 'cash';
-  const bank = (method === 'bank' && bankEl) ? bankEl.value : '';
   if(!amt||amt<=0){ alert('Please enter a valid amount!'); amtEl.focus(); return; }
   if(!date){ alert('Please select a date!'); return; }
-  cashEntries.unshift({ id:Date.now(), type, amount:amt, date, desc, method, bank });
+
+  // Split payment — Cash + Bank dono ek saath
+  if (method === 'split') {
+    const splitCash = parseFloat(document.getElementById('cb-split-cash')?.value) || 0;
+    const splitBank = parseFloat(document.getElementById('cb-split-bank-amt')?.value) || 0;
+    const splitBankAcc = document.getElementById('cb-split-bank-acc')?.value || '';
+    if ((splitCash + splitBank) !== amt) {
+      alert('⚠️ Cash + Bank ka total (Rs. ' + (splitCash+splitBank).toLocaleString() + ') Amount (Rs. ' + amt.toLocaleString() + ') ke barabar nahi hai!\n\nDoono amounts check karo.');
+      return;
+    }
+    if ((splitCash + splitBank) <= 0) { alert('Cash aur Bank amount likho!'); return; }
+    if (splitCash > 0) cashEntries.unshift({ id:Date.now(), type, amount:splitCash, date, desc: desc ? (desc+' (Cash Hissa)') : 'Cash Hissa', method:'cash', bank:'' });
+    if (splitBank > 0) cashEntries.unshift({ id:Date.now()+1, type, amount:splitBank, date, desc: desc ? (desc+' (Bank Hissa)') : 'Bank Hissa', method:'bank', bank:splitBankAcc });
+  } else {
+    const bank = (method === 'bank' && bankEl) ? bankEl.value : '';
+    cashEntries.unshift({ id:Date.now(), type, amount:amt, date, desc, method, bank });
+  }
+
   cbSave();
   amtEl.value='';
   if(descEl) descEl.value='';
+  const sc = document.getElementById('cb-split-cash'); if(sc) sc.value='';
+  const sb = document.getElementById('cb-split-bank-amt'); if(sb) sb.value='';
   cbPopMonths(); cbRender(); cbStats();
   // Flash success
   const btn = document.querySelector('#cashbook .btn-gold');
@@ -4548,6 +4823,9 @@ function cbExport(){
 function cbInitTab(){
   const dateEl=document.getElementById('cb-date');
   if(dateEl){ const d=new Date(); dateEl.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  const mEl=document.getElementById('cb-method'); if(mEl) mEl.value='cash';
+  const bfEl=document.getElementById('cb-bank-field'); if(bfEl) bfEl.style.display='none';
+  const sfEl=document.getElementById('cb-split-fields'); if(sfEl) sfEl.style.display='none';
   cbPopMonths(); cbRender(); cbStats();
 }
 
