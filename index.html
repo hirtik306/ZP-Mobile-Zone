@@ -1258,6 +1258,30 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
     <div class="scard"><div class="scard-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="slbl">Today Net</div><div class="sval b" id="cb-today-net">Rs. 0</div></div>
   </div>
 
+  <!-- Bank & Cash Breakdown Cards -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:1.25rem">
+    <div class="scard" style="border-left:3px solid var(--g)">
+      <div class="slbl" style="font-size:10px;color:var(--txt3)">💵 Haath Mein Cash</div>
+      <div class="sval g" id="cb-hand-cash" style="font-size:15px">Rs. 0</div>
+    </div>
+    <div class="scard" style="border-left:3px solid #3b82f6">
+      <div class="slbl" style="font-size:10px;color:var(--txt3)">🏦 Bank Balance (Kul)</div>
+      <div class="sval" style="color:#3b82f6;font-size:15px" id="cb-bank-total">Rs. 0</div>
+    </div>
+    <div class="scard" style="border-left:3px solid var(--gd)">
+      <div class="slbl" style="font-size:10px;color:var(--txt3)">🏦 Meezan (ZP + Personal)</div>
+      <div class="sval gold" style="font-size:14px" id="cb-bank-meezan">Rs. 0</div>
+    </div>
+    <div class="scard" style="border-left:3px solid #8b5cf6">
+      <div class="slbl" style="font-size:10px;color:var(--txt3)">🏦 UBL + UBL Ameen</div>
+      <div class="sval" style="color:#8b5cf6;font-size:14px" id="cb-bank-ubl">Rs. 0</div>
+    </div>
+    <div class="scard" style="border-left:3px solid #06b6d4">
+      <div class="slbl" style="font-size:10px;color:var(--txt3)">🏦 Alfalah</div>
+      <div class="sval" style="color:#06b6d4;font-size:14px" id="cb-bank-alfalah">Rs. 0</div>
+    </div>
+  </div>
+
   <div class="card" style="margin-bottom:1.25rem">
     <div class="card-hd"><div class="card-hd-accent"></div>Add Entry</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
@@ -1288,6 +1312,23 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
         <input type="number" id="cb-amount" placeholder="0" min="0">
       </div>
       <div class="fg">
+        <label>Payment Method <span class="req">*</span></label>
+        <select id="cb-method" onchange="cbMethodChange()" style="padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur2);color:var(--txt)">
+          <option value="cash">💵 Cash (Haath Mein)</option>
+          <option value="bank">🏦 Bank / Online Transfer</option>
+        </select>
+      </div>
+      <div class="fg" id="cb-bank-field" style="display:none">
+        <label>Bank Account <span class="req">*</span></label>
+        <select id="cb-bank" style="padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur2);color:var(--txt)">
+          <option value="meezan_zp">🏦 ZP Mobile Zone (Meezan)</option>
+          <option value="meezan">🏦 Meezan (Personal)</option>
+          <option value="ubl">🏦 UBL</option>
+          <option value="alfalah">🏦 Alfalah</option>
+          <option value="ubl_ameen">🏦 UBL Ameen</option>
+        </select>
+      </div>
+      <div class="fg">
         <label>Date <span class="req">*</span></label>
         <input type="date" id="cb-date">
       </div>
@@ -1310,6 +1351,16 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
         <option value="in">Cash In Only</option>
         <option value="out">Cash Out Only</option>
       </select>
+      <select id="cb-f-method" onchange="cbRender()" style="flex:1;min-width:120px;padding:8px 10px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:12px;background:var(--sur);color:var(--txt)">
+        <option value="">Cash + Bank</option>
+        <option value="cash">💵 Cash Only</option>
+        <option value="bank">🏦 Bank Only</option>
+        <option value="meezan_zp">ZP Meezan</option>
+        <option value="meezan">Meezan Personal</option>
+        <option value="ubl">UBL</option>
+        <option value="alfalah">Alfalah</option>
+        <option value="ubl_ameen">UBL Ameen</option>
+      </select>
       <select id="cb-f-month" onchange="cbRender()" style="flex:1;min-width:120px;padding:8px 10px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:12px;background:var(--sur);color:var(--txt)">
         <option value="">All Months</option>
       </select>
@@ -1320,7 +1371,7 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
     </div>
     <div style="overflow-x:auto">
       <table>
-        <thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Cash In</th><th>Cash Out</th><th>Action</th></tr></thead>
+        <thead><tr><th>Date</th><th>Type</th><th>Method / Bank</th><th>Name</th><th>Cash In</th><th>Cash Out</th><th>Action</th></tr></thead>
         <tbody id="cb-tbody"></tbody>
       </table>
     </div>
@@ -4178,6 +4229,10 @@ const CB_LABELS = {
 
 function cbIsIn(type){ return CB_IN_TYPES.includes(type) || (type && type.startsWith('__cin__')); }
 
+const CB_BANK_LABELS = {
+  meezan_zp: 'ZP Meezan', meezan: 'Meezan', ubl: 'UBL', alfalah: 'Alfalah', ubl_ameen: 'UBL Ameen'
+};
+
 function cbTypeChange(){
   const t = document.getElementById('cb-type').value;
   const otherInp = document.getElementById('cb-type-other');
@@ -4185,28 +4240,36 @@ function cbTypeChange(){
   else otherInp.style.display='none';
 }
 
+function cbMethodChange(){
+  const m = document.getElementById('cb-method').value;
+  const bankField = document.getElementById('cb-bank-field');
+  if(bankField) bankField.style.display = (m==='bank') ? 'block' : 'none';
+}
+
 function cbAdd(){
   const typeEl = document.getElementById('cb-type');
   const amtEl = document.getElementById('cb-amount');
   const dateEl = document.getElementById('cb-date');
   const descEl = document.getElementById('cb-desc');
+  const methodEl = document.getElementById('cb-method');
+  const bankEl = document.getElementById('cb-bank');
   if(!typeEl||!amtEl||!dateEl){alert('Form not ready, please try again.');return;}
   let type = typeEl.value;
   if(type === '__other__' || type === '__other_in__'){
     const isInType = type === '__other_in__';
     type = document.getElementById('cb-type-other').value.trim();
     if(!type){ alert('Please type the entry type!'); document.getElementById('cb-type-other').focus(); return; }
-    // Mark as cash in or out using prefix
     if(isInType) type = '__cin__' + type;
   }
   const amt = parseFloat(amtEl.value);
-  // Auto-fill today if date empty
   if(!dateEl.value){ const d=new Date(); dateEl.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
   const date = dateEl.value;
   const desc = descEl ? descEl.value.trim() : '';
+  const method = methodEl ? methodEl.value : 'cash';
+  const bank = (method === 'bank' && bankEl) ? bankEl.value : '';
   if(!amt||amt<=0){ alert('Please enter a valid amount!'); amtEl.focus(); return; }
   if(!date){ alert('Please select a date!'); return; }
-  cashEntries.unshift({ id:Date.now(), type, amount:amt, date, desc });
+  cashEntries.unshift({ id:Date.now(), type, amount:amt, date, desc, method, bank });
   cbSave();
   amtEl.value='';
   if(descEl) descEl.value='';
@@ -4228,41 +4291,34 @@ function cbEditOpen(id){
   // Remove old edit modal if exists
   const old = document.getElementById('cb-edit-modal');
   if(old) old.remove();
-  const isCustom = !CB_LABELS[e.type] && !(e.type && e.type.startsWith('__cin__') && CB_LABELS[e.type.replace('__cin__','')]);
-  const isCustomCin = e.type && e.type.startsWith('__cin__');
-  const displayType = isCustomCin ? e.type.replace('__cin__','') : (CB_LABELS[e.type]||e.type);
-  const selectVal = isCustomCin ? '__other_in__' : (isCustom ? '__other__' : e.type);
+  const displayType = e.type && e.type.startsWith('__cin__') ? e.type.replace('__cin__','') : (CB_LABELS[e.type]||e.type);
+  const curMethod = e.method || 'cash';
+  const curBank = e.bank || 'meezan_zp';
+  const bankOpts = Object.keys(CB_BANK_LABELS).map(k=>`<option value="${k}"${k===curBank?' selected':''}>${CB_BANK_LABELS[k]}</option>`).join('');
   const modal = document.createElement('div');
   modal.id = 'cb-edit-modal';
   modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
   modal.innerHTML = `
-    <div style="background:var(--sur);border:1px solid var(--bor);border-radius:var(--rad);padding:20px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.4)">
+    <div style="background:var(--sur);border:1px solid var(--bor);border-radius:var(--rad);padding:20px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.4);max-height:90vh;overflow-y:auto">
       <div style="font-size:14px;font-weight:700;margin-bottom:16px;color:var(--txt)">✏️ Entry Edit Karo</div>
       <div class="fg" style="margin-bottom:12px">
         <label style="font-size:11px;font-weight:600;color:var(--txt2);display:block;margin-bottom:6px">Type</label>
-        <select id="cb-edit-type" onchange="cbEditTypeChange()" style="width:100%;padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur2);color:var(--txt);outline:none">
-          <optgroup label="Cash In">
-            <option value="sale_cash"${selectVal==='sale_cash'?' selected':''}>Phone Sale Cash</option>
-            <option value="cust_payment"${selectVal==='cust_payment'?' selected':''}>Customer Due Payment</option>
-            <option value="loan_return"${selectVal==='loan_return'?' selected':''}>Loan Returned</option>
-            <option value="other_in"${selectVal==='other_in'?' selected':''}>Other Cash In</option>
-            <option value="__other_in__"${selectVal==='__other_in__'?' selected':''}>Other (Type karo)</option>
-          </optgroup>
-          <optgroup label="Cash Out">
-            <option value="stock_buy"${selectVal==='stock_buy'?' selected':''}>Stock Purchase</option>
-            <option value="expense_out"${selectVal==='expense_out'?' selected':''}>Shop Expense</option>
-            <option value="partner_draw"${selectVal==='partner_draw'?' selected':''}>Partner Withdrawal</option>
-            <option value="loan_out"${selectVal==='loan_out'?' selected':''}>Customer Ko Loan</option>
-            <option value="supplier_pay"${selectVal==='supplier_pay'?' selected':''}>Supplier Payment</option>
-            <option value="other_out"${selectVal==='other_out'?' selected':''}>Other Cash Out</option>
-            <option value="__other__"${selectVal==='__other__'?' selected':''}>Other (Type karo)</option>
-          </optgroup>
-        </select>
-        <input type="text" id="cb-edit-type-other" value="${isCustom?displayType:''}" placeholder="Type likho..." style="display:${isCustom?'block':'none'};margin-top:8px;width:100%;padding:9px 12px;border:1px solid var(--gold-border);border-radius:var(--rad-s);font-size:13px;background:var(--card);color:var(--txt1);outline:none">
+        <input type="text" id="cb-edit-type" value="${displayType}" style="width:100%;padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur2);color:var(--txt);outline:none">
       </div>
       <div class="fg" style="margin-bottom:12px">
         <label style="font-size:11px;font-weight:600;color:var(--txt2);display:block;margin-bottom:6px">Amount (Rs.)</label>
         <input type="number" id="cb-edit-amount" value="${e.amount}" style="width:100%;padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur2);color:var(--txt);outline:none">
+      </div>
+      <div class="fg" style="margin-bottom:12px">
+        <label style="font-size:11px;font-weight:600;color:var(--txt2);display:block;margin-bottom:6px">Payment Method</label>
+        <select id="cb-edit-method" onchange="document.getElementById('cb-edit-bank-field').style.display=(this.value==='bank')?'block':'none'" style="width:100%;padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur2);color:var(--txt);outline:none">
+          <option value="cash"${curMethod==='cash'?' selected':''}>💵 Cash (Haath Mein)</option>
+          <option value="bank"${curMethod==='bank'?' selected':''}>🏦 Bank / Online Transfer</option>
+        </select>
+      </div>
+      <div class="fg" id="cb-edit-bank-field" style="margin-bottom:12px;display:${curMethod==='bank'?'block':'none'}">
+        <label style="font-size:11px;font-weight:600;color:var(--txt2);display:block;margin-bottom:6px">Bank Account</label>
+        <select id="cb-edit-bank" style="width:100%;padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur2);color:var(--txt);outline:none">${bankOpts}</select>
       </div>
       <div class="fg" style="margin-bottom:12px">
         <label style="font-size:11px;font-weight:600;color:var(--txt2);display:block;margin-bottom:6px">Date</label>
@@ -4273,7 +4329,7 @@ function cbEditOpen(id){
         <input type="text" id="cb-edit-desc" value="${e.desc||''}" style="width:100%;padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur2);color:var(--txt);outline:none">
       </div>
       <div style="display:flex;gap:10px">
-        <button class="btn btn-gold" onclick="cbEditSave('${id}')" style="flex:1;font-size:13px">✅ Save</button>
+        <button class="btn btn-gold" onclick="cbEditSave(${id})" style="flex:1;font-size:13px">✅ Save</button>
         <button class="btn btn-ghost" onclick="document.getElementById('cb-edit-modal').remove()" style="font-size:13px;padding:8px 16px">Cancel</button>
       </div>
     </div>`;
@@ -4281,32 +4337,31 @@ function cbEditOpen(id){
   modal.addEventListener('click', function(ev){ if(ev.target===modal) modal.remove(); });
 }
 
-function cbEditTypeChange(){
-  const t = document.getElementById('cb-edit-type').value;
-  const otherInp = document.getElementById('cb-edit-type-other');
-  if(t === '__other__' || t === '__other_in__'){ otherInp.style.display='block'; otherInp.focus(); }
-  else otherInp.style.display='none';
-}
-
 function cbEditSave(id){
   const e = cashEntries.find(en=>String(en.id)===String(id));
   if(!e){ alert('Entry not found!'); return; }
-  let newType = document.getElementById('cb-edit-type').value;
-  if(newType === '__other__' || newType === '__other_in__'){
-    const isInType = newType === '__other_in__';
-    const typed = document.getElementById('cb-edit-type-other').value.trim();
-    if(!typed){ alert('Please type the entry type!'); document.getElementById('cb-edit-type-other').focus(); return; }
-    newType = isInType ? '__cin__'+typed : typed;
-  }
+  const newType = document.getElementById('cb-edit-type').value.trim();
   const newAmt = parseFloat(document.getElementById('cb-edit-amount').value);
   const newDate = document.getElementById('cb-edit-date').value;
   const newDesc = document.getElementById('cb-edit-desc').value.trim();
+  const newMethod = document.getElementById('cb-edit-method').value;
+  const newBank = newMethod==='bank' ? document.getElementById('cb-edit-bank').value : '';
+  if(!newType){ alert('Type required!'); return; }
   if(!newAmt||newAmt<=0){ alert('Valid amount required!'); return; }
   if(!newDate){ alert('Date required!'); return; }
-  e.type = newType;
+  // Preserve direction: if original was cash in custom, keep prefix
+  const wasCin = e.type && e.type.startsWith('__cin__');
+  const wasKnownOut = ['stock_buy','expense_out','partner_draw','loan_out','supplier_pay','other_out'].includes(e.type);
+  const matchedKey = Object.keys(CB_LABELS).find(k=>CB_LABELS[k]===newType);
+  if(matchedKey){ e.type = matchedKey; }
+  else if(wasCin){ e.type = '__cin__'+newType; }
+  else if(wasKnownOut || !cbIsIn(e.type)){ e.type = newType; }
+  else { e.type = newType; }
   e.amount = newAmt;
   e.date = newDate;
   e.desc = newDesc;
+  e.method = newMethod;
+  e.bank = newBank;
   cbSave(); cbRender(); cbStats();
   document.getElementById('cb-edit-modal').remove();
 }
@@ -4316,13 +4371,28 @@ function cbStats(){
   const today = new Date();
   const td = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
   let totalIn=0, totalOut=0, todayNet=0;
+  let handCash=0, bankTotal=0;
+  const bankMap = { meezan_zp:0, meezan:0, ubl:0, alfalah:0, ubl_ameen:0 };
   cashEntries.forEach(e=>{
-    if(cbIsIn(e.type)){ totalIn+=e.amount; if(e.date===td) todayNet+=e.amount; }
+    const isIn = cbIsIn(e.type);
+    const sign = isIn ? 1 : -1;
+    if(isIn){ totalIn+=e.amount; if(e.date===td) todayNet+=e.amount; }
     else { totalOut+=e.amount; if(e.date===td) todayNet-=e.amount; }
+    if(e.method === 'bank' && e.bank){
+      bankTotal += sign * e.amount;
+      if(bankMap.hasOwnProperty(e.bank)) bankMap[e.bank] += sign * e.amount;
+    } else {
+      handCash += sign * e.amount;
+    }
   });
   const s=(id,v)=>{const x=document.getElementById(id);if(x)x.textContent=v;};
   s('cb-in-total',fmt(totalIn)); s('cb-out-total',fmt(totalOut));
   s('cb-net-total',fmt(totalIn-totalOut));
+  s('cb-hand-cash', fmt(Math.max(0,handCash)));
+  s('cb-bank-total', fmt(bankTotal));
+  s('cb-bank-meezan', fmt((bankMap.meezan_zp||0)+(bankMap.meezan||0)));
+  s('cb-bank-ubl', fmt((bankMap.ubl||0)+(bankMap.ubl_ameen||0)));
+  s('cb-bank-alfalah', fmt(bankMap.alfalah||0));
   const tn=document.getElementById('cb-today-net');
   if(tn){ tn.textContent=fmt(Math.abs(todayNet)); tn.className='sval '+(todayNet>=0?'g':'r'); }
 }
@@ -4341,10 +4411,14 @@ function cbRender(){
   const empty=document.getElementById('cb-empty');
   if(!tbody) return;
   const dir=document.getElementById('cb-f-dir')?.value||'';
+  const method=document.getElementById('cb-f-method')?.value||'';
   const month=document.getElementById('cb-f-month')?.value||'';
   let list=cashEntries;
   if(dir==='in') list=list.filter(e=>cbIsIn(e.type));
   else if(dir==='out') list=list.filter(e=>!cbIsIn(e.type));
+  if(method==='cash') list=list.filter(e=>e.method!=='bank');
+  else if(method==='bank') list=list.filter(e=>e.method==='bank');
+  else if(method) list=list.filter(e=>e.method==='bank' && e.bank===method);
   if(month) list=list.filter(e=>e.date.startsWith(month));
   tbody.innerHTML='';
   if(!list.length){ empty.style.display='block'; return; }
@@ -4361,21 +4435,23 @@ function cbRender(){
     const isIn=cbIsIn(e.type);
     const bal=balMap[e.id]||0;
     const displayLabel = e.type && e.type.startsWith('__cin__') ? e.type.replace('__cin__','') : (CB_LABELS[e.type]||e.type);
+    const methodLabel = e.method==='bank' ? ('🏦 '+(CB_BANK_LABELS[e.bank]||e.bank||'Bank')) : '💵 Cash';
     const tr=document.createElement('tr');
     tr.innerHTML=`<td style="white-space:nowrap;font-size:12px">${e.date}</td>`+
       `<td><div style="font-size:12px;font-weight:600">${displayLabel}</div><span style="font-size:10px;padding:2px 7px;border-radius:8px;font-weight:700;background:${isIn?'var(--gl)':'var(--rl)'};color:${isIn?'var(--gt)':'var(--rt)'}">${isIn?'Cash In':'Cash Out'}</span></td>`+
+      `<td style="font-size:11px;color:var(--txt2);white-space:nowrap">${methodLabel}</td>`+
       `<td style="font-size:12px;color:var(--txt2)">${e.desc||'—'}</td>`+
       `<td style="font-weight:700;color:var(--gd)">${isIn?fmt(e.amount):'—'}</td>`+
       `<td style="font-weight:700;color:var(--r)">${!isIn?fmt(e.amount):'—'}</td>`+
-      `<td style="white-space:nowrap"><button onclick="cbEditOpen('${e.id}')" class="btn btn-ghost" style="padding:4px 8px;font-size:11px;margin-right:4px">✏️</button><button onclick="cbDelete('${e.id}')" class="btn btn-r" style="padding:4px 10px;font-size:11px">Del</button></td>`;
+      `<td style="white-space:nowrap"><button onclick="cbEditOpen(${e.id})" class="btn btn-ghost" style="padding:4px 8px;font-size:11px;margin-right:4px">✏️</button><button onclick="cbDelete(${e.id})" class="btn btn-r" style="padding:4px 10px;font-size:11px">Del</button></td>`;
     tbody.appendChild(tr);
   });
 }
 
 function cbExport(){
   if(!cashEntries.length){alert('No data available!');return;}
-  let csv='Date,Type,Direction,Description,Amount\n';
-  cashEntries.forEach(e=>{ csv+=e.date+',"'+(CB_LABELS[e.type]||e.type)+'","'+(cbIsIn(e.type)?'In':'Out')+'","'+(e.desc||'')+'",'+e.amount+'\n'; });
+  let csv='Date,Type,Direction,Method,Bank,Description,Amount\n';
+  cashEntries.forEach(e=>{ csv+=e.date+',"'+(CB_LABELS[e.type]||e.type)+'","'+(cbIsIn(e.type)?'In':'Out')+'","'+(e.method==='bank'?'Bank':'Cash')+'","'+(e.method==='bank'?(CB_BANK_LABELS[e.bank]||e.bank||''):'')+'","'+(e.desc||'')+'",'+e.amount+'\n'; });
   const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
   a.download='cashbook_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
 }
