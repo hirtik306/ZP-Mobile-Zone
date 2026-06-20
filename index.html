@@ -4241,7 +4241,7 @@ function expAdd(){
 
 function expDelete(id){
   if(!confirm('Delete this entry?')) return;
-  expenses = expenses.filter(e => e.id !== id);
+  expenses = expenses.filter(e => String(e.id) !== String(id));
   expSaveData();
   expRender();
   expUpdateStats();
@@ -4276,7 +4276,7 @@ function expRender(){
       +'<td><div style="font-size:12px;font-weight:600">'+label+'</div>'+badge+'</td>'
       +'<td style="color:var(--txt2);font-size:12px">'+(e.desc||'—')+'</td>'
       +'<td style="font-weight:700;color:'+color+'">'+fmt(e.amount)+'</td>'
-      +'<td><button onclick="expDelete('+e.id+')" class="btn btn-r" style="padding:4px 10px;font-size:11px">Delete</button></td>';
+      +'<td><button onclick="expDelete(\''+e.id+'\')" class="btn btn-r" style="padding:4px 10px;font-size:11px">Delete</button></td>';
     tbody.appendChild(tr);
   });
 }
@@ -4441,8 +4441,8 @@ function advAdd(){
 
 function advDelete(id){
   if(!confirm('Delete this entry?')) return;
-  const phone = advances.find(a=>a.id===id)?.phone;
-  advances = advances.filter(a=>a.id!==id);
+  const phone = advances.find(a=>String(a.id)===String(id))?.phone;
+  advances = advances.filter(a=>String(a.id)!==String(id));
   advSave();
   if(phone){ advRender(phone); }
 }
@@ -4464,7 +4464,7 @@ function advRender(phone){
     myAdv.map(a=>'<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--sur2);border:1px solid var(--bor);border-radius:var(--rad-s);margin-bottom:6px;gap:8px">'+
       '<div><span style="font-size:12px;font-weight:600;color:'+colors[a.type]+'">'+labels[a.type]+'</span><span style="font-size:11px;color:var(--txt3);margin-left:8px">'+a.date+'</span></div>'+
       '<div style="display:flex;align-items:center;gap:10px"><span style="font-size:13px;font-weight:700">'+fmt(a.amount)+'</span>'+
-      '<button onclick="advDelete('+a.id+')" class="btn btn-r" style="padding:3px 8px;font-size:11px">Del</button></div>'+
+      '<button onclick="advDelete(\''+a.id+'\')" class="btn btn-r" style="padding:3px 8px;font-size:11px">Del</button></div>'+
     '</div>').join('');
 }
 
@@ -4497,7 +4497,7 @@ async function custEditSave(){
   if(isOnline && customers[idx]._mongoId){
     try{ await api('PATCH', '/api/customers/' + customers[idx]._mongoId, {name, phone: newPhone||phone, cnic, address}); }catch(e){}
   }
-  localStorage.setItem(CKEY, JSON.stringify(customers.filter(x=>!x.id?.toString().startsWith('local_'))));
+  if(!String(customers[idx].id).startsWith('local_')) { await idb.put('customers', customers[idx]); }
   document.getElementById('cdp-edit-form').style.display='none';
   document.getElementById('cdp-name').textContent = name;
   renderCustomers();
@@ -4518,7 +4518,7 @@ async function custDeleteConfirm(){
   if(isOnline && cust._mongoId){
     try{ await api('DELETE', '/api/customers/' + cust._mongoId); }catch(e){}
   }
-  localStorage.setItem(CKEY, JSON.stringify(customers.filter(x=>!x.id?.toString().startsWith('local_'))));
+  if(!String(cust.id).startsWith('local_')) { await idb.del('customers', cust.id); }
   closeCustDetail();
   renderCustomers();
 }
@@ -4693,7 +4693,7 @@ function cbEditOpen(id){
         <input type="text" id="cb-edit-desc" value="${e.desc||''}" style="width:100%;padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur2);color:var(--txt);outline:none">
       </div>
       <div style="display:flex;gap:10px">
-        <button class="btn btn-gold" onclick="cbEditSave(${id})" style="flex:1;font-size:13px">✅ Save</button>
+        <button class="btn btn-gold" onclick="cbEditSave('${id}')" style="flex:1;font-size:13px">✅ Save</button>
         <button class="btn btn-ghost" onclick="document.getElementById('cb-edit-modal').remove()" style="font-size:13px;padding:8px 16px">Cancel</button>
       </div>
     </div>`;
@@ -4807,7 +4807,7 @@ function cbRender(){
       `<td style="font-size:12px;color:var(--txt2)">${e.desc||'—'}</td>`+
       `<td style="font-weight:700;color:var(--gd)">${isIn?fmt(e.amount):'—'}</td>`+
       `<td style="font-weight:700;color:var(--r)">${!isIn?fmt(e.amount):'—'}</td>`+
-      `<td style="white-space:nowrap"><button onclick="cbEditOpen(${e.id})" class="btn btn-ghost" style="padding:4px 8px;font-size:11px;margin-right:4px">✏️</button><button onclick="cbDelete(${e.id})" class="btn btn-r" style="padding:4px 10px;font-size:11px">Del</button></td>`;
+      `<td style="white-space:nowrap"><button onclick="cbEditOpen('${e.id}')" class="btn btn-ghost" style="padding:4px 8px;font-size:11px;margin-right:4px">✏️</button><button onclick="cbDelete('${e.id}')" class="btn btn-r" style="padding:4px 10px;font-size:11px">Del</button></td>`;
     tbody.appendChild(tr);
   });
 }
@@ -5084,7 +5084,7 @@ function supTxnAdd(){
 
 function supTxnDelete(id){
   if(!confirm('Delete this entry?')) return;
-  supTxns=supTxns.filter(t=>t.id!==id);
+  supTxns=supTxns.filter(t=>String(t.id)!==String(id));
   supTxnSave();
   if(openSupId){ supUpdateDetailStats(openSupId); supTxnRender(openSupId); }
   supRender();
@@ -5107,7 +5107,7 @@ function supTxnRender(id){
       `<td><span style="font-size:12px;font-weight:600;color:${TXN_COLORS[t.type]||'var(--txt)'}">${TXN_LABELS[t.type]||t.type}</span></td>`+
       `<td style="font-size:12px;color:var(--txt2)">${t.note||'—'}</td>`+
       `<td style="font-weight:700;font-size:13px">${fmt(t.amount)}</td>`+
-      `<td><button onclick="supTxnDelete(${t.id})" class="btn btn-r" style="padding:4px 10px;font-size:11px">Del</button></td>`;
+      `<td><button onclick="supTxnDelete('${t.id}')" class="btn btn-r" style="padding:4px 10px;font-size:11px">Del</button></td>`;
     tbody.appendChild(tr);
   });
 }
