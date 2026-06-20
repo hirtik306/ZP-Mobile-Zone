@@ -748,6 +748,26 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
         </div>
       </div>
 
+      <div class="frow" style="margin-top:10px">
+        <div class="fg">
+          <label>Paisa Kaise Aya <span class="req">*</span></label>
+          <select id="sell-recv-method" onchange="sellRecvMethodChange()" style="padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--card);color:var(--txt1)">
+            <option value="cash">💵 Cash (Haath Mein)</option>
+            <option value="bank">🏦 Bank / Online Transfer</option>
+          </select>
+        </div>
+        <div class="fg" id="sell-bank-field" style="display:none">
+          <label>Konsa Bank Account</label>
+          <select id="sell-recv-bank" style="padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--card);color:var(--txt1)">
+            <option value="meezan_zp">🏦 ZP Mobile Zone (Meezan)</option>
+            <option value="meezan">🏦 Meezan (Personal)</option>
+            <option value="ubl">🏦 UBL</option>
+            <option value="alfalah">🏦 Alfalah</option>
+            <option value="ubl_ameen">🏦 UBL Ameen</option>
+          </select>
+        </div>
+      </div>
+
       <div id="partial-section" style="display:none">
         <div class="partial-box">
           <div class="frow" style="margin-bottom:10px">
@@ -1103,6 +1123,23 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
     <div style="font-size:13px;color:var(--txt2);margin-bottom:1.25rem">Enter the amount received from customer</div>
     <div id="pay-modal-info" style="margin-bottom:1.25rem"></div>
     <div class="fg" style="margin-bottom:12px"><label>Amount Received (Rs.) <span class="req">*</span></label><input type="number" id="pay-amount" placeholder="0"></div>
+    <div class="fg" style="margin-bottom:12px">
+      <label>Paisa Kaise Aya <span class="req">*</span></label>
+      <select id="pay-recv-method" onchange="payRecvMethodChange()" style="width:100%;padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur2);color:var(--txt)">
+        <option value="cash">💵 Cash (Haath Mein)</option>
+        <option value="bank">🏦 Bank / Online Transfer</option>
+      </select>
+    </div>
+    <div class="fg" id="pay-bank-field" style="display:none;margin-bottom:12px">
+      <label>Konsa Bank Account</label>
+      <select id="pay-recv-bank" style="width:100%;padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur2);color:var(--txt)">
+        <option value="meezan_zp">🏦 ZP Mobile Zone (Meezan)</option>
+        <option value="meezan">🏦 Meezan (Personal)</option>
+        <option value="ubl">🏦 UBL</option>
+        <option value="alfalah">🏦 Alfalah</option>
+        <option value="ubl_ameen">🏦 UBL Ameen</option>
+      </select>
+    </div>
     <div class="fg" style="margin-bottom:1.5rem"><label>Note <span style="color:var(--txt3);font-weight:400;text-transform:none;font-size:10px">(optional)</span></label><input type="text" id="pay-note" placeholder="e.g. Cash received in full"></div>
     <div style="display:flex;gap:8px">
       <button class="btn btn-gold" style="flex:1;justify-content:center;padding:11px" onclick="savePayment()">
@@ -2746,6 +2783,8 @@ function findForSell() {
   document.getElementById('mic-buy').textContent = 'Rs. ' + m.buyPrice.toLocaleString();
   document.getElementById('sell-date').value = new Date().toISOString().split('T')[0];
   document.getElementById('sell-price').value = '';
+  const rm = document.getElementById('sell-recv-method'); if(rm) rm.value = 'cash';
+  const rbf = document.getElementById('sell-bank-field'); if(rbf) rbf.style.display = 'none';
   document.getElementById('sell-existing-note').style.display = 'none';
   document.getElementById('profit-preview').innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Enter sale price to see profit / loss`;
   document.getElementById('profit-preview').style.color = 'var(--txt3)';
@@ -2773,6 +2812,12 @@ function setPayType(t) {
   document.getElementById('pt-full').classList.toggle('active', t === 'full');
   document.getElementById('pt-partial').classList.toggle('active', t === 'partial');
   document.getElementById('partial-section').style.display = t === 'partial' ? 'block' : 'none';
+}
+
+function sellRecvMethodChange(){
+  const m = document.getElementById('sell-recv-method').value;
+  const f = document.getElementById('sell-bank-field');
+  if(f) f.style.display = (m === 'bank') ? 'block' : 'none';
 }
 
 async function completeSell() {
@@ -2818,6 +2863,17 @@ async function completeSell() {
     await saveStockItem(updatedItem);
     stock[idx] = updatedItem;
   } catch(e) { alert('Error saving: ' + e.message); return; }
+  // Cash Book mein entry — sirf jitna paisa actually receive hua
+  if (paidNow > 0) {
+    const recvMethod = document.getElementById('sell-recv-method')?.value || 'cash';
+    const recvBank = (recvMethod === 'bank') ? (document.getElementById('sell-recv-bank')?.value || '') : '';
+    cbAutoAdd({
+      type: 'sale_cash', amount: paidNow,
+      date: date || new Date().toISOString().split('T')[0],
+      desc: 'Sale: ' + stock[idx].model + ' — ' + name,
+      method: recvMethod, bank: recvBank
+    });
+  }
   updateStats();
   const pl = sp - stock[idx].buyPrice;
   let msg = `✓ Sale Confirmed!\n\nDevice: ${stock[idx].model} (${stock[idx].variant})\nCustomer: ${name}\nPhone: ${phone}\nSale Price: Rs. ${sp.toLocaleString()}`;
@@ -3027,7 +3083,15 @@ function openPayModal(imei) {
   payTargetImei = imei; const m = stock.find(x => x.imei === imei); if (!m) return;
   document.getElementById('pay-modal-info').innerHTML = `<div class="alert alert-gold" style="margin-bottom:0"><span class="alert-icon">💳</span><span><strong>${m.customer ? m.customer.name : '—'}</strong> &nbsp;·&nbsp; ${m.model}<br>Outstanding Balance: <strong style="color:var(--r)">Rs. ${(m.balance || 0).toLocaleString()}</strong></span></div>`;
   document.getElementById('pay-amount').value = ''; document.getElementById('pay-note').value = '';
+  const rm = document.getElementById('pay-recv-method'); if(rm) rm.value = 'cash';
+  const rbf = document.getElementById('pay-bank-field'); if(rbf) rbf.style.display = 'none';
   document.getElementById('pay-modal').style.display = 'flex';
+}
+
+function payRecvMethodChange(){
+  const m = document.getElementById('pay-recv-method').value;
+  const f = document.getElementById('pay-bank-field');
+  if(f) f.style.display = (m === 'bank') ? 'block' : 'none';
 }
 
 function closePayModal() { document.getElementById('pay-modal').style.display = 'none'; payTargetImei = null; }
@@ -3052,6 +3116,15 @@ async function savePayment() {
     await saveStockItem(updPmt);
     stock[idx] = updPmt;
   } catch(e) { alert('Error saving: ' + e.message); return; }
+  // Cash Book mein entry — customer ka due payment
+  const recvMethod = document.getElementById('pay-recv-method')?.value || 'cash';
+  const recvBank = (recvMethod === 'bank') ? (document.getElementById('pay-recv-bank')?.value || '') : '';
+  cbAutoAdd({
+    type: 'cust_payment', amount: amount,
+    date: new Date().toISOString().split('T')[0],
+    desc: 'Due Payment: ' + m.model + ' — ' + (m.customer ? m.customer.name : ''),
+    method: recvMethod, bank: recvBank
+  });
   // If overpaid, save extra as customer advance
   if (extra > 0) {
     const advData = JSON.parse(localStorage.getItem('zpmobile_advances_v1') || '[]');
@@ -4244,6 +4317,22 @@ function cbMethodChange(){
   const m = document.getElementById('cb-method').value;
   const bankField = document.getElementById('cb-bank-field');
   if(bankField) bankField.style.display = (m==='bank') ? 'block' : 'none';
+}
+
+// Auto-add a cash book entry from outside the Cash Book tab (e.g. phone sale, due payment).
+// Marked with source:'auto' + sourceType so it can be identified, but still editable/deletable normally.
+function cbAutoAdd({type, amount, date, desc, method, bank}){
+  if(!amount || amount<=0) return;
+  cashEntries.unshift({
+    id: Date.now() + Math.floor(Math.random()*1000),
+    type, amount, date: date || new Date().toISOString().split('T')[0],
+    desc: desc || '', method: method || 'cash', bank: (method==='bank') ? (bank||'') : '',
+    source: 'auto'
+  });
+  cbSave();
+  if(typeof cbPopMonths === 'function') cbPopMonths();
+  if(typeof cbRender === 'function') cbRender();
+  if(typeof cbStats === 'function') cbStats();
 }
 
 function cbAdd(){
