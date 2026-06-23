@@ -444,6 +444,49 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
   </div>
 </div>
 
+<!-- Balance Strip — always visible below topbar -->
+<div id="balance-strip" onclick="showTab('cashbook')" style="background:linear-gradient(90deg,#0f0d00,#1a1600,#0f0d00);border-bottom:1px solid rgba(201,162,39,0.18);padding:7px 16px;display:flex;align-items:center;gap:6px;overflow-x:auto;cursor:pointer;position:sticky;top:62px;z-index:190;scrollbar-width:none">
+  <div style="display:flex;align-items:center;gap:14px;min-width:max-content">
+    <div style="display:flex;align-items:center;gap:5px;font-size:11px">
+      <span style="color:rgba(255,255,255,0.35);font-size:10px">💵</span>
+      <span style="color:rgba(255,255,255,0.4);font-size:10px">Cash</span>
+      <span id="strip-cash" style="color:#e8c547;font-weight:700;font-size:12px;font-family:'IBM Plex Mono',monospace">Rs. —</span>
+    </div>
+    <span style="color:rgba(255,255,255,0.15);font-size:10px">|</span>
+    <div style="display:flex;align-items:center;gap:5px;font-size:11px">
+      <span style="color:rgba(255,255,255,0.35);font-size:10px">🏦</span>
+      <span style="color:rgba(255,255,255,0.4);font-size:10px">ZP Meezan</span>
+      <span id="strip-meezan-zp" style="color:#4ade80;font-weight:700;font-size:12px;font-family:'IBM Plex Mono',monospace">Rs. —</span>
+    </div>
+    <span style="color:rgba(255,255,255,0.15);font-size:10px">|</span>
+    <div style="display:flex;align-items:center;gap:5px">
+      <span style="color:rgba(255,255,255,0.4);font-size:10px">Meezan</span>
+      <span id="strip-meezan" style="color:#4ade80;font-weight:700;font-size:12px;font-family:'IBM Plex Mono',monospace">Rs. —</span>
+    </div>
+    <span style="color:rgba(255,255,255,0.15);font-size:10px">|</span>
+    <div style="display:flex;align-items:center;gap:5px">
+      <span style="color:rgba(255,255,255,0.4);font-size:10px">UBL</span>
+      <span id="strip-ubl" style="color:#4ade80;font-weight:700;font-size:12px;font-family:'IBM Plex Mono',monospace">Rs. —</span>
+    </div>
+    <span style="color:rgba(255,255,255,0.15);font-size:10px">|</span>
+    <div style="display:flex;align-items:center;gap:5px">
+      <span style="color:rgba(255,255,255,0.4);font-size:10px">UBL Ameen</span>
+      <span id="strip-ubl-ameen" style="color:#4ade80;font-weight:700;font-size:12px;font-family:'IBM Plex Mono',monospace">Rs. —</span>
+    </div>
+    <span style="color:rgba(255,255,255,0.15);font-size:10px">|</span>
+    <div style="display:flex;align-items:center;gap:5px">
+      <span style="color:rgba(255,255,255,0.4);font-size:10px">Alfalah</span>
+      <span id="strip-alfalah" style="color:#4ade80;font-weight:700;font-size:12px;font-family:'IBM Plex Mono',monospace">Rs. —</span>
+    </div>
+    <span style="color:rgba(255,255,255,0.15);font-size:10px">|</span>
+    <div style="display:flex;align-items:center;gap:5px">
+      <span style="color:rgba(255,255,255,0.4);font-size:10px;font-weight:700">Kul</span>
+      <span id="strip-total" style="color:#e8c547;font-weight:800;font-size:12px;font-family:'IBM Plex Mono',monospace">Rs. —</span>
+    </div>
+    <span style="color:rgba(255,255,255,0.2);font-size:9px;margin-left:4px">↗ Cash Book</span>
+  </div>
+</div>
+
 <!-- NAV -->
 <nav class="nav">
   <button class="ntab active" onclick="showTab('purchase',this)">
@@ -1376,8 +1419,15 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
 
 <!-- ══ CASH BOOK ══════════════════════════════════════════ -->
 <div id="cashbook" class="sec">
-  <div class="page-title">Cash Book</div>
-  <div class="page-sub">Daily cash in & out — know your drawer balance at end of day</div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:4px">
+    <div>
+      <div class="page-title" style="margin-bottom:2px">Cash Book</div>
+      <div class="page-sub">Daily cash in & out — know your drawer balance at end of day</div>
+    </div>
+    <button onclick="dinBandKaro()" class="btn btn-gold" style="padding:10px 16px;font-size:13px;white-space:nowrap;margin-top:4px">
+      🌙 Din Band Karo
+    </button>
+  </div>
 
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:1.25rem 0">
     <div class="scard"><div class="scard-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div><div class="slbl">Total Cash In</div><div class="sval g" id="cb-in-total">Rs. 0</div></div>
@@ -1387,6 +1437,10 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
   </div>
 
   <!-- Bank & Cash Breakdown Cards -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <div style="font-size:13px;font-weight:700;color:var(--txt2)">💰 Cash & Bank Balances</div>
+    <button onclick="cbOpenBalModal()" class="btn btn-ghost" style="padding:6px 12px;font-size:11px">⚙️ Opening Balance Set Karo</button>
+  </div>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:1.25rem">
     <div class="scard" style="border-left:3px solid var(--g)">
       <div class="slbl" style="font-size:10px;color:var(--txt3)">💵 Haath Mein Cash</div>
@@ -1397,17 +1451,101 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
       <div class="sval" style="color:#3b82f6;font-size:15px" id="cb-bank-total">Rs. 0</div>
     </div>
     <div class="scard" style="border-left:3px solid var(--gd)">
-      <div class="slbl" style="font-size:10px;color:var(--txt3)">🏦 Meezan (ZP + Personal)</div>
-      <div class="sval gold" style="font-size:14px" id="cb-bank-meezan">Rs. 0</div>
+      <div class="slbl" style="font-size:10px;color:var(--txt3)">🏦 ZP Mobile Zone (Meezan)</div>
+      <div class="sval gold" style="font-size:14px" id="cb-bank-meezan-zp">Rs. 0</div>
+    </div>
+    <div class="scard" style="border-left:3px solid var(--gd)">
+      <div class="slbl" style="font-size:10px;color:var(--txt3)">🏦 Meezan (Personal)</div>
+      <div class="sval gold" style="font-size:14px" id="cb-bank-meezan-personal">Rs. 0</div>
     </div>
     <div class="scard" style="border-left:3px solid #8b5cf6">
-      <div class="slbl" style="font-size:10px;color:var(--txt3)">🏦 UBL + UBL Ameen</div>
-      <div class="sval" style="color:#8b5cf6;font-size:14px" id="cb-bank-ubl">Rs. 0</div>
+      <div class="slbl" style="font-size:10px;color:var(--txt3)">🏦 UBL</div>
+      <div class="sval" style="color:#8b5cf6;font-size:14px" id="cb-bank-ubl-only">Rs. 0</div>
+    </div>
+    <div class="scard" style="border-left:3px solid #8b5cf6">
+      <div class="slbl" style="font-size:10px;color:var(--txt3)">🏦 UBL Ameen</div>
+      <div class="sval" style="color:#8b5cf6;font-size:14px" id="cb-bank-ubl-ameen">Rs. 0</div>
     </div>
     <div class="scard" style="border-left:3px solid #06b6d4">
       <div class="slbl" style="font-size:10px;color:var(--txt3)">🏦 Alfalah</div>
       <div class="sval" style="color:#06b6d4;font-size:14px" id="cb-bank-alfalah">Rs. 0</div>
     </div>
+  </div>
+
+  <!-- Bank to Bank Transfer -->
+  <div class="card" style="margin-bottom:1.25rem">
+    <div class="card-hd"><div class="card-hd-accent"></div>🔁 Bank to Bank Transfer (Apna Paisa Bhejna)</div>
+    <div style="font-size:11px;color:var(--txt3);margin-bottom:12px">Jab tum khud apne ek bank account se dusre account mein paisa bhejo (jaise UBL se Meezan) — Cash Book pe asar nahi parega, sirf dono bank balances adjust ho jayenge.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="fg">
+        <label>Kis Account Se (From)</label>
+        <select id="bt-from" style="width:100%;padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur2);color:var(--txt)">
+          <option value="meezan_zp">🏦 ZP Mobile Zone (Meezan)</option>
+          <option value="meezan">🏦 Meezan (Personal)</option>
+          <option value="ubl">🏦 UBL</option>
+          <option value="alfalah">🏦 Alfalah</option>
+          <option value="ubl_ameen">🏦 UBL Ameen</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Kis Account Mein (To)</label>
+        <select id="bt-to" style="width:100%;padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur2);color:var(--txt)">
+          <option value="meezan_zp">🏦 ZP Mobile Zone (Meezan)</option>
+          <option value="meezan" selected>🏦 Meezan (Personal)</option>
+          <option value="ubl">🏦 UBL</option>
+          <option value="alfalah">🏦 Alfalah</option>
+          <option value="ubl_ameen">🏦 UBL Ameen</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Amount (Rs.) <span class="req">*</span></label>
+        <input type="number" id="bt-amount" placeholder="0" min="0">
+      </div>
+      <div class="fg">
+        <label>Date</label>
+        <input type="date" id="bt-date">
+      </div>
+    </div>
+    <button class="btn btn-gold" onclick="bankTransferDo()" style="margin-top:14px;width:100%">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+      Transfer Karo
+    </button>
+    <div id="bt-history" style="margin-top:14px"></div>
+  </div>
+
+  <!-- Cash Deposit to Bank -->
+  <div class="card" style="margin-bottom:1.25rem">
+    <div class="card-hd"><div class="card-hd-accent"></div>💵➡️🏦 Cash Deposit to Bank</div>
+    <div style="font-size:11px;color:var(--txt3);margin-bottom:12px">Jab dukaan ka cash bank mein jama karo — Haath Mein Cash minus hoga aur us bank account mein plus ho jayega. Cash Book mein automatic entry bhi ban jayegi.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="fg">
+        <label>Konse Bank Mein Jama Karna Hai</label>
+        <select id="cd-bank" style="width:100%;padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur2);color:var(--txt)">
+          <option value="meezan_zp">🏦 ZP Mobile Zone (Meezan)</option>
+          <option value="meezan">🏦 Meezan (Personal)</option>
+          <option value="ubl">🏦 UBL</option>
+          <option value="alfalah">🏦 Alfalah</option>
+          <option value="ubl_ameen">🏦 UBL Ameen</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Amount (Rs.) <span class="req">*</span></label>
+        <input type="number" id="cd-amount" placeholder="0" min="0">
+      </div>
+      <div class="fg">
+        <label>Date</label>
+        <input type="date" id="cd-date">
+      </div>
+      <div class="fg">
+        <label>Note <span style="color:var(--txt3);font-weight:400;font-size:10px">(optional)</span></label>
+        <input type="text" id="cd-note" placeholder="e.g. Roz ka cash jama">
+      </div>
+    </div>
+    <button class="btn btn-gold" onclick="cashDepositDo()" style="margin-top:14px;width:100%">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg>
+      Cash Deposit Karo
+    </button>
+    <div id="cd-history" style="margin-top:14px"></div>
   </div>
 
   <div class="card" style="margin-bottom:1.25rem">
@@ -1493,6 +1631,17 @@ video{width:100%;max-height:240px;object-fit:cover;display:block}
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Add Entry
     </button>
+  </div>
+
+  <!-- Daily Closing History -->
+  <div class="card" style="margin-bottom:1.25rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="card-hd" style="margin:0"><div class="card-hd-accent"></div>📅 Rozana Closing History</div>
+      <div style="font-size:11px;color:var(--txt3)">"Din Band Karo" dabane se save hota hai</div>
+    </div>
+    <div id="ds-history-wrap">
+      <div style="text-align:center;padding:20px;font-size:12px;color:var(--txt3)">Abhi koi record nahi — "🌙 Din Band Karo" dabao pehla record save karne ke liye</div>
+    </div>
   </div>
 
   <div class="card">
@@ -3154,6 +3303,8 @@ function updateStats() {
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
   set('s-total', stock.length); set('s-avail', avail); set('s-sold', sold);
   set('s-invest', 'Rs. ' + invest.toLocaleString());
+  // Update balance strip on every stats refresh
+  if(typeof cbStats === 'function') cbStats();
 
   // Low stock alert — model wise check
   const modelCount = {};
@@ -4241,7 +4392,7 @@ function expAdd(){
 
 function expDelete(id){
   if(!confirm('Delete this entry?')) return;
-  expenses = expenses.filter(e => String(e.id) !== String(id));
+  expenses = expenses.filter(e => e.id !== id);
   expSaveData();
   expRender();
   expUpdateStats();
@@ -4276,7 +4427,7 @@ function expRender(){
       +'<td><div style="font-size:12px;font-weight:600">'+label+'</div>'+badge+'</td>'
       +'<td style="color:var(--txt2);font-size:12px">'+(e.desc||'—')+'</td>'
       +'<td style="font-weight:700;color:'+color+'">'+fmt(e.amount)+'</td>'
-      +'<td><button onclick="expDelete(\''+e.id+'\')" class="btn btn-r" style="padding:4px 10px;font-size:11px">Delete</button></td>';
+      +'<td><button onclick="expDelete('+e.id+')" class="btn btn-r" style="padding:4px 10px;font-size:11px">Delete</button></td>';
     tbody.appendChild(tr);
   });
 }
@@ -4441,8 +4592,8 @@ function advAdd(){
 
 function advDelete(id){
   if(!confirm('Delete this entry?')) return;
-  const phone = advances.find(a=>String(a.id)===String(id))?.phone;
-  advances = advances.filter(a=>String(a.id)!==String(id));
+  const phone = advances.find(a=>a.id===id)?.phone;
+  advances = advances.filter(a=>a.id!==id);
   advSave();
   if(phone){ advRender(phone); }
 }
@@ -4464,7 +4615,7 @@ function advRender(phone){
     myAdv.map(a=>'<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--sur2);border:1px solid var(--bor);border-radius:var(--rad-s);margin-bottom:6px;gap:8px">'+
       '<div><span style="font-size:12px;font-weight:600;color:'+colors[a.type]+'">'+labels[a.type]+'</span><span style="font-size:11px;color:var(--txt3);margin-left:8px">'+a.date+'</span></div>'+
       '<div style="display:flex;align-items:center;gap:10px"><span style="font-size:13px;font-weight:700">'+fmt(a.amount)+'</span>'+
-      '<button onclick="advDelete(\''+a.id+'\')" class="btn btn-r" style="padding:3px 8px;font-size:11px">Del</button></div>'+
+      '<button onclick="advDelete('+a.id+')" class="btn btn-r" style="padding:3px 8px;font-size:11px">Del</button></div>'+
     '</div>').join('');
 }
 
@@ -4497,7 +4648,7 @@ async function custEditSave(){
   if(isOnline && customers[idx]._mongoId){
     try{ await api('PATCH', '/api/customers/' + customers[idx]._mongoId, {name, phone: newPhone||phone, cnic, address}); }catch(e){}
   }
-  if(!String(customers[idx].id).startsWith('local_')) { await idb.put('customers', customers[idx]); }
+  localStorage.setItem(CKEY, JSON.stringify(customers.filter(x=>!x.id?.toString().startsWith('local_'))));
   document.getElementById('cdp-edit-form').style.display='none';
   document.getElementById('cdp-name').textContent = name;
   renderCustomers();
@@ -4518,7 +4669,7 @@ async function custDeleteConfirm(){
   if(isOnline && cust._mongoId){
     try{ await api('DELETE', '/api/customers/' + cust._mongoId); }catch(e){}
   }
-  if(!String(cust.id).startsWith('local_')) { await idb.del('customers', cust.id); }
+  localStorage.setItem(CKEY, JSON.stringify(customers.filter(x=>!x.id?.toString().startsWith('local_'))));
   closeCustDetail();
   renderCustomers();
 }
@@ -4531,6 +4682,29 @@ let cashEntries = JSON.parse(localStorage.getItem(CB_KEY) || '[]');
 function cbSave(){
   localStorage.setItem(CB_KEY, JSON.stringify(cashEntries));
   if(isOnline) { api('DELETE','/api/cashbook/all').catch(()=>{}); cashEntries.forEach(e => api('POST','/api/cashbook', e).catch(()=>{})); }
+}
+
+// Opening Balances — set once when you start using the app, so existing bank/cash money is included in totals
+const CB_OPEN_KEY = 'zpmobile_openbal_v1';
+let cbOpenBal = JSON.parse(localStorage.getItem(CB_OPEN_KEY) || '{"cash":0,"meezan_zp":0,"meezan":0,"ubl":0,"alfalah":0,"ubl_ameen":0}');
+function cbOpenBalSave(){
+  localStorage.setItem(CB_OPEN_KEY, JSON.stringify(cbOpenBal));
+  if(isOnline) { api('POST','/api/settings', {key:'openbal', value: cbOpenBal}).catch(()=>{}); }
+}
+
+// Bank-to-Bank Transfers — your own money moving between your own accounts, doesn't touch Cash Book totals
+const BT_KEY = 'zpmobile_banktransfers_v1';
+let bankTransfers = JSON.parse(localStorage.getItem(BT_KEY) || '[]');
+function btSave(){
+  localStorage.setItem(BT_KEY, JSON.stringify(bankTransfers));
+  if(isOnline) { api('DELETE','/api/banktransfers/all').catch(()=>{}); bankTransfers.forEach(t => api('POST','/api/banktransfers', t).catch(()=>{})); }
+}
+
+// Cash Deposits — cash from drawer deposited into a bank account
+const CD_KEY = 'zpmobile_cashdeposits_v1';
+let cashDeposits = JSON.parse(localStorage.getItem(CD_KEY) || '[]');
+function cdSave(){
+  localStorage.setItem(CD_KEY, JSON.stringify(cashDeposits));
 }
 
 const CB_IN_TYPES = ['sale_cash','cust_payment','loan_return','other_in','__other_in__'];
@@ -4693,7 +4867,7 @@ function cbEditOpen(id){
         <input type="text" id="cb-edit-desc" value="${e.desc||''}" style="width:100%;padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur2);color:var(--txt);outline:none">
       </div>
       <div style="display:flex;gap:10px">
-        <button class="btn btn-gold" onclick="cbEditSave('${id}')" style="flex:1;font-size:13px">✅ Save</button>
+        <button class="btn btn-gold" onclick="cbEditSave(${id})" style="flex:1;font-size:13px">✅ Save</button>
         <button class="btn btn-ghost" onclick="document.getElementById('cb-edit-modal').remove()" style="font-size:13px;padding:8px 16px">Cancel</button>
       </div>
     </div>`;
@@ -4735,30 +4909,55 @@ function cbStats(){
   const today = new Date();
   const td = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
   let totalIn=0, totalOut=0, todayNet=0;
-  let handCash=0, bankTotal=0;
-  const bankMap = { meezan_zp:0, meezan:0, ubl:0, alfalah:0, ubl_ameen:0 };
+  // Start with opening balances (money already in hand/bank before app usage began)
+  let handCash = cbOpenBal.cash || 0;
+  const bankMap = {
+    meezan_zp: cbOpenBal.meezan_zp || 0, meezan: cbOpenBal.meezan || 0,
+    ubl: cbOpenBal.ubl || 0, alfalah: cbOpenBal.alfalah || 0, ubl_ameen: cbOpenBal.ubl_ameen || 0
+  };
   cashEntries.forEach(e=>{
     const isIn = cbIsIn(e.type);
     const sign = isIn ? 1 : -1;
     if(isIn){ totalIn+=e.amount; if(e.date===td) todayNet+=e.amount; }
     else { totalOut+=e.amount; if(e.date===td) todayNet-=e.amount; }
     if(e.method === 'bank' && e.bank){
-      bankTotal += sign * e.amount;
       if(bankMap.hasOwnProperty(e.bank)) bankMap[e.bank] += sign * e.amount;
     } else {
       handCash += sign * e.amount;
     }
   });
+  // Apply bank-to-bank transfers (your own money moving between your own accounts)
+  bankTransfers.forEach(t=>{
+    if(bankMap.hasOwnProperty(t.from)) bankMap[t.from] -= t.amount;
+    if(bankMap.hasOwnProperty(t.to)) bankMap[t.to] += t.amount;
+  });
+  // Apply cash deposits (cash goes out of drawer, into a bank account)
+  cashDeposits.forEach(d=>{
+    handCash -= d.amount;
+    if(bankMap.hasOwnProperty(d.bank)) bankMap[d.bank] += d.amount;
+  });
+  const bankTotal = Object.values(bankMap).reduce((s,v)=>s+v,0);
   const s=(id,v)=>{const x=document.getElementById(id);if(x)x.textContent=v;};
   s('cb-in-total',fmt(totalIn)); s('cb-out-total',fmt(totalOut));
   s('cb-net-total',fmt(totalIn-totalOut));
-  s('cb-hand-cash', fmt(Math.max(0,handCash)));
+  s('cb-hand-cash', fmt(handCash));
   s('cb-bank-total', fmt(bankTotal));
-  s('cb-bank-meezan', fmt((bankMap.meezan_zp||0)+(bankMap.meezan||0)));
-  s('cb-bank-ubl', fmt((bankMap.ubl||0)+(bankMap.ubl_ameen||0)));
+  s('cb-bank-meezan-zp', fmt(bankMap.meezan_zp||0));
+  s('cb-bank-meezan-personal', fmt(bankMap.meezan||0));
+  s('cb-bank-ubl-only', fmt(bankMap.ubl||0));
+  s('cb-bank-ubl-ameen', fmt(bankMap.ubl_ameen||0));
   s('cb-bank-alfalah', fmt(bankMap.alfalah||0));
   const tn=document.getElementById('cb-today-net');
   if(tn){ tn.textContent=fmt(Math.abs(todayNet)); tn.className='sval '+(todayNet>=0?'g':'r'); }
+  // Update balance strip — always visible at top of every page
+  const fmtS = n => 'Rs. ' + Number(n).toLocaleString();
+  s('strip-cash', fmtS(handCash));
+  s('strip-meezan-zp', fmtS(bankMap.meezan_zp||0));
+  s('strip-meezan', fmtS(bankMap.meezan||0));
+  s('strip-ubl', fmtS(bankMap.ubl||0));
+  s('strip-ubl-ameen', fmtS(bankMap.ubl_ameen||0));
+  s('strip-alfalah', fmtS(bankMap.alfalah||0));
+  s('strip-total', fmtS(handCash + bankTotal));
 }
 
 function cbPopMonths(){
@@ -4807,7 +5006,7 @@ function cbRender(){
       `<td style="font-size:12px;color:var(--txt2)">${e.desc||'—'}</td>`+
       `<td style="font-weight:700;color:var(--gd)">${isIn?fmt(e.amount):'—'}</td>`+
       `<td style="font-weight:700;color:var(--r)">${!isIn?fmt(e.amount):'—'}</td>`+
-      `<td style="white-space:nowrap"><button onclick="cbEditOpen('${e.id}')" class="btn btn-ghost" style="padding:4px 8px;font-size:11px;margin-right:4px">✏️</button><button onclick="cbDelete('${e.id}')" class="btn btn-r" style="padding:4px 10px;font-size:11px">Del</button></td>`;
+      `<td style="white-space:nowrap"><button onclick="cbEditOpen(${e.id})" class="btn btn-ghost" style="padding:4px 8px;font-size:11px;margin-right:4px">✏️</button><button onclick="cbDelete(${e.id})" class="btn btn-r" style="padding:4px 10px;font-size:11px">Del</button></td>`;
     tbody.appendChild(tr);
   });
 }
@@ -4826,11 +5025,493 @@ function cbInitTab(){
   const mEl=document.getElementById('cb-method'); if(mEl) mEl.value='cash';
   const bfEl=document.getElementById('cb-bank-field'); if(bfEl) bfEl.style.display='none';
   const sfEl=document.getElementById('cb-split-fields'); if(sfEl) sfEl.style.display='none';
-  cbPopMonths(); cbRender(); cbStats();
+  const btDateEl=document.getElementById('bt-date');
+  if(btDateEl && !btDateEl.value){ const d=new Date(); btDateEl.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  const cdDateEl=document.getElementById('cd-date');
+  if(cdDateEl && !cdDateEl.value){ const d=new Date(); cdDateEl.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  cbPopMonths(); cbRender(); cbStats(); btRenderHistory(); cdRenderHistory(); dsRender();
 }
 
-// ═══════════════════════════════════════════════
-// SUPPLIER LEDGER MODULE (UPGRADED)
+// ═══ OPENING BALANCE MODAL ═══
+function cbOpenBalModal(){
+  const old = document.getElementById('cb-openbal-modal');
+  if(old) old.remove();
+  const modal = document.createElement('div');
+  modal.id = 'cb-openbal-modal';
+  modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  const fieldRow = (key,label) => `
+    <div class="fg" style="margin-bottom:12px">
+      <label style="font-size:11px;font-weight:600;color:var(--txt2);display:block;margin-bottom:6px">${label}</label>
+      <input type="number" id="ob-${key}" value="${cbOpenBal[key]||0}" min="0" style="width:100%;padding:9px 12px;border:1px solid var(--bor2);border-radius:var(--rad-s);font-size:13px;background:var(--sur2);color:var(--txt);outline:none">
+    </div>`;
+  modal.innerHTML = `
+    <div style="background:var(--sur);border:1px solid var(--bor);border-radius:var(--rad);padding:20px;width:100%;max-width:420px;box-shadow:0 8px 32px rgba(0,0,0,0.4);max-height:90vh;overflow-y:auto">
+      <div style="font-size:14px;font-weight:700;margin-bottom:6px;color:var(--txt)">⚙️ Opening Balance Set Karo</div>
+      <div style="font-size:11px;color:var(--txt3);margin-bottom:16px">Jo paisa app use karna shuru karne se pehle dukaan ke cash drawer ya in bank accounts mein pehle se mojood tha, wo yahan likho. Ye sirf ek dafa set karna hai — uske baad app khud add/minus karta rahega.</div>
+      ${fieldRow('cash','💵 Haath Mein Cash (Opening)')}
+      ${fieldRow('meezan_zp','🏦 ZP Mobile Zone (Meezan)')}
+      ${fieldRow('meezan','🏦 Meezan (Personal)')}
+      ${fieldRow('ubl','🏦 UBL')}
+      ${fieldRow('alfalah','🏦 Alfalah')}
+      ${fieldRow('ubl_ameen','🏦 UBL Ameen')}
+      <div style="display:flex;gap:10px;margin-top:6px">
+        <button class="btn btn-gold" onclick="cbOpenBalSaveFromModal()" style="flex:1;font-size:13px">✅ Save</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('cb-openbal-modal').remove()" style="font-size:13px;padding:8px 16px">Cancel</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', function(ev){ if(ev.target===modal) modal.remove(); });
+}
+
+function cbOpenBalSaveFromModal(){
+  const keys = ['cash','meezan_zp','meezan','ubl','alfalah','ubl_ameen'];
+  keys.forEach(k=>{
+    const el = document.getElementById('ob-'+k);
+    cbOpenBal[k] = el ? (parseFloat(el.value) || 0) : (cbOpenBal[k]||0);
+  });
+  cbOpenBalSave();
+  cbStats();
+  document.getElementById('cb-openbal-modal').remove();
+  alert('✅ Opening Balance save ho gaya!');
+}
+
+// ═══ BANK TO BANK TRANSFER ═══
+function bankTransferDo(){
+  const from = document.getElementById('bt-from').value;
+  const to = document.getElementById('bt-to').value;
+  const amt = parseFloat(document.getElementById('bt-amount').value);
+  const dateEl = document.getElementById('bt-date');
+  if(!dateEl.value){ const d=new Date(); dateEl.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  const date = dateEl.value;
+  if(!amt || amt<=0){ alert('Please enter a valid amount!'); return; }
+  if(from === to){ alert('From aur To account same nahi ho sakte!'); return; }
+  bankTransfers.unshift({ id: Date.now(), from, to, amount: amt, date });
+  btSave();
+  document.getElementById('bt-amount').value = '';
+  btRenderHistory();
+  cbStats();
+  alert('✅ Rs. '+amt.toLocaleString()+' transfer ho gaya '+(CB_BANK_LABELS[from]||from)+' se '+(CB_BANK_LABELS[to]||to)+' mein.');
+}
+
+function btDelete(id){
+  if(!confirm('Ye transfer delete karna hai? Dono accounts ka balance wapis adjust ho jayega.')) return;
+  bankTransfers = bankTransfers.filter(t=>String(t.id)!==String(id));
+  btSave();
+  btRenderHistory();
+  cbStats();
+}
+
+function btRenderHistory(){
+  const el = document.getElementById('bt-history');
+  if(!el) return;
+  if(!bankTransfers.length){ el.innerHTML = '<div style="font-size:12px;color:var(--txt3);padding:8px 0">Koi transfer nahi hua abhi tak</div>'; return; }
+  const fmt = n=>'Rs. '+Number(n).toLocaleString();
+  el.innerHTML = bankTransfers.map(t=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--sur2);border:1px solid var(--bor);border-radius:var(--rad-s);margin-bottom:6px;gap:8px">
+      <div style="font-size:12px"><strong>${CB_BANK_LABELS[t.from]||t.from}</strong> → <strong>${CB_BANK_LABELS[t.to]||t.to}</strong><span style="color:var(--txt3);margin-left:8px">${t.date}</span></div>
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-size:13px;font-weight:700;color:var(--b)">${fmt(t.amount)}</span>
+      <button onclick="btDelete(${t.id})" class="btn btn-r" style="padding:3px 8px;font-size:11px">Del</button></div>
+    </div>`).join('');
+}
+
+// ═══ CASH DEPOSIT TO BANK ═══
+function cashDepositDo(){
+  const bank = document.getElementById('cd-bank').value;
+  const amt = parseFloat(document.getElementById('cd-amount').value);
+  const dateEl = document.getElementById('cd-date');
+  if(!dateEl.value){ const d=new Date(); dateEl.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  const date = dateEl.value;
+  const note = document.getElementById('cd-note').value.trim();
+  if(!amt || amt<=0){ alert('Please enter a valid amount!'); return; }
+  cashDeposits.unshift({ id: Date.now(), bank, amount: amt, date, note });
+  cdSave();
+  // Also add to Cash Book so the ledger reflects it — Cash Out (haath se gaya), Bank In (bank mein gaya)
+  cbAutoAdd({ type:'other_out', amount: amt, date, desc: 'Cash Deposit → '+(CB_BANK_LABELS[bank]||bank)+(note?' ('+note+')':''), method:'cash', bank:'' });
+  cbAutoAdd({ type:'other_in', amount: amt, date, desc: 'Cash Deposit Received ← Cash'+(note?' ('+note+')':''), method:'bank', bank });
+  document.getElementById('cd-amount').value = '';
+  document.getElementById('cd-note').value = '';
+  cdRenderHistory();
+  cbStats();
+  alert('✅ Rs. '+amt.toLocaleString()+' cash deposit ho gaya '+(CB_BANK_LABELS[bank]||bank)+' mein!');
+}
+
+function cdDelete(id){
+  if(!confirm('Ye deposit delete karna hai? Cash aur bank balance adjust ho jayenge.')) return;
+  cashDeposits = cashDeposits.filter(d=>String(d.id)!==String(id));
+  cdSave();
+  // Also remove the paired Cash Book entries that were auto-created
+  cashEntries = cashEntries.filter(e=>!(e.source==='auto' && String(e.id).includes(String(id))));
+  cbSave();
+  cdRenderHistory();
+  cbStats(); cbRender();
+}
+
+function cdRenderHistory(){
+  const el = document.getElementById('cd-history');
+  if(!el) return;
+  if(!cashDeposits.length){ el.innerHTML = '<div style="font-size:12px;color:var(--txt3);padding:8px 0">Koi deposit nahi hua abhi tak</div>'; return; }
+  const fmt = n=>'Rs. '+Number(n).toLocaleString();
+  el.innerHTML = cashDeposits.map(d=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--sur2);border:1px solid var(--bor);border-radius:var(--rad-s);margin-bottom:6px;gap:8px">
+      <div style="font-size:12px">
+        <strong>💵 Cash</strong> → <strong>🏦 ${CB_BANK_LABELS[d.bank]||d.bank}</strong>
+        <span style="color:var(--txt3);margin-left:8px">${d.date}</span>
+        ${d.note ? '<div style="font-size:11px;color:var(--txt3);margin-top:2px">'+d.note+'</div>' : ''}
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:13px;font-weight:700;color:var(--gd)">${fmt(d.amount)}</span>
+        <button onclick="cdDelete(${d.id})" class="btn btn-r" style="padding:3px 8px;font-size:11px">Del</button>
+      </div>
+    </div>`).join('');
+}
+
+// ═══ DAILY SNAPSHOTS — har din ka closing balance record ═══
+const DS_KEY = 'zpmobile_daily_snapshots_v1';
+let dailySnapshots = JSON.parse(localStorage.getItem(DS_KEY) || '[]');
+function dsSave(){ localStorage.setItem(DS_KEY, JSON.stringify(dailySnapshots)); }
+
+function dsSaveToday(closingCash, closingBank, todayCashIn, todayCashOut, todayBankIn, todayBankOut){
+  const td = new Date().toISOString().split('T')[0];
+  const totalBank = Object.values(closingBank).reduce((s,v)=>s+v,0);
+  const snap = {
+    date: td,
+    cash: closingCash,
+    bank: {...closingBank},
+    totalBank,
+    kul: closingCash + totalBank,
+    todayCashIn, todayCashOut, todayBankIn, todayBankOut,
+    savedAt: Date.now()
+  };
+  const idx = dailySnapshots.findIndex(s=>s.date===td);
+  if(idx>=0) dailySnapshots[idx] = snap;
+  else dailySnapshots.unshift(snap);
+  dsSave();
+}
+
+function dsRender(){
+  const el = document.getElementById('ds-history-wrap');
+  if(!el) return;
+  if(!dailySnapshots.length){
+    el.innerHTML = '<div style="text-align:center;padding:20px;font-size:12px;color:var(--txt3)">Abhi koi record nahi — "🌙 Din Band Karo" dabao pehla record save karne ke liye</div>';
+    return;
+  }
+  const fmt = n => 'Rs. ' + Number(n).toLocaleString();
+  const fmtDiff = (now, prev) => {
+    if(prev===undefined) return '';
+    const d = now - prev;
+    if(d===0) return '<span style="color:var(--txt3);font-size:10px">= same</span>';
+    const col = d>0 ? 'var(--gd)' : 'var(--r)';
+    const arrow = d>0 ? '▲' : '▼';
+    return `<span style="color:${col};font-size:10px;font-weight:700">${arrow} Rs. ${Math.abs(d).toLocaleString()}</span>`;
+  };
+  // Table header
+  let html = `
+    <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;min-width:600px">
+      <thead>
+        <tr style="background:var(--sur2);font-size:10px;color:var(--txt3);text-transform:uppercase">
+          <th style="padding:8px 10px;text-align:left">Date</th>
+          <th style="padding:8px 10px;text-align:right">💵 Cash</th>
+          <th style="padding:8px 10px;text-align:right">🏦 ZP Meezan</th>
+          <th style="padding:8px 10px;text-align:right">Meezan</th>
+          <th style="padding:8px 10px;text-align:right">UBL</th>
+          <th style="padding:8px 10px;text-align:right">Alfalah</th>
+          <th style="padding:8px 10px;text-align:right">UBL Ameen</th>
+          <th style="padding:8px 10px;text-align:right">💼 Kul</th>
+          <th style="padding:8px 10px;text-align:center">Change</th>
+          <th style="padding:8px 10px;text-align:center"></th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+  dailySnapshots.forEach((snap, i) => {
+    const prev = dailySnapshots[i+1];
+    const diff = fmtDiff(snap.kul, prev?.kul);
+    const dateObj = new Date(snap.date+'T00:00:00');
+    const dateLabel = dateObj.toLocaleDateString('en-PK', {weekday:'short', day:'numeric', month:'short'});
+    const isToday = snap.date === new Date().toISOString().split('T')[0];
+    html += `
+      <tr style="border-bottom:1px solid var(--bor);${isToday?'background:rgba(201,162,39,0.05)':''}">
+        <td style="padding:8px 10px;font-size:12px;font-weight:${isToday?'700':'500'};color:${isToday?'var(--gd)':'var(--txt)'}">
+          ${dateLabel}${isToday?' <span style="font-size:9px;background:var(--gd);color:#000;padding:1px 5px;border-radius:4px;margin-left:4px">Aaj</span>':''}
+        </td>
+        <td style="padding:8px 10px;text-align:right;font-size:12px;font-weight:600;color:var(--gd)">${fmt(snap.cash)}</td>
+        <td style="padding:8px 10px;text-align:right;font-size:11px;color:var(--txt2)">${fmt(snap.bank?.meezan_zp||0)}</td>
+        <td style="padding:8px 10px;text-align:right;font-size:11px;color:var(--txt2)">${fmt(snap.bank?.meezan||0)}</td>
+        <td style="padding:8px 10px;text-align:right;font-size:11px;color:var(--txt2)">${fmt(snap.bank?.ubl||0)}</td>
+        <td style="padding:8px 10px;text-align:right;font-size:11px;color:var(--txt2)">${fmt(snap.bank?.alfalah||0)}</td>
+        <td style="padding:8px 10px;text-align:right;font-size:11px;color:var(--txt2)">${fmt(snap.bank?.ubl_ameen||0)}</td>
+        <td style="padding:8px 10px;text-align:right;font-size:13px;font-weight:800;color:var(--gd)">${fmt(snap.kul)}</td>
+        <td style="padding:8px 10px;text-align:center">${diff}</td>
+        <td style="padding:8px 10px;text-align:center">
+          <button onclick="dsDetailModal('${snap.date}')" class="btn btn-ghost" style="padding:3px 8px;font-size:10px">Detail</button>
+        </td>
+      </tr>`;
+  });
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+
+function dsDetailModal(date){
+  const snap = dailySnapshots.find(s=>s.date===date);
+  if(!snap) return;
+  const fmt = n => 'Rs. ' + Number(n).toLocaleString();
+  const dateObj = new Date(date+'T00:00:00');
+  const dateLabel = dateObj.toLocaleDateString('ur-PK', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+  // Us din ki entries
+  const dayEntries = cashEntries.filter(e=>e.date===date);
+  const entriesHtml = dayEntries.length ? dayEntries.map(e=>{
+    const isIn = cbIsIn(e.type);
+    const lbl = e.type && e.type.startsWith('__cin__') ? e.type.replace('__cin__','') : (CB_LABELS[e.type]||e.type);
+    const mth = e.method==='bank' ? ('🏦 '+(CB_BANK_LABELS[e.bank]||e.bank)) : '💵 Cash';
+    return `<tr>
+      <td style="padding:5px 8px;font-size:12px">${lbl}</td>
+      <td style="padding:5px 8px;font-size:11px;color:var(--txt3)">${mth}</td>
+      <td style="padding:5px 8px;font-weight:700;color:${isIn?'var(--gd)':'var(--r)'};text-align:right;font-size:12px">${isIn?'+':'-'}${fmt(e.amount)}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="3" style="padding:12px;text-align:center;color:var(--txt3);font-size:12px">Is din koi entry nahi</td></tr>';
+
+  const old = document.getElementById('ds-detail-modal');
+  if(old) old.remove();
+  const modal = document.createElement('div');
+  modal.id = 'ds-detail-modal';
+  modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto';
+  modal.innerHTML = `
+    <div style="background:var(--sur);border:1px solid var(--bor);border-radius:var(--rad);padding:22px;width:100%;max-width:480px;box-shadow:0 8px 40px rgba(0,0,0,0.5);margin:auto">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div>
+          <div style="font-size:15px;font-weight:800;color:var(--txt)">📅 ${dateLabel}</div>
+          <div style="font-size:11px;color:var(--txt3);margin-top:2px">Closing Snapshot</div>
+        </div>
+        <button onclick="document.getElementById('ds-detail-modal').remove()" class="btn btn-ghost" style="padding:6px 10px">✕</button>
+      </div>
+
+      <div style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;margin-bottom:8px">📊 Is Din Ka Hisaab</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+        <div style="background:var(--gl);border-radius:var(--rad-s);padding:10px 14px">
+          <div style="font-size:10px;color:var(--gt);font-weight:600">💵 Cash In</div>
+          <div style="font-size:15px;font-weight:800;color:var(--gd)">${fmt(snap.todayCashIn||0)}</div>
+        </div>
+        <div style="background:var(--rl);border-radius:var(--rad-s);padding:10px 14px">
+          <div style="font-size:10px;color:var(--rt);font-weight:600">💵 Cash Out</div>
+          <div style="font-size:15px;font-weight:800;color:var(--r)">${fmt(snap.todayCashOut||0)}</div>
+        </div>
+        <div style="background:rgba(59,130,246,.12);border-radius:var(--rad-s);padding:10px 14px">
+          <div style="font-size:10px;color:#3b82f6;font-weight:600">🏦 Bank In</div>
+          <div style="font-size:15px;font-weight:800;color:#3b82f6">${fmt(snap.todayBankIn||0)}</div>
+        </div>
+        <div style="background:rgba(239,68,68,.1);border-radius:var(--rad-s);padding:10px 14px">
+          <div style="font-size:10px;color:var(--r);font-weight:600">🏦 Bank Out</div>
+          <div style="font-size:15px;font-weight:800;color:var(--r)">${fmt(snap.todayBankOut||0)}</div>
+        </div>
+      </div>
+
+      <div style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;margin-bottom:8px">💰 Closing Balance</div>
+      <div style="background:var(--gl);border-radius:var(--rad-s);padding:10px 14px;margin-bottom:8px;display:flex;justify-content:space-between">
+        <span style="font-size:13px;font-weight:600">💵 Haath Mein Cash</span>
+        <span style="font-size:16px;font-weight:800;color:var(--gd)">${fmt(snap.cash)}</span>
+      </div>
+      <div style="background:var(--sur2);border-radius:var(--rad-s);padding:10px 14px;margin-bottom:8px">
+        ${Object.entries(snap.bank||{}).map(([k,v])=>`
+          <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bor);font-size:12px">
+            <span>🏦 ${CB_BANK_LABELS[k]||k}</span>
+            <span style="font-weight:700;color:var(--gd)">${fmt(v)}</span>
+          </div>`).join('')}
+        <div style="display:flex;justify-content:space-between;padding:8px 0 0;font-size:13px;font-weight:800">
+          <span>🏦 Total Bank</span><span style="color:#3b82f6">${fmt(snap.totalBank||0)}</span>
+        </div>
+      </div>
+      <div style="background:var(--sur2);border-radius:var(--rad-s);padding:10px 14px;display:flex;justify-content:space-between;margin-bottom:16px">
+        <span style="font-size:14px;font-weight:700">💼 Kul Daulat</span>
+        <span style="font-size:18px;font-weight:800;color:var(--gd)">${fmt(snap.kul)}</span>
+      </div>
+
+      <div style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;margin-bottom:8px">📋 Is Din Ki Entries (${dayEntries.length})</div>
+      <div style="overflow-x:auto;border:1px solid var(--bor);border-radius:var(--rad-s);margin-bottom:16px;max-height:200px;overflow-y:auto">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="background:var(--sur2)">
+            <th style="padding:6px 8px;font-size:10px;text-align:left;color:var(--txt3)">Type</th>
+            <th style="padding:6px 8px;font-size:10px;text-align:left;color:var(--txt3)">Method</th>
+            <th style="padding:6px 8px;font-size:10px;text-align:right;color:var(--txt3)">Amount</th>
+          </tr></thead>
+          <tbody>${entriesHtml}</tbody>
+        </table>
+      </div>
+      <button onclick="document.getElementById('ds-detail-modal').remove()" class="btn btn-ghost" style="width:100%">Close</button>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', ev=>{ if(ev.target===modal) modal.remove(); });
+}
+
+
+
+// ═══ DIN BAND KARO — DAILY CLOSING SUMMARY ═══
+function dinBandKaro(){
+  const today = new Date();
+  const td = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+  const dayName = today.toLocaleDateString('ur-PK', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  const fmt = n => 'Rs. ' + Number(n).toLocaleString();
+
+  // Aaj ki entries
+  const todayEntries = cashEntries.filter(e => e.date === td);
+  let todayCashIn = 0, todayCashOut = 0;
+  let todayBankIn = 0, todayBankOut = 0;
+  const bankTodayMap = { meezan_zp:0, meezan:0, ubl:0, alfalah:0, ubl_ameen:0 };
+
+  todayEntries.forEach(e => {
+    const isIn = cbIsIn(e.type);
+    const amt = e.amount;
+    if(e.method === 'bank' && e.bank) {
+      if(isIn){ todayBankIn += amt; if(bankTodayMap.hasOwnProperty(e.bank)) bankTodayMap[e.bank] += amt; }
+      else { todayBankOut += amt; if(bankTodayMap.hasOwnProperty(e.bank)) bankTodayMap[e.bank] -= amt; }
+    } else {
+      if(isIn) todayCashIn += amt;
+      else todayCashOut += amt;
+    }
+  });
+
+  // Aaj ke deposits
+  const todayDeposits = cashDeposits.filter(d => d.date === td);
+  const todayDepTotal = todayDeposits.reduce((s,d) => s+d.amount, 0);
+
+  // Aaj ke bank transfers
+  const todayBT = bankTransfers.filter(t => t.date === td);
+
+  // Current closing balances (from cbStats logic)
+  let closingCash = cbOpenBal.cash || 0;
+  const closingBank = { meezan_zp: cbOpenBal.meezan_zp||0, meezan: cbOpenBal.meezan||0, ubl: cbOpenBal.ubl||0, alfalah: cbOpenBal.alfalah||0, ubl_ameen: cbOpenBal.ubl_ameen||0 };
+  cashEntries.forEach(e => {
+    const sign = cbIsIn(e.type) ? 1 : -1;
+    if(e.method === 'bank' && e.bank && closingBank.hasOwnProperty(e.bank)) closingBank[e.bank] += sign * e.amount;
+    else closingCash += sign * e.amount;
+  });
+  bankTransfers.forEach(t => { closingBank[t.from] -= t.amount; closingBank[t.to] += t.amount; });
+  cashDeposits.forEach(d => { closingCash -= d.amount; if(closingBank.hasOwnProperty(d.bank)) closingBank[d.bank] += d.amount; });
+  const totalClosingBank = Object.values(closingBank).reduce((s,v)=>s+v,0);
+
+  // Snapshot save karo — aaj ka closing record
+  dsSaveToday(closingCash, closingBank, todayCashIn, todayCashOut, todayBankIn, todayBankOut);
+  dsRender();
+
+  // Aaj ki top entries list
+  const topList = todayEntries.slice(0,8).map(e => {
+    const isIn = cbIsIn(e.type);
+    const lbl = e.type && e.type.startsWith('__cin__') ? e.type.replace('__cin__','') : (CB_LABELS[e.type]||e.type);
+    const mth = e.method==='bank' ? ('🏦 '+(CB_BANK_LABELS[e.bank]||e.bank)) : '💵 Cash';
+    return `<tr>
+      <td style="padding:5px 8px;font-size:12px">${lbl}</td>
+      <td style="padding:5px 8px;font-size:11px;color:var(--txt3)">${mth}</td>
+      <td style="padding:5px 8px;font-size:12px;font-weight:700;color:${isIn?'var(--gd)':'var(--r)'};text-align:right">${isIn?'+':'-'}${fmt(e.amount)}</td>
+    </tr>`;
+  }).join('');
+
+  const bankRows = Object.entries(closingBank).map(([k,v]) =>
+    `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bor);font-size:13px">
+      <span>🏦 ${CB_BANK_LABELS[k]||k}</span>
+      <span style="font-weight:700;color:${v>=0?'var(--gd)':'var(--r)'}">${fmt(v)}</span>
+    </div>`
+  ).join('');
+
+  const old = document.getElementById('din-band-modal');
+  if(old) old.remove();
+  const modal = document.createElement('div');
+  modal.id = 'din-band-modal';
+  modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto';
+  modal.innerHTML = `
+    <div id="din-band-inner" style="background:var(--sur);border:1px solid var(--bor);border-radius:var(--rad);padding:22px;width:100%;max-width:480px;box-shadow:0 8px 40px rgba(0,0,0,0.5);margin:auto">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+        <div>
+          <div style="font-size:16px;font-weight:800;color:var(--txt)">🌙 Din Band — Closing Summary</div>
+          <div style="font-size:11px;color:var(--txt3);margin-top:2px">${dayName}</div>
+        </div>
+        <button onclick="document.getElementById('din-band-modal').remove()" class="btn btn-ghost" style="padding:6px 10px;font-size:16px;line-height:1">✕</button>
+      </div>
+
+      <!-- Aaj ka Activity -->
+      <div style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📊 Aaj Ka Hisaab</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+        <div style="background:var(--gl);border-radius:var(--rad-s);padding:10px 14px">
+          <div style="font-size:10px;color:var(--gt);font-weight:600">💵 Cash In</div>
+          <div style="font-size:16px;font-weight:800;color:var(--gd)">${fmt(todayCashIn)}</div>
+        </div>
+        <div style="background:var(--rl);border-radius:var(--rad-s);padding:10px 14px">
+          <div style="font-size:10px;color:var(--rt);font-weight:600">💵 Cash Out</div>
+          <div style="font-size:16px;font-weight:800;color:var(--r)">${fmt(todayCashOut)}</div>
+        </div>
+        <div style="background:rgba(59,130,246,.12);border-radius:var(--rad-s);padding:10px 14px">
+          <div style="font-size:10px;color:#3b82f6;font-weight:600">🏦 Bank In</div>
+          <div style="font-size:16px;font-weight:800;color:#3b82f6">${fmt(todayBankIn)}</div>
+        </div>
+        <div style="background:rgba(239,68,68,.1);border-radius:var(--rad-s);padding:10px 14px">
+          <div style="font-size:10px;color:var(--r);font-weight:600">🏦 Bank Out</div>
+          <div style="font-size:16px;font-weight:800;color:var(--r)">${fmt(todayBankOut)}</div>
+        </div>
+      </div>
+
+      ${todayDepTotal > 0 ? `<div style="background:var(--sur2);border-radius:var(--rad-s);padding:8px 12px;font-size:12px;margin-bottom:12px;color:var(--txt2)">💳 Aaj Bank Deposit: <strong style="color:var(--gd)">${fmt(todayDepTotal)}</strong></div>` : ''}
+      ${todayBT.length > 0 ? `<div style="background:var(--sur2);border-radius:var(--rad-s);padding:8px 12px;font-size:12px;margin-bottom:12px;color:var(--txt2)">🔁 Aaj Bank Transfer: <strong>${todayBT.length} transfers</strong></div>` : ''}
+
+      <!-- Aaj ki entries -->
+      ${todayEntries.length > 0 ? `
+      <div style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">📋 Aaj Ki Entries ${todayEntries.length > 8 ? '(Top 8)' : ''}</div>
+      <div style="overflow-x:auto;margin-bottom:16px;border:1px solid var(--bor);border-radius:var(--rad-s)">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="background:var(--sur2)"><th style="padding:6px 8px;font-size:10px;text-align:left;color:var(--txt3)">Type</th><th style="padding:6px 8px;font-size:10px;text-align:left;color:var(--txt3)">Method</th><th style="padding:6px 8px;font-size:10px;text-align:right;color:var(--txt3)">Amount</th></tr></thead>
+          <tbody>${topList}</tbody>
+        </table>
+      </div>` : `<div style="text-align:center;padding:12px;font-size:12px;color:var(--txt3);margin-bottom:12px">Aaj koi entry nahi</div>`}
+
+      <!-- Closing Balances -->
+      <div style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">💰 Closing Balance (Abhi Tak)</div>
+      <div style="background:var(--gl);border-radius:var(--rad-s);padding:12px 16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:13px;font-weight:600">💵 Haath Mein Cash</span>
+        <span style="font-size:18px;font-weight:800;color:var(--gd)">${fmt(closingCash)}</span>
+      </div>
+      <div style="background:var(--sur2);border-radius:var(--rad-s);padding:12px 16px;margin-bottom:16px">
+        ${bankRows}
+        <div style="display:flex;justify-content:space-between;padding:8px 0 0 0;font-size:14px;font-weight:800">
+          <span>🏦 Total Bank</span>
+          <span style="color:#3b82f6">${fmt(totalClosingBank)}</span>
+        </div>
+      </div>
+
+      <div style="background:var(--sur2);border-radius:var(--rad-s);padding:12px 16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:14px;font-weight:700">💼 Kul Daulat (Cash + Bank)</span>
+        <span style="font-size:20px;font-weight:800;color:var(--gd)">${fmt(closingCash + totalClosingBank)}</span>
+      </div>
+
+      <div style="display:flex;gap:10px">
+        <button onclick="dinBandPrint()" class="btn btn-gold" style="flex:1;font-size:13px">🖨️ Print / Save</button>
+        <button onclick="document.getElementById('din-band-modal').remove()" class="btn btn-ghost" style="font-size:13px;padding:8px 16px">Close</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+function dinBandPrint(){
+  const inner = document.getElementById('din-band-inner');
+  if(!inner) return;
+  const w = window.open('','_blank','width=520,height=700');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Din Band Summary</title>
+  <style>
+    body{font-family:sans-serif;padding:24px;color:#111;background:#fff;max-width:480px;margin:0 auto}
+    *{box-sizing:border-box} table{width:100%;border-collapse:collapse} th,td{padding:5px 8px;text-align:left}
+    thead tr{background:#f3f4f6} .g{color:#16a34a} .r{color:#dc2626} .b{color:#2563eb}
+    .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #e5e7eb}
+    .card{background:#f9fafb;border-radius:8px;padding:10px 14px;margin-bottom:8px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+    .badge{border-radius:6px;padding:8px 12px}
+    h2{margin:0 0 4px} p{margin:0 0 16px;color:#6b7280;font-size:12px}
+    h4{font-size:11px;text-transform:uppercase;color:#9ca3af;letter-spacing:.5px;margin:0 0 6px}
+    @media print{button{display:none}}
+  </style></head><body>
+  ${inner.innerHTML}
+  <script>setTimeout(()=>window.print(),400)<\/script>
+  </body></html>`);
+  w.document.close();
+}
+
+
 // ═══════════════════════════════════════════════
 const SUP_KEY = 'zpmobile_suppliers_v1';
 const SUP_TXN_KEY = 'zpmobile_sup_txn_v1';
@@ -5084,7 +5765,7 @@ function supTxnAdd(){
 
 function supTxnDelete(id){
   if(!confirm('Delete this entry?')) return;
-  supTxns=supTxns.filter(t=>String(t.id)!==String(id));
+  supTxns=supTxns.filter(t=>t.id!==id);
   supTxnSave();
   if(openSupId){ supUpdateDetailStats(openSupId); supTxnRender(openSupId); }
   supRender();
@@ -5107,7 +5788,7 @@ function supTxnRender(id){
       `<td><span style="font-size:12px;font-weight:600;color:${TXN_COLORS[t.type]||'var(--txt)'}">${TXN_LABELS[t.type]||t.type}</span></td>`+
       `<td style="font-size:12px;color:var(--txt2)">${t.note||'—'}</td>`+
       `<td style="font-weight:700;font-size:13px">${fmt(t.amount)}</td>`+
-      `<td><button onclick="supTxnDelete('${t.id}')" class="btn btn-r" style="padding:4px 10px;font-size:11px">Del</button></td>`;
+      `<td><button onclick="supTxnDelete(${t.id})" class="btn btn-r" style="padding:4px 10px;font-size:11px">Del</button></td>`;
     tbody.appendChild(tr);
   });
 }
